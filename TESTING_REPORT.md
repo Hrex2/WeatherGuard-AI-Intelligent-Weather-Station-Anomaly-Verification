@@ -51,3 +51,12 @@ Software tests use synthetic fixtures only and do not establish scientific valid
 - Saved campaign figures and summary are displayed only when their manifest indicates a passed Phase 01 audit and their source hashes match the currently loaded Phase 01 files.
 - Synthetic event table now separately reports all-window changes and changes beyond the feature-propagation window. Existing saved propagation checks were reused; no model refit was run.
 - Full optional model fitting, a new campaign, real browser screenshot capture, and notebook execution were not run.
+
+## User-friendly UI and model education redesign — 2026-11-16
+
+- `python -B -m unittest discover -s tests -v`: **40 passed, 0 failed**.
+- Streamlit AppTest visited Home, Weather Data, Investigate a Reading, Model Evaluation, Experiment Lab, and Research with no script exceptions. Weather Data and Model Evaluation each rendered Plotly charts.
+- AppTest confirmed Model Evaluation has exactly two primary sections, all three model-profile selections render, and no new model-run state is created on page load.
+- Model metadata tests checked the 11-feature order; actual train/test counts; all configurations; Isolation Forest settings; LOF neighbor values/novelty/contamination; and One-Class SVM kernel/gamma/nu.
+- `python -m compileall -q app.py services ui src/weather_research tests`: passed.
+- No estimator refit or synthetic campaign was run as part of the UI redesign.

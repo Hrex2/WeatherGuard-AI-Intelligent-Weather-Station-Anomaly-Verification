@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from services.data_service import load_project_data, prediction_wide
 from services.evidence_service import observation_evidence
+from services.model_metadata import build_model_education
 
 
 class TestWeatherGuardApplication(unittest.TestCase):
@@ -73,14 +74,45 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(results.unaffected_window_changed_configuration_predictions.tolist(), [0, 0, 0, 0])
         self.assertTrue(results.evaluation_window.str.contains("outside the injected observation").all())
 
+    def test_model_education_uses_actual_configs_parameters_and_dataset_metadata(self):
+        education = build_model_education(self.data)
+        self.assertEqual(education["input_features"], 11)
+        self.assertEqual(education["feature_order"], ["temp", "dwpt", "rhum", "prcp", "wspd", "pres", "temp_change_1h", "temp_rolling_mean_6h", "temp_deviation_6h", "month_sin", "month_cos"])
+        self.assertEqual(education["train_rows"], 36434)
+        self.assertEqual(education["test_rows"], 8415)
+        profiles = education["profiles"]
+        self.assertEqual(sum(len(profile["configs"]) for profile in profiles.values()), 12)
+        self.assertEqual([x["value"] for x in profiles["IsolationForest"]["configs"]], [0.01, 0.02, 0.03, 0.05])
+        self.assertEqual(profiles["IsolationForest"]["configs"][0]["parameters"]["n_estimators"], 200)
+        self.assertEqual(profiles["IsolationForest"]["configs"][0]["parameters"]["n_jobs"], -1)
+        self.assertEqual(profiles["IsolationForest"]["configs"][0]["parameters"]["random_state"], 42)
+        self.assertIn("unscaled", profiles["IsolationForest"]["preprocessing"])
+        self.assertEqual([x["value"] for x in profiles["LocalOutlierFactor"]["configs"]], [10, 20, 30, 50])
+        self.assertTrue(profiles["LocalOutlierFactor"]["configs"][0]["parameters"]["novelty"])
+        self.assertEqual(profiles["LocalOutlierFactor"]["configs"][0]["parameters"]["contamination"], 0.02)
+        self.assertIn("training rows only", profiles["LocalOutlierFactor"]["preprocessing"])
+        self.assertEqual(profiles["OneClassSVM"]["configs"][0]["parameters"]["kernel"], "rbf")
+        self.assertEqual(profiles["OneClassSVM"]["configs"][0]["parameters"]["gamma"], "scale")
+        self.assertEqual([x["value"] for x in profiles["OneClassSVM"]["configs"]], [0.01, 0.02, 0.03, 0.05])
+
     def test_streamlit_workspaces_start_without_page_errors(self):
         from streamlit.testing.v1 import AppTest
         app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
         self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
-        self.assertEqual([title.value for title in app.title], ["Command Center"])
-        for workspace in ("Research Studio", "Investigation Studio", "Experiment Lab", "Model Evaluation"):
+        self.assertEqual([title.value for title in app.title], ["Home"])
+        self.assertEqual(app.radio[0].options, ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"])
+        for workspace in ("Weather Data", "Investigate a Reading", "Experiment Lab", "Research", "Model Evaluation"):
             app.radio[0].set_value(workspace).run()
             self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+            if workspace == "Weather Data":
+                self.assertGreater(len(app.get("plotly_chart")), 0)
+            if workspace == "Model Evaluation":
+                self.assertEqual([tab.label for tab in app.tabs], ["A. Experiments & Results", "B. How the Models Work"])
+                self.assertGreater(len(app.get("plotly_chart")), 0)
+                self.assertNotIn("new_predictions", app.session_state)
+                for family in ("IsolationForest", "LocalOutlierFactor", "OneClassSVM"):
+                    app.selectbox(key="model_profile_family").set_value(family).run()
+                    self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
 
 
 if __name__ == "__main__":

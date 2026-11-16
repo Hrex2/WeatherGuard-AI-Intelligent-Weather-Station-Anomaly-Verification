@@ -17,6 +17,19 @@ def default_model_configs(random_seed=42):
                 "value": nu, "random_seed": random_seed} for nu in (0.01, 0.02, 0.03, 0.05)])
 
 
+def build_estimator(config, n_estimators=200):
+    """Construct one estimator using the protocol's explicit overrides."""
+    family, value = config["family"], config["value"]
+    if family == "IsolationForest":
+        return IsolationForest(n_estimators=n_estimators, contamination=value,
+                               random_state=config.get("random_seed", 42), n_jobs=-1)
+    if family == "LocalOutlierFactor":
+        return LocalOutlierFactor(n_neighbors=value, contamination=0.02, novelty=True)
+    if family == "OneClassSVM":
+        return OneClassSVM(kernel="rbf", gamma="scale", nu=value)
+    raise ValueError(f"unsupported model family: {family}")
+
+
 def fit_predict_configurations(x_train_unscaled, x_test_unscaled,
                                x_train_scaled, x_test_scaled,
                                configs=None, n_estimators=200):
@@ -53,19 +66,16 @@ def fit_predict_configurations(x_train_unscaled, x_test_unscaled,
         raise ValueError("configuration names must be present and unique")
     for cfg in configs:
         family, value = cfg["family"], cfg["value"]
+        model = build_estimator(cfg, n_estimators=n_estimators)
         if family == "IsolationForest":
-            model = IsolationForest(n_estimators=n_estimators, contamination=value,
-                                    random_state=cfg.get("random_seed", 42), n_jobs=-1)
             model.fit(x_train_unscaled)
             pred = model.predict(x_test_unscaled)
         elif family == "LocalOutlierFactor":
             if value >= len(x_train_scaled):
                 raise ValueError("LOF n_neighbors must be less than train size")
-            model = LocalOutlierFactor(n_neighbors=value, contamination=0.02, novelty=True)
             model.fit(x_train_scaled.to_numpy())
             pred = model.predict(x_test_scaled.to_numpy())
         elif family == "OneClassSVM":
-            model = OneClassSVM(kernel="rbf", gamma="scale", nu=value)
             model.fit(x_train_scaled)
             pred = model.predict(x_test_scaled)
         else:

@@ -1,0 +1,35 @@
+{
+  "IsolationForest": {
+    "name": "Isolation Forest",
+    "simple": "Imagine separating readings by asking a series of random questions about their values. An unusual reading often gets separated from the rest with fewer questions.",
+    "technical": "Isolation Forest builds randomized isolation trees. Shorter average path lengths are associated with observations that are easier to isolate.",
+    "why": "Provides a tree-based view of unusual combinations and can model nonlinear patterns without feature scaling in this project protocol.",
+    "difference": "It isolates observations through random partitions; LOF compares local density, while One-Class SVM learns a boundary around the training data.",
+    "detects_well": "Can surface points that are isolated in the feature space, including unusual combinations across weather variables.",
+    "may_miss": "May miss anomalies that are not easy to isolate, and behavior depends on the sampled trees and contamination setting.",
+    "scaling": "Unscaled input features in the existing model protocol.",
+    "parameter_explanation": "Contamination is the configured expected share of unusual training observations used to set the model's decision threshold. It is not measured sensor-fault prevalence or accuracy."
+  },
+  "LocalOutlierFactor": {
+    "name": "Local Outlier Factor (LOF)",
+    "simple": "LOF compares a reading with its nearest neighbors. A point can look unusual when its local neighborhood is much denser than the area around that point.",
+    "technical": "LOF estimates local reachability density and scores observations relative to the density of their k-nearest neighborhoods. This project uses novelty mode for held-out observations.",
+    "why": "Adds a local-density perspective that can find observations unusual relative to nearby patterns even when the full dataset is varied.",
+    "difference": "LOF compares local densities; Isolation Forest isolates points globally through partitions, while One-Class SVM estimates a separating boundary.",
+    "detects_well": "Can identify locally isolated points when neighborhood structure is informative.",
+    "may_miss": "Results depend on the chosen neighborhood size and may be less informative when local density is unstable or the representation is poorly scaled.",
+    "scaling": "StandardScaler fitted to training rows only; transformed training and test rows are used.",
+    "parameter_explanation": "n_neighbors sets how many nearby training observations define the local comparison. The tested values are 10, 20, 30, and 50."
+  },
+  "OneClassSVM": {
+    "name": "One-Class SVM",
+    "simple": "It learns a flexible boundary around much of the training data. A new reading outside that learned region can be marked unusual.",
+    "technical": "The RBF-kernel One-Class SVM estimates a support boundary in a kernel feature space. gamma='scale' controls the kernel's distance scale, and nu controls the boundary/allowed training outlier fraction constraints.",
+    "why": "Provides a boundary-based perspective that differs from both isolation trees and local-density comparison.",
+    "difference": "It separates the learned data region from the outside; Isolation Forest uses random isolation and LOF uses local neighborhood density.",
+    "detects_well": "Can represent nonlinear boundaries around the scaled training distribution.",
+    "may_miss": "Can be sensitive to nu, feature scaling, and the shape of the training distribution; an out-of-boundary point is not necessarily faulty.",
+    "scaling": "StandardScaler fitted to training rows only; transformed training and test rows are used.",
+    "parameter_explanation": "nu is a model control related to the upper bound on training errors and lower bound on support vectors. It is not a probability that a reading is faulty. RBF lets the boundary bend around nonlinear patterns."
+  }
+}

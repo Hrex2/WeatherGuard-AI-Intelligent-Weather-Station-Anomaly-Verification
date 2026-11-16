@@ -19,6 +19,7 @@ if str(SRC) not in sys.path:
 from services.data_service import load_project_data
 from services.model_service import run_saved_protocol
 from services.evidence_service import observation_evidence
+from services.model_metadata import build_model_education
 from ui.theme import apply_theme, metric_card, evidence_panel
 
 st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="expanded")
@@ -57,12 +58,13 @@ def render_header(kicker, title, subtitle):
     st.write("")
 
 
-def render_command(data, manifest, hashes):
+def render_home(data, manifest, hashes):
     obs = data["observations"]
     stability = data["stability"].set_index("timestamp").sort_index()
     predictions = data["predictions"]
     candidate = stability.loc[stability.configuration_votes.ge(8)]
-    render_header("WeatherGuard AI  /  overview", "Command Center", "A station anomaly is a prompt for investigation, not a sensor-fault verdict.")
+    render_header("WeatherGuard AI", "Home", "Understand unusual historical readings and the evidence available to investigate them.")
+    st.markdown("WeatherGuard AI examines historical weather-station readings, identifies unusual observations and gathers available evidence to help investigate whether a reading represents unusual weather or a possible measurement problem.")
     _source_note()
     meta = st.columns([1.4, 1, 1, 1])
     with meta[0]:
@@ -77,19 +79,21 @@ def render_command(data, manifest, hashes):
     with meta[3]:
         st.markdown("**Dataset integrity**")
         st.caption("Manifest hashes match · processed snapshot")
+    st.caption("Measurements available: air temperature, dew point, relative humidity, precipitation, wind speed and air pressure.")
     st.divider()
-    metrics = st.columns(6)
-    with metrics[0]: metric_card("Processed rows", f"{len(obs):,}", "model_df snapshot; not raw acquisition")
-    with metrics[1]: metric_card("Feature-ready rows", f"{len(data['train']) + len(data['test']):,}", "saved train + test matrices")
-    with metrics[2]: metric_card("8/12 candidates", f"{len(candidate):,}", "verified saved stability table")
-    with metrics[3]: metric_card("Episodes · 1h", f"{len(data['episodes']):,}", "saved episode profiles")
-    with metrics[4]: metric_card("Regional outcomes", "Not evaluated", "integrated evidence pipeline pending")
-    with metrics[5]: metric_card("Station-specific outcomes", "Not evaluated", "no verified fault labels")
+    metrics = st.columns(4)
+    with metrics[0]: st.metric("Historical readings", f"{len(obs):,}", help="Processed observations in the saved historical snapshot.")
+    with metrics[1]: st.metric("Model configurations", f"{data['predictions'].configuration.nunique()}", help="Four settings each for three unsupervised model families.")
+    with metrics[2]: st.metric("Readings flagged by 8/12 or more", f"{len(candidate):,}", help="This is a configured consensus threshold, not a fault probability.")
+    with metrics[3]: st.metric("Research status", "Prototype", help="Real fault labels and a validated combined evidence rule are not available.")
+    st.info("A model flag means ‘unusual compared with patterns the model learned.’ It does not confirm a broken sensor or explain the weather event.")
     st.write("")
     left, right = st.columns([1.55, 1])
     with left:
-        st.subheader("Observation timeline")
-        variable = st.selectbox("Weather variable", ["temp", "dwpt", "rhum", "prcp", "wspd", "pres"], key="command_variable")
+        st.subheader("Explore a weather measurement")
+        st.caption("Processed station observations, with 8/12 consensus candidates marked. Explore other variables and dates in Weather Data.")
+        variable_labels = {"temp": "Air temperature (°C)", "dwpt": "Dew point (°C)", "rhum": "Relative humidity (%)", "prcp": "Precipitation (mm)", "wspd": "Wind speed (km/h)", "pres": "Air pressure (hPa)"}
+        variable = st.selectbox("Weather measurement", list(variable_labels), format_func=lambda key: variable_labels[key], key="command_variable")
         series = obs[variable].dropna()
         if len(series) > 6000:
             series = series.iloc[:: max(1, len(series) // 6000)]
@@ -98,28 +102,72 @@ def render_command(data, manifest, hashes):
         if len(candidate):
             candidate_times = candidate.index.intersection(obs.index)
             fig.add_trace(go.Scatter(x=candidate_times, y=obs.loc[candidate_times, variable], mode="markers", name="8/12 candidate", marker={"color":"#FBBF24","size":7,"symbol":"diamond"}))
+        fig.update_layout(title=variable_labels[variable], xaxis_title="Historical time", yaxis_title=variable_labels[variable])
         st.plotly_chart(_plot_layout(fig, 390), width="stretch")
     with right:
-        st.subheader("Configuration sensitivity")
+        st.subheader("How often did configurations flag readings?")
         counts = data["configuration_results"].sort_values("anomalies")
         fig = px.bar(counts, x="anomalies", y="configuration", orientation="h", color="family",
                      color_discrete_sequence=["#38BDF8", "#2DD4BF", "#A78BFA"])
         st.plotly_chart(_plot_layout(fig, 390), width="stretch")
-    st.subheader("Recent consensus candidates")
+    st.subheader("Recent unusual readings for investigation")
     recent = candidate.tail(12).reset_index().rename(columns={"index":"timestamp"})
     if len(recent):
-        display_cols = [c for c in ["timestamp", "configuration_votes", "family_balanced_agreement"] if c in recent]
-        st.dataframe(recent[display_cols].sort_values("timestamp", ascending=False), hide_index=True, width="stretch")
+        recent = recent[["timestamp", "configuration_votes"]].rename(columns={"timestamp": "Historical time", "configuration_votes": "Configurations agreeing (of 12)"})
+        st.dataframe(recent.sort_values("Historical time", ascending=False), hide_index=True, width="stretch")
     else:
         st.info("No saved rows meet the 8/12 candidate threshold.")
-    with st.expander("Dataset and prediction fingerprints"):
+    with st.expander("Dataset and prediction verification details"):
         st.json({"phase01_manifest_audit_passed": manifest.get("audit_passed"), "sha256": hashes,
                  "saved_prediction_rows": len(predictions), "unique_timestamps": predictions.timestamp.nunique(),
                  "configurations": predictions.configuration.nunique()})
 
 
+def render_weather_data(data):
+    obs = data["observations"]
+    stability = data["stability"].set_index("timestamp").sort_index()
+    render_header("WeatherGuard AI / historical data", "Weather Data", "Explore the measurements behind the saved analysis.")
+    st.info("This is a historical processed research snapshot, not a live sensor feed. Times are shown in Asia/Kolkata.")
+    labels = {"temp": ("Air temperature", "°C"), "dwpt": ("Dew point", "°C"),
+              "rhum": ("Relative humidity", "%"), "prcp": ("Rainfall / precipitation", "mm"),
+              "wspd": ("Wind speed", "km/h"), "pres": ("Air pressure", "hPa")}
+    controls = st.columns([1.2, 1])
+    with controls[0]:
+        variable = st.selectbox("Weather measurement", list(labels), format_func=lambda key: labels[key][0], key="weather_data_variable")
+    start, end = obs.index.min().date(), obs.index.max().date()
+    with controls[1]:
+        dates = st.date_input("Date range", value=(max(start, end.replace(year=end.year - 1)), end), min_value=start, max_value=end, key="weather_data_dates")
+    if isinstance(dates, tuple) and len(dates) == 2:
+        lo = pd.Timestamp(dates[0]).tz_localize(str(obs.index.tz))
+        hi = (pd.Timestamp(dates[1]) + pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)).tz_localize(str(obs.index.tz))
+        view = obs.loc[(obs.index >= lo) & (obs.index <= hi)]
+    else:
+        view = obs
+    series = view[variable].dropna()
+    if len(series) > 9000:
+        series = series.iloc[::max(1, len(series) // 9000)]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=series.index, y=series, mode="lines", name=labels[variable][0],
+                             line={"color": "#38BDF8", "width": 1.4},
+                             hovertemplate="%{x|%Y-%m-%d %H:%M}<br>%{y:.2f} " + labels[variable][1] + "<extra></extra>"))
+    candidate_times = stability.index[stability.configuration_votes.ge(8)].intersection(series.index)
+    if len(candidate_times):
+        fig.add_trace(go.Scatter(x=candidate_times, y=series.loc[candidate_times], mode="markers", name="8/12 model agreement",
+                                 marker={"color": "#FBBF24", "size": 7, "symbol": "diamond"}))
+    selected = st.session_state.get("selected_observation")
+    if selected is not None and pd.Timestamp(selected) in series.index:
+        selected = pd.Timestamp(selected)
+        fig.add_trace(go.Scatter(x=[selected], y=[series.loc[selected]], mode="markers", name="Selected reading",
+                                 marker={"color": "#F87171", "size": 11, "symbol": "x"}))
+    fig.update_layout(title=f"{labels[variable][0]} over time", xaxis_title="Historical time", yaxis_title=f"{labels[variable][0]} ({labels[variable][1]})")
+    st.plotly_chart(_plot_layout(fig, 430), width="stretch")
+    st.caption(f"Showing {len(view):,} historical rows; {int(view[variable].isna().sum()):,} missing values for {labels[variable][0].lower()} in this range. Gold markers indicate model agreement, not confirmed faults.")
+    with st.expander("View measurement rows"):
+        st.dataframe(view[[variable]].rename(columns={variable: f"{labels[variable][0]} ({labels[variable][1]})"}), width="stretch")
+
+
 def render_research(data):
-    render_header("WeatherGuard AI  /  research studio", "Research Studio", "A verified research narrative with published literature separated from project findings.")
+    render_header("WeatherGuard AI / research", "Research", "Explore the research question, methods, evidence, findings and limitations behind the prototype.")
     tabs = st.tabs(["Overview", "Literature review", "Research gap & contribution", "Method & results", "References"])
     with tabs[0]:
         st.subheader("Uncertainty-aware event-level verification")
@@ -173,86 +221,73 @@ def render_research(data):
 
 
 def render_investigation(data, root):
-    render_header("WeatherGuard AI  /  investigation studio", "Investigation Studio", "Explore the historical series, saved model votes, temporal context, spatial coverage, and screening flags.")
-    obs = data["observations"]
-    stab = data["stability"].set_index("timestamp").sort_index()
-    start_date, end_date = obs.index.min().date(), obs.index.max().date()
-    col1, col2, col3 = st.columns([1.2, 1, 1])
-    with col1:
-        dates = st.date_input("Observation date range", value=(max(start_date, end_date.replace(year=end_date.year-1)), end_date), min_value=start_date, max_value=end_date, key="explorer_dates")
-    with col2:
-        variable = st.selectbox("Variable", ["temp", "dwpt", "rhum", "prcp", "wspd", "pres"], key="explorer_variable")
-    with col3:
-        view = st.selectbox("Rows", ["All observations", "8/12 candidates only", "Below 8/12 candidate threshold"], key="explorer_candidates")
-    if isinstance(dates, tuple) and len(dates) == 2:
-        lo = pd.Timestamp(dates[0]).tz_localize(str(obs.index.tz))
-        hi = (pd.Timestamp(dates[1]) + pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)).tz_localize(str(obs.index.tz))
-        frame = obs.loc[(obs.index >= lo) & (obs.index <= hi)]
-    else:
-        frame = obs
-    candidates = stab.loc[stab.configuration_votes.ge(8)]
-    if view == "8/12 candidates only":
-        frame = frame.loc[frame.index.isin(candidates.index)]
-    elif view == "Below 8/12 candidate threshold":
-        frame = frame.loc[~frame.index.isin(candidates.index)]
-    chart = frame[[variable]].dropna()
-    if len(chart) > 8000:
-        chart = chart.iloc[:: max(1, len(chart) // 8000)]
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=chart.index, y=chart[variable], mode="lines", name=variable, line={"color":"#38BDF8","width":1.3}))
-    event_idx = chart.index.intersection(candidates.index)
-    if len(event_idx):
-        fig.add_trace(go.Scatter(x=event_idx, y=chart.loc[event_idx, variable], mode="markers", name="8/12 model candidate", marker={"color":"#FBBF24","size":8,"symbol":"diamond"}))
-    st.plotly_chart(_plot_layout(fig, 420), width="stretch")
-    st.caption(f"Rows in selected window: {len(frame):,}. Dataset timestamps are shown in {obs.index.tz}.")
-    choices = frame.index
-    if not len(choices):
-        st.info("No observations match these filters.")
-        return
-    preferred = candidates.index.intersection(choices)
-    default_ts = st.session_state.get("selected_observation")
-    if default_ts is None or pd.Timestamp(default_ts) not in choices:
-        default_ts = preferred[-1] if len(preferred) else choices[-1]
-    selectables = choices
-    if len(selectables) > 12000:
-        selectables = selectables[:: max(1, len(selectables)//12000)]
-        if default_ts not in selectables:
-            selectables = selectables.append(pd.DatetimeIndex([default_ts])).sort_values()
-    index = list(selectables).index(default_ts)
-    selected = st.selectbox("Selected observation (shared across workspaces)", selectables, index=index,
+    render_header("WeatherGuard AI / guided review", "Investigate a Reading", "Follow the evidence step by step. The model flags unusual patterns; it does not diagnose a broken sensor.")
+    observations = data["observations"]
+    stability = data["stability"].set_index("timestamp").sort_index()
+    prediction_times = pd.DatetimeIndex(data["predictions"].timestamp.unique()).sort_values()
+    candidates = stability.loc[stability.configuration_votes.ge(8)].index.intersection(prediction_times)
+    previous = pd.Timestamp(st.session_state.get("selected_observation", candidates[-1] if len(candidates) else prediction_times[-1]))
+    choices = prediction_times
+    if previous not in choices:
+        previous = candidates[-1] if len(candidates) else choices[-1]
+    selected = st.selectbox("Choose a historical reading", choices, index=choices.get_loc(previous),
                             format_func=_fmt_ts, key="selected_observation_widget")
     st.session_state["selected_observation"] = selected
-    selected_values = obs.loc[selected]
-    st.subheader("Observation details")
-    st.dataframe(selected_values.rename("value").to_frame(), width="stretch")
+
+    st.subheader("1. What was observed?")
+    st.caption("Station VILD0 · processed historical dataset · source instrument/provider provenance is incomplete.")
+    values = observations.loc[selected]
+    units = {"temp": "°C", "dwpt": "°C", "rhum": "%", "prcp": "mm", "wspd": "km/h", "pres": "hPa"}
+    names = {"temp": "Air temperature", "dwpt": "Dew point", "rhum": "Relative humidity", "prcp": "Precipitation", "wspd": "Wind speed", "pres": "Air pressure"}
+    metrics = st.columns(6)
+    for slot, variable in zip(metrics, units):
+        value = values.get(variable, pd.NA)
+        slot.metric(names[variable], "Missing" if pd.isna(value) else f"{value:g} {units[variable]}")
+    st.caption(f"Historical timestamp: {_fmt_ts(selected)}. The observation is shared with Weather Data through the selected-reading control.")
 
     spatial_tables = {}
     for station in ("42099", "42101"):
         path = root / "phase03_model_revalidation" / f"spatial_comparison_{station}.csv"
         if path.is_file():
-            spatial_tables[station] = pd.read_csv(path, parse_dates=["candidate_time", "station_time"])
-    bundle = observation_evidence(selected, obs, data["predictions"], data["stability"], data["episodes"], spatial_tables)
-    a, b, c, d = st.columns(4)
-    details = {
-        "E1 · Model stability": (bundle["evidence_states"]["E1"], f"Configuration votes: {bundle['vote_count'] if bundle['vote_count'] is not None else 'unavailable'} / 12. Agreement is not an anomaly probability."),
-        "E2 · Temporal consistency": (bundle["evidence_states"]["E2"], f"Saved one-hour candidate episodes matching this timestamp: {len(bundle['episodes'])}. No episode means no detected evidence under the saved 8/12 candidate definition."),
-        "E3 · Spatial corroboration": (bundle["evidence_states"]["E3"], "Exploratory candidate comparisons may be shown below, but raw neighbor series/provenance and a validated residual threshold are unavailable."),
-        "E4 · Physical screening": (bundle["evidence_states"]["E4"], f"Broad screening flags at this timestamp: {int(bundle['quality_flags'].screening_flag.sum()) if len(bundle['quality_flags']) else 'unavailable'}. A screening flag is not a sensor-fault label."),
-    }
-    for slot, key in zip((a,b,c,d), details):
-        with slot:
-            evidence_panel(key, *details[key])
-    st.markdown("### Current interpretation")
-    st.info(bundle["outcome"] + " — " + bundle["outcome_reason"])
-    st.markdown("**Outcome evidence:** model votes and available screening flags are displayed above. **Missing:** a validated integrated rule, complete neighbor series, and independent source provenance. **Conflict:** cannot be reliably adjudicated with current artifacts.")
-    st.subheader("Twelve model configuration predictions")
-    if len(bundle["model_rows"]):
-        st.dataframe(bundle["model_rows"][["configuration", "family", "parameter", "parameter_value", "is_candidate"]], hide_index=True, width="stretch")
+            try:
+                spatial_tables[station] = pd.read_csv(path, parse_dates=["candidate_time", "station_time"])
+            except (OSError, ValueError, KeyError):
+                st.warning(f"A derived comparison for station {station} could not be loaded; spatial evidence remains unavailable.")
+    bundle = observation_evidence(selected, observations, data["predictions"], data["stability"], data["episodes"], spatial_tables)
+    st.subheader("2. Why was it flagged?")
+    if bundle["vote_count"] is None:
+        st.info("No saved model predictions are available for this timestamp.")
     else:
-        st.info("No saved prediction row exists for the selected timestamp.")
-    if len(bundle["spatial_rows"]):
-        st.subheader("Exploratory neighboring-station comparison")
-        st.dataframe(bundle["spatial_rows"], hide_index=True, width="stretch")
+        st.markdown(f"**{bundle['vote_count']} of 12 model configurations** marked this reading as unusual.")
+        st.caption("Eight or more votes meet the project's current 8/12 candidate threshold. Votes describe model agreement, not the probability of a fault.")
+    if len(bundle["model_rows"]):
+        with st.expander("See the exact configuration predictions"):
+            st.dataframe(bundle["model_rows"][["configuration", "family", "parameter", "parameter_value", "is_candidate"]], hide_index=True, width="stretch")
+
+    st.subheader("3. What other evidence is available?")
+    st.caption("These evidence groups are prompts for investigation. Missing information is shown as unavailable, not as evidence against the reading.")
+    evidence_descriptions = {
+        "Do the models agree? (E1)": (bundle["evidence_states"]["E1"], f"{bundle['vote_count'] if bundle['vote_count'] is not None else 'No saved votes'} of 12 configurations. This agreement is not a probability."),
+        "Does it make sense over time? (E2)": ("UNAVAILABLE", f"Saved episode matches: {len(bundle['episodes'])}. Episodes are built from E1 candidates, so they are context rather than independent temporal evidence."),
+        "Do nearby stations show something similar? (E3)": ("UNAVAILABLE", "Raw neighbor series, verified provenance, and a validated comparison rule are not available."),
+        "Is the measurement physically reasonable? (E4)": (bundle["evidence_states"]["E4"], f"Broad screening flags: {int(bundle['quality_flags'].screening_flag.sum()) if len(bundle['quality_flags']) else 'unavailable'}. Missing values alone are not treated as fault evidence."),
+    }
+    for title, (state, explanation) in evidence_descriptions.items():
+        evidence_panel(title, state, explanation)
+    with st.expander("Technical screening details"):
+        if len(bundle["quality_flags"]):
+            st.dataframe(bundle["quality_flags"], hide_index=True, width="stretch")
+        else:
+            st.info("Physical screening is unavailable for this reading.")
+
+    st.subheader("4. What can we conclude?")
+    st.info("Uncertain / insufficient evidence. " + bundle["outcome_reason"])
+    st.caption("An unusual pattern is not proof of a sensor fault. No validated combined evidence rule or real-observation fault labels are available.")
+    with st.expander("5. Technical details and research limits"):
+        st.markdown("**Research codes:** E1 model stability; E2 temporal consistency; E3 spatial corroboration; E4 physical sensor quality. **Current status:** E1 vote counts are available; E2 is not independent of E1; E3 is unavailable; E4 is broad screening only. The overall outcome remains uncertain.")
+        if len(bundle["spatial_rows"]):
+            st.markdown("**Exploratory derived station comparisons** (not used to assign E3 support or conflict):")
+            st.dataframe(bundle["spatial_rows"], hide_index=True, width="stretch")
 
 
 def render_experiments(root, data, phase01_hashes):
@@ -360,62 +395,246 @@ def render_experiments(root, data, phase01_hashes):
                                {"Fault type":"Step, drift, stuck, noise, dropout", "Status":"Pending", "Notes":"Backend primitives/tests exist in part; campaign evaluation not wired"}]), hide_index=True, width="stretch")
 
 
-def render_evaluation(data, root):
-    render_header("WeatherGuard AI  /  model evaluation", "Model Evaluation", "Inspect saved model configuration behavior and synthetic-only results without implying real-world accuracy.")
-    tabs = st.tabs(["Configuration comparison", "Stability", "Synthetic fault evaluation", "Ablation"])
-    st.markdown("#### Optional model execution")
-    st.caption("No fitted model objects are included in this archive. This control explicitly refits the established 12 configurations on the saved training matrix and predicts the saved test matrix; it is not run on page load.")
-    if st.button("Run the saved 12-model protocol", key="run_saved_protocol", type="primary"):
-        try:
-            with st.spinner("Fitting 12 configurations on 36k training rows and predicting the held-out matrix…"):
-                new_predictions, metadata = run_saved_protocol(data["train"], data["test"])
-            st.session_state["new_predictions"] = new_predictions
-            st.session_state["new_prediction_metadata"] = metadata
-        except (ValueError, KeyError) as exc:
-            st.error(f"Local model execution failed: {exc}")
-    if "new_predictions" in st.session_state:
-        meta = st.session_state["new_prediction_metadata"]
-        st.success(f"New local execution completed at {meta['executed_at_utc']} · {len(st.session_state['new_predictions']):,} prediction rows")
-        st.json(meta)
-        st.caption("This execution is separate from the saved historical predictions. Model-output parity is reported here rather than assumed.")
-        new_long = st.session_state["new_predictions"].reset_index()
-        saved_long = data["predictions"][["timestamp", "configuration", "is_candidate"]]
-        paired = new_long.merge(saved_long, on=["timestamp", "configuration"], how="left", suffixes=("_new", "_saved"), validate="one_to_one")
-        if paired.is_candidate_saved.isna().any():
-            st.warning("Prediction grid differs from the saved historical artifact.")
-        else:
-            mismatch = paired.is_candidate_new.astype(bool) != paired.is_candidate_saved.astype(bool)
-            st.metric("Saved-label mismatches", f"{int(mismatch.sum()):,} / {len(paired):,}")
-            st.dataframe(new_long.head(100), hide_index=True, width="stretch")
-    with tabs[0]:
-        cfg = data["configuration_results"].sort_values("anomaly_percentage", ascending=False)
-        st.caption("Anomaly counts describe model output frequency, not ground-truth performance.")
-        fig = px.bar(cfg.sort_values("anomalies"), x="anomalies", y="configuration", orientation="h", color="family",
-                     color_discrete_sequence=["#38BDF8", "#2DD4BF", "#A78BFA"], hover_data=["parameter_value", "anomaly_percentage"])
-        st.plotly_chart(_plot_layout(fig, 460), width="stretch")
-        st.dataframe(cfg, hide_index=True, width="stretch")
-    with tabs[1]:
+def _campaign_is_verified(root, hashes):
+    folder = root / "outputs" / "synthetic_fault_campaign"
+    manifest_path = folder / "synthetic_campaign_manifest.json"
+    if not (folder / "observation_level_results.csv").is_file() or not (folder / "event_level_results.csv").is_file():
+        return False
+    try:
+        campaign = json.loads(manifest_path.read_text(encoding="utf-8"))
+        recorded = campaign.get("dataset_hashes", {})
+        return (campaign.get("phase01_manifest_audit_passed") is True
+                and recorded.get("model_df") == hashes.get("observations")
+                and recorded.get("X_train_multi") == hashes.get("train")
+                and recorded.get("X_test_multi") == hashes.get("test"))
+    except (OSError, json.JSONDecodeError):
+        return False
+
+
+def render_evaluation(data, root, hashes):
+    render_header("Learn about the saved analysis", "Model Evaluation", "See what the project tested, what the results show, and how each model works.")
+    try:
+        education = build_model_education(data)
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        st.error("Model education details could not be assembled from the saved configuration and dataset metadata.")
+        st.caption(str(exc))
+        return
+    st.caption("Two sections: saved experiments and results, then a plain-language model guide with technical detail on demand.")
+    experiments_tab, models_tab = st.tabs(["A. Experiments & Results", "B. How the Models Work"])
+
+    with experiments_tab:
+        st.subheader("A1. Compare the tested configurations")
+        st.write("The saved analysis compared four settings for each of three unsupervised algorithms. The bars show how often each configuration flagged a held-out reading as unusual.")
+        cfg = data["configuration_results"].copy()
+        parameter_names = pd.DataFrame(education["configurations"])[["name", "parameter"]].rename(columns={"name": "configuration"})
+        cfg = cfg.merge(parameter_names, on="configuration", how="left", validate="one_to_one")
+        cfg["family"] = cfg["family"].replace({"IsolationForest": "Isolation Forest", "LocalOutlierFactor": "Local Outlier Factor", "OneClassSVM": "One-Class SVM"})
+        fig = px.bar(cfg.sort_values("anomalies"), x="anomalies", y="configuration", color="family", orientation="h",
+                     hover_data={"parameter": True, "parameter_value": True, "anomaly_percentage": ":.2f", "test_observations": True},
+                     labels={"anomalies": "Readings flagged", "configuration": "Saved configuration", "family": "Algorithm"},
+                     color_discrete_sequence=["#38BDF8", "#2DD4BF", "#A78BFA"], title="Saved flags by model configuration")
+        fig.update_layout(xaxis_title="Held-out readings flagged (not accuracy)", yaxis_title="Configuration")
+        st.plotly_chart(_plot_layout(fig, 450), width="stretch")
+        st.caption("These are model output counts. No verified real fault labels exist, so accuracy, precision, recall and F1 are not available.")
+        with st.expander("All 12 configurations and saved counts"):
+            st.dataframe(data["configuration_results"].sort_values(["family", "configuration"]), hide_index=True, width="stretch")
+
+        st.subheader("A2. Do the models agree? (model stability)")
         stability = data["stability"]
-        fig = px.histogram(stability, x="configuration_votes", nbins=13, color_discrete_sequence=["#38BDF8"])
-        st.plotly_chart(_plot_layout(fig, 320), width="stretch")
-        st.caption("Votes are configuration agreement, not calibrated anomaly probability.")
-        st.dataframe(stability.configuration_votes.value_counts().sort_index().rename_axis("votes").rename("timestamps").reset_index(), hide_index=True, width="stretch")
-        st.info("Saved Phase 03 predictions are historical artifacts. A local refit differs at 42 of 100,980 labels; see the parity report before interpreting refit comparisons.")
-    with tabs[2]:
-        summary_path = root / "outputs" / "synthetic_fault_campaign" / "observation_level_results.csv"
-        if summary_path.is_file():
-            results = pd.read_csv(summary_path)
-            st.warning("Synthetic labels only. These detection rates do not measure accuracy on real weather observations.")
-            st.dataframe(results, hide_index=True, width="stretch")
-            fig = px.line(results, x="magnitude", y="synthetic_detection_rate", markers=True,
-                          labels={"synthetic_detection_rate":"Target detected by ≥1 configuration", "magnitude":"Injected temperature change (°C)"},
-                          color_discrete_sequence=["#2DD4BF"])
-            st.plotly_chart(_plot_layout(fig, 330), width="stretch")
+        candidate_count = int(stability.configuration_votes.ge(8).sum())
+        c1, c2 = st.columns(2)
+        c1.metric("8/12 consensus candidates", f"{candidate_count:,}", help="A configured two-thirds vote threshold, not an anomaly probability.")
+        c2.metric("Test timestamps", f"{len(stability):,}", help="Saved historical timestamps evaluated by all 12 configurations.")
+        st.write("More configurations flagging the same observation means stronger agreement among these tested settings. It does not say how likely a sensor fault is.")
+        vote_counts = stability.configuration_votes.value_counts().sort_index().rename_axis("votes").rename("timestamps").reset_index()
+        vote_fig = px.bar(vote_counts, x="votes", y="timestamps", labels={"votes":"Configurations flagging the reading (of 12)", "timestamps":"Number of timestamps"},
+                          title="How many configurations flagged each timestamp", color_discrete_sequence=["#38BDF8"])
+        st.plotly_chart(_plot_layout(vote_fig, 330), width="stretch")
+        family_columns = {"Isolation Forest": "IsolationForest_votes", "Local Outlier Factor": "LocalOutlierFactor_votes", "One-Class SVM": "OneClassSVM_votes"}
+        family_votes = stability[list(family_columns.values())].rename(columns={v:k for k,v in family_columns.items()}).melt(var_name="Algorithm family", value_name="Configurations flagging")
+        family_fig = px.histogram(family_votes, x="Configurations flagging", color="Algorithm family", barmode="group", histnorm="probability",
+                                  labels={"Configurations flagging":"Flags within this family (of 4)", "probability":"Share of timestamps"},
+                                  title="Family-level voting patterns", color_discrete_sequence=["#38BDF8", "#2DD4BF", "#A78BFA"])
+        st.plotly_chart(_plot_layout(family_fig, 330), width="stretch")
+        jac_path = root / "phase03_model_revalidation" / "jaccard_similarity_verified.csv"
+        if jac_path.is_file():
+            try:
+                jac = pd.read_csv(jac_path, index_col=0).apply(pd.to_numeric, errors="coerce")
+                if jac.empty or jac.isna().all().all():
+                    raise ValueError("Saved similarity matrix contains no usable numeric values")
+                heat = px.imshow(jac, text_auto=".2f", zmin=0, zmax=1, aspect="auto", color_continuous_scale="Tealgrn",
+                                 labels={"x":"Model configuration", "y":"Model configuration", "color":"Jaccard similarity"},
+                                 title="How similarly did each pair flag readings? (Jaccard similarity)")
+                st.plotly_chart(_plot_layout(heat, 520), width="stretch")
+                st.caption("Jaccard similarity compares the overlap of flagged timestamp sets. Lower overlap indicates disagreement; it is not model accuracy.")
+            except (OSError, ValueError, KeyError, pd.errors.ParserError) as exc:
+                st.warning(f"Saved configuration similarity is unavailable: {exc}")
         else:
-            st.info("Not evaluated. No synthetic campaign output is available.")
-    with tabs[3]:
-        st.info("Not evaluated. The integrated E1–E4 ablation runner and validated evidence inputs are not available yet.")
-        st.caption("No synthetic or original-observation ablation metrics are displayed until an executable, reviewable comparison exists.")
+            st.info("Saved configuration similarity matrix is unavailable.")
+        with st.expander("Technical definition of the similarity measure"):
+            st.write("Jaccard similarity is the number of timestamps flagged by both configurations divided by the number flagged by either one. It compares decisions, not correctness.")
+
+        st.subheader("A3. Controlled temperature experiment")
+        if _campaign_is_verified(root, hashes):
+            dose_results = pd.read_csv(root / "outputs" / "synthetic_fault_campaign" / "observation_level_results.csv")
+            event_results = pd.read_csv(root / "outputs" / "synthetic_fault_campaign" / "event_level_results.csv")
+            doses = dose_results[["magnitude", "configuration_votes_faulted", "detected_injected_observations", "injected_observations"]].copy()
+            doses["any_model_detected"] = doses.detected_injected_observations.gt(0)
+            doses["8_of_12_consensus"] = doses.configuration_votes_faulted.ge(8)
+            clean_row = pd.DataFrame([{"magnitude": 0.0, "configuration_votes_faulted": int(dose_results.configuration_votes_clean.iloc[0]),
+                                       "detected_injected_observations": 0, "injected_observations": 1,
+                                       "any_model_detected": False, "8_of_12_consensus": False}])
+            doses = pd.concat([clean_row, doses], ignore_index=True).sort_values("magnitude")
+            votes_fig = px.line(doses, x="magnitude", y="configuration_votes_faulted", markers=True,
+                                hover_data={"any_model_detected": True, "8_of_12_consensus": True},
+                                labels={"magnitude":"Synthetic temperature change (°C)", "configuration_votes_faulted":"Configurations flagging target (of 12)"},
+                                title="Synthetic dose versus model votes", color_discrete_sequence=["#F59E0B"])
+            votes_fig.update_layout(xaxis_title="Injected temperature change (°C)", yaxis_title="Target votes (of 12)")
+            st.plotly_chart(_plot_layout(votes_fig, 340), width="stretch")
+            st.dataframe(doses.rename(columns={"magnitude":"Dose (°C)", "configuration_votes_faulted":"Target votes (of 12)", "any_model_detected":"At least one model flagged", "8_of_12_consensus":"Met 8/12 cutoff"}), hide_index=True, width="stretch")
+            st.warning("Synthetic controlled results only; not real-world sensor-fault accuracy. ‘Any model’ and ‘8/12 consensus’ are different detection criteria.")
+            st.caption("The injected timestamp was 2025-09-02 07:30 IST. The expected feature-propagation window is the injected row plus up to six following hourly rows.")
+            st.dataframe(event_results[["experiment_id", "changed_configuration_predictions_anywhere", "unaffected_window_changed_configuration_predictions"]].rename(columns={"changed_configuration_predictions_anywhere":"Changed predictions anywhere", "unaffected_window_changed_configuration_predictions":"Changes beyond expected feature window"}), hide_index=True, width="stretch")
+            with st.expander("Saved experiment protocol and limitations"):
+                st.json(json.loads((root / "outputs" / "synthetic_fault_campaign" / "synthetic_campaign_manifest.json").read_text(encoding="utf-8")))
+                st.write("The injected observation and recomputed features are synthetic copies. Historical observations and saved Phase 03 predictions are not overwritten.")
+        else:
+            st.info("Verified saved controlled experiment results are unavailable for the loaded dataset.")
+
+        st.subheader("A4. Configuration sensitivity")
+        st.write("Each family varies a predefined setting while holding its other explicit protocol settings fixed. This is a configuration comparison, not automated or exhaustive hyperparameter optimization.")
+        sensitivity = cfg.copy()
+        sensitivity["family"] = sensitivity["family"].replace({"IsolationForest": "Isolation Forest", "LocalOutlierFactor": "Local Outlier Factor", "OneClassSVM": "One-Class SVM"})
+        sens_fig = px.line(sensitivity.sort_values("parameter_value"), x="parameter_value", y="anomalies", facet_col="family", markers=True,
+                           hover_data=["configuration", "parameter", "anomaly_percentage"],
+                           labels={"parameter_value":"Varied value", "anomalies":"Saved readings flagged", "family":"Algorithm family"},
+                           title="Flag counts across the tested parameter settings", color_discrete_sequence=["#2DD4BF"])
+        sens_fig.for_each_annotation(lambda annotation: annotation.update(text=annotation.text.replace("family=", "")))
+        st.plotly_chart(_plot_layout(sens_fig, 350), width="stretch")
+        st.caption("Each panel has its own x-axis because the families vary different parameters: contamination, neighborhood size, or nu.")
+
+        st.subheader("A5. Contribution tests (ablation)")
+        st.info("Not evaluated yet. There is no validated integrated E1–E4 runner and no suitable evidence inputs for an ablation comparison.")
+
+    with models_tab:
+        st.subheader("Choose an algorithm to learn about")
+        family = st.selectbox("Model profile", list(education["profiles"]),
+                              format_func=lambda key: education["profiles"][key]["name"], key="model_profile_family")
+        profile = education["profiles"][family]
+        st.markdown("### What does this algorithm do?")
+        st.info(profile["simple"])
+        st.caption("Illustration of the idea only; this is not the fitted model's decision boundary.")
+        if family == "IsolationForest":
+            diagram = st.columns([1, 1, 1])
+            diagram[0].markdown("**Weather reading**\n\nA point among many measurements")
+            diagram[1].markdown("**Random questions**\n\nSplit values into smaller groups")
+            diagram[2].markdown("**Isolation depth**\n\nFewer splits can indicate unusualness")
+        elif family == "LocalOutlierFactor":
+            diagram = st.columns([1, 1, 1])
+            diagram[0].markdown("**Reading A**\n\nCompare nearby learned points")
+            diagram[1].markdown("**Local density**\n\nEstimate neighborhood crowding")
+            diagram[2].markdown("**Relative density**\n\nA sparse pocket may be unusual")
+        else:
+            diagram = st.columns([1, 1, 1])
+            diagram[0].markdown("**Training observations**\n\nLearn the typical data region")
+            diagram[1].markdown("**Flexible boundary**\n\nRBF kernel shapes a curved edge")
+            diagram[2].markdown("**New reading**\n\nOutside the learned region may be flagged")
+        with st.expander("Technical explanation"):
+            st.write(profile["technical"])
+
+        st.subheader("Why include it?")
+        st.write(profile["why"])
+        st.caption(profile["difference"])
+
+        st.subheader("What data did it learn from?")
+        facts = st.columns(4)
+        facts[0].metric("Training observations", f"{education['train_rows']:,}")
+        facts[1].metric("Test observations", f"{education['test_rows']:,}")
+        facts[2].metric("Input features", str(education["input_features"]))
+        facts[3].metric("Estimator objects saved", "No")
+        timeline = pd.DataFrame([
+            {"Split": "Training", "Start": education["training_start"], "End": education["training_end"], "Rows": education["train_rows"]},
+            {"Split": "Testing", "Start": education["testing_start"], "End": education["testing_end"], "Rows": education["test_rows"]},
+        ])
+        timeline_fig = px.timeline(timeline, x_start="Start", x_end="End", y="Split", color="Split", text="Rows",
+                                   hover_data={"Rows": True}, title="Chronological training and testing periods",
+                                   color_discrete_sequence=["#38BDF8", "#F59E0B"])
+        timeline_fig.update_layout(xaxis_title="Historical timestamp", yaxis_title="Saved data split", showlegend=False)
+        st.plotly_chart(_plot_layout(timeline_fig, 250), width="stretch")
+        st.caption(f"Train: {education['train_rows']:,} rows, { _fmt_ts(education['training_start']) } to { _fmt_ts(education['training_end']) }. Test: {education['test_rows']:,} rows, {_fmt_ts(education['testing_start'])} to {_fmt_ts(education['testing_end'])}.")
+        st.write("Each configured model is fitted on the earlier training period, then evaluated on the later held-out test period. Test observations are not used to fit the model or scaler.")
+        st.markdown("**Preprocessing used:** " + profile["preprocessing"])
+        if family == "IsolationForest":
+            st.caption("Its inputs are unscaled in this protocol. LOF and One-Class SVM use a StandardScaler fitted on training rows only.")
+        else:
+            st.caption("The scaler is fitted to training observations only, then applied to both training and test rows to avoid test-data leakage.")
+
+        st.subheader("What information goes into each reading?")
+        feature_rows = []
+        for group, features in education["feature_groups"].items():
+            for feature in features:
+                label, unit = education["feature_labels"][feature]
+                feature_rows.append({"Feature group": group, "Input name": feature, "Meaning": label, "Unit": unit})
+        feature_frame = pd.DataFrame(feature_rows)
+        group_counts = feature_frame.groupby("Feature group", sort=False).size().rename("Features").reset_index()
+        feature_fig = px.bar(group_counts, x="Features", y="Feature group", orientation="h", text="Features",
+                             title="Feature groups used by the models", color_discrete_sequence=["#2DD4BF"])
+        st.plotly_chart(_plot_layout(feature_fig, 230), width="stretch")
+        with st.expander("Show all 11 feature names and meanings"):
+            st.dataframe(feature_frame, hide_index=True, width="stretch")
+        st.caption("Six current weather measurements, three recent-temperature features, and two seasonal month encodings. These are model inputs, not explanations of an individual prediction.")
+
+        st.subheader("How was the model configured?")
+        configs = pd.DataFrame(profile["configs"])
+        first_parameters = profile["configs"][0]["parameters"]
+        parameter_table = pd.DataFrame([{"Parameter": name,
+                                         "scikit-learn default": str(profile["defaults"].get(name, "not applicable")),
+                                         "Protocol setting": str(first_parameters[name]),
+                                         "What varied?": "Varied across configurations" if len({str(item["parameters"][name]) for item in profile["configs"]}) > 1 else "Held fixed"}
+                                        for name in profile["configs"][0]["parameters"]
+                                        if name in {"n_estimators", "contamination", "random_state", "n_jobs", "n_neighbors", "novelty", "kernel", "gamma", "nu"}])
+        st.dataframe(parameter_table, hide_index=True, width="stretch")
+        st.write(profile["parameter_explanation"])
+        param_fig = px.bar(configs, x="value", y="anomalies", color="name", hover_data=["parameter", "anomaly_percentage"],
+                           labels={"value": profile["configs"][0]["parameter"], "anomalies":"Saved readings flagged", "name":"Configuration"},
+                           title=f"Saved results for {profile['name']} settings", color_discrete_sequence=px.colors.sequential.Teal)
+        st.plotly_chart(_plot_layout(param_fig, 300), width="stretch")
+        with st.expander("All four tested settings"):
+            st.dataframe(configs[["name", "parameter", "value", "anomalies", "anomaly_percentage"]].rename(columns={"name":"Configuration", "parameter":"Varied parameter", "value":"Value", "anomalies":"Saved flags", "anomaly_percentage":"Flagged (%)"}), hide_index=True, width="stretch")
+        with st.expander("Estimator defaults from this installed scikit-learn version"):
+            st.caption(f"scikit-learn {__import__('sklearn').__version__}. Values below come from the installed estimator constructor; explicit project overrides are shown above.")
+            defaults = pd.DataFrame([{"Parameter": name, "scikit-learn default": str(value)} for name, value in profile["defaults"].items()])
+            st.dataframe(defaults, hide_index=True, width="stretch")
+
+        st.subheader("How does a prediction happen?")
+        st.markdown("**For an explicitly run protocol:** historical reading → same 11-feature preparation → preprocessing used by this family → fitted estimator → normal or unusual label")
+        st.caption("The application explores archived historical test predictions; it is not a live predictor for newly arriving readings. Fitted estimator objects are not stored, and opening this page does not fit models.")
+        st.markdown("**In principle:** " + profile["detects_well"])
+        st.markdown("**May miss or misread:** " + profile["may_miss"])
+        st.warning("An unusual label is not proof of a sensor fault. Configuration votes are not probabilities, and real-world fault accuracy has not been measured.")
+
+        with st.expander("Optional: run a new local refit (advanced; takes time)"):
+            st.caption("This refits the established 12 configurations on the verified train matrix. It is separate from the archived predictions and is not run automatically.")
+            if st.button("Run a new 12-configuration refit", key="run_saved_protocol", type="primary"):
+                try:
+                    with st.spinner("Fitting 12 configurations on the saved training rows…"):
+                        new_predictions, metadata = run_saved_protocol(data["train"], data["test"])
+                    st.session_state["new_predictions"] = new_predictions
+                    st.session_state["new_prediction_metadata"] = metadata
+                except (ValueError, KeyError) as exc:
+                    st.error(f"Local model execution failed: {exc}")
+            if "new_predictions" in st.session_state:
+                meta = st.session_state["new_prediction_metadata"]
+                st.success(f"New local refit completed at {meta['executed_at_utc']} · {len(st.session_state['new_predictions']):,} rows")
+                saved = data["predictions"][["timestamp", "configuration", "is_candidate"]]
+                fresh = st.session_state["new_predictions"].reset_index()
+                paired = fresh.merge(saved, on=["timestamp", "configuration"], how="left", suffixes=("_new", "_saved"), validate="one_to_one")
+                if paired.is_candidate_saved.isna().any():
+                    st.warning("The new prediction grid does not align with the archived grid.")
+                else:
+                    mismatch = paired.is_candidate_new.astype(bool) != paired.is_candidate_saved.astype(bool)
+                    st.metric("Labels differing from archived results", f"{int(mismatch.sum()):,} / {len(paired):,}")
+                    st.caption("The known saved/local discrepancy is 42 of 100,980 cells; it remains unresolved.")
 
 
 try:
@@ -432,23 +651,25 @@ if "selected_observation" not in st.session_state:
 
 with st.sidebar:
     st.markdown("<div class='wg-eyebrow'>WeatherGuard AI</div>", unsafe_allow_html=True)
-    st.markdown("### Observatory")
-    st.caption("Research dataset mode")
-    workspace = st.radio("Workspace", ["Command Center", "Research Studio", "Investigation Studio", "Experiment Lab", "Model Evaluation"], label_visibility="collapsed")
+    st.markdown("### Historical Weather Anomaly Monitoring")
+    st.caption("Choose a place to start")
+    workspace = st.radio("Main navigation", ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"], label_visibility="collapsed", key="workspace_navigation")
     st.divider()
-    st.markdown("**Dataset** · VILD0 processed snapshot")
+    st.markdown("**Historical data** · VILD0 processed snapshot")
     st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
     st.caption("Not a live feed · source provenance incomplete")
     st.divider()
     st.caption("Working title: Uncertainty-Aware Event-Level Verification of Weather Station Anomalies")
 
-if workspace == "Command Center":
-    render_command(data, manifest, hashes)
-elif workspace == "Research Studio":
-    render_research(data)
-elif workspace == "Investigation Studio":
+if workspace == "Home":
+    render_home(data, manifest, hashes)
+elif workspace == "Weather Data":
+    render_weather_data(data)
+elif workspace == "Investigate a Reading":
     render_investigation(data, ROOT)
+elif workspace == "Research":
+    render_research(data)
 elif workspace == "Experiment Lab":
     render_experiments(ROOT, data, hashes)
 else:
-    render_evaluation(data, ROOT)
+    render_evaluation(data, ROOT, hashes)

@@ -17,19 +17,23 @@ Open the local URL printed by Streamlit. A prepared Python environment is prefer
 
 ## Rehearsed walkthrough
 
-### 0:00–1:00 · Command Center
+### 0:00–0:50 · Home
 
 Show the project name and explain: “An anomaly detector can find unusual values, but unusual weather and a broken sensor can look similar. This prototype gathers evidence and can abstain when evidence is missing.” Point out the 44,879-row processed historical snapshot, its time span, saved predictions, and verified Phase 01 hash status. It is not a live feed and the station-source provenance remains incomplete.
 
-### 1:00–2:15 · Model Evaluation
+### 0:50–1:25 · Weather Data
 
-Open **Model Evaluation → Configuration comparison**. Explain the three unsupervised methods and four parameter settings per method. These 12 configurations show sensitivity to modeling choices; anomaly counts are not accuracy scores because no real fault labels are available. In **Stability**, show the saved vote distribution and the 8/12 cutoff. Say explicitly: “Eight votes is a strict two-thirds operating threshold in this analysis, not a calibrated probability or a demonstrated optimal cutoff.”
+Open **Weather Data**. Choose a measurement and point out the units, date filter, and gold consensus markers. The data are processed historical observations; markers mean model agreement, not confirmed faults.
 
-### 2:15–3:30 · Investigate a candidate
+### 1:25–2:40 · Model Evaluation → Experiments & Results
 
-Open **Investigation Studio**. The default latest candidate is **2026-03-09 13:30 IST**, with 8/12 saved configuration votes. Show the weather values and the 12 individual predictions. The app’s default date window includes this timestamp. Explain that model agreement makes it a candidate for review, not a sensor-fault finding.
+Open **Model Evaluation → A. Experiments & Results** and show **Compare the tested configurations**. Explain the three unsupervised methods and four parameter settings per method. These 12 configurations show sensitivity to modeling choices; anomaly counts are not accuracy scores because no real fault labels are available. In **Do the models agree?**, show the saved vote distribution and the 8/12 cutoff. Say explicitly: “Eight votes is a strict two-thirds operating threshold in this analysis, not a calibrated probability or a demonstrated optimal cutoff.”
 
-### 3:30–4:45 · E1–E4 and cautious interpretation
+### 2:40–3:45 · Investigate a candidate
+
+Open **Investigate a Reading**. The default latest candidate is **2026-03-09 13:30 IST**, with 8/12 saved configuration votes. Show the weather values and the 12 individual predictions. Explain that model agreement makes it a candidate for review, not a sensor-fault finding.
+
+### 3:45–4:50 · E1–E4 and cautious interpretation
 
 Walk through the evidence cards:
 
@@ -40,7 +44,7 @@ Walk through the evidence cards:
 
 Point to the uncertain interpretation. Missing evidence is not a negative result, and agreement is not a probability.
 
-### 4:45–6:45 · Experiment Lab
+### 4:50–6:50 · Experiment Lab
 
 Open **Experiment Lab** and show the saved dose series before running anything. Choose **+10 °C** under “Saved dose to visualize.” The chart overlays the original historical series and an explicitly synthetic injected series at **2025-09-02 07:30 IST**. Saved target votes were 0 clean and 11 after +10 °C. The saved dose campaign reports votes 0, 6, 9, 11, and 12 for clean, +2, +5, +10, and +15 °C.
 
@@ -48,9 +52,13 @@ Clarify the metrics: any-model detection is true for all four injected doses; on
 
 Do not run a new campaign during the short demo unless rehearsal established that the machine can tolerate model fitting time. A new run is explicit and is not needed to show these saved results.
 
-### 6:45–8:15 · Research Studio and close
+### 6:50–8:15 · Research and close
 
-Open **Research Studio** and show the research question, method, references, findings and limitations. Close with: “The prototype demonstrates saved model stability and a controlled synthetic experiment. It does not yet distinguish real regional weather from a faulty station. Verified neighbors, provenance, and independent validation are future research steps.”
+Open **Research** and show the research question, method, references, findings and limitations. Close with: “The prototype demonstrates saved model stability and a controlled synthetic experiment. It does not yet distinguish real regional weather from a faulty station. Verified neighbors, provenance, and independent validation are future research steps.”
+
+
+
+The current navigation is **Home → Weather Data → Investigate a Reading → Model Evaluation → Experiment Lab → Research**. In Model Evaluation, the two main sections are **A. Experiments & Results** and **B. How the Models Work**. For a short demonstration, open B and select Isolation Forest only if there is time to explain an algorithm profile.
 
 ## Useful answers to keep precise
 

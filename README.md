@@ -1,4 +1,6 @@
-# WeatherGuard AI — Intelligent Weather Station Anomaly Verification`r`n`r`n## Codex continuation checkpoint (2026-11-16)
+# WeatherGuard AI — Intelligent Weather Station Anomaly Verification
+
+## Codex continuation checkpoint (2026-11-16)
 
 The extracted November 15 checkpoint is audited in [CODEX_PROJECT_AUDIT.md](CODEX_PROJECT_AUDIT.md). Stored Phase 01 hashes/counts and Phase 03 table structure were checked locally. The reusable controlled temperature campaign is in `src/weather_research/synthetic_campaign.py`; its executed synthetic-only outputs are in `outputs/synthetic_fault_campaign/`. Run it explicitly with `PYTHONPATH=src` and `run_temperature_spike_campaign('.')`. The campaign performs no retrieval. Local clean-model reproduction differs from saved Phase 03 labels at 42/100,980 cells; see `outputs/synthetic_fault_campaign/clean_baseline_reproduction.csv` and the handoff before interpreting these outputs.
 
@@ -55,11 +57,16 @@ The research separates model anomaly flags from event-level interpretation. It o
 
 ## Workspaces
 
-- Command Center: actual saved dataset coverage, candidate/episode counts, and model configuration anomaly counts.
-- Research Studio: research overview, source-linked literature summaries, a comparison matrix, methods, and saved project results.
-- Investigation Studio: date/variable filters, timestamp selection, twelve saved model votes, episode context, spatial artifacts, and physical screening.
-- Experiment Lab: manual controlled temperature-spike execution; other fault campaigns are pending.
-- Model Evaluation: saved configuration counts, stability distribution, synthetic-only evaluation, and an explicit button for a new local model refit. Ablation is shown as not evaluated.
+- **Home** — plain-language purpose, historical coverage, agreement summary, candidate count, and validation status.
+- **Weather Data** — date-filtered measurements with units and historical candidate markers.
+- **Investigate a Reading** — guided review of measurements, votes, E1–E4 evidence availability, and technical details.
+- **Model Evaluation** — exactly two primary sections: **Experiments & Results** and **How the Models Work**. The model selector explains Isolation Forest, LOF and One-Class SVM using saved data and actual protocol settings.
+- **Experiment Lab** — saved and explicitly triggered temperature point-spike experiments.
+- **Research** — methods, literature summaries, research gap, findings and limitations.
+
+Model metadata is served through `services/model_metadata.py`, sourced from `weather_research.models.build_estimator`, `default_model_configs`, the loaded dataset, and saved configuration results. Plain-language profile copy is maintained in `research_content/model_profiles.json`.
+
+See the implementation notes in [UI_UX_AUDIT_AND_REDESIGN.md](UI_UX_AUDIT_AND_REDESIGN.md), the [Model Evaluation design](MODEL_EVALUATION_DESIGN.md), and [UI redesign changelog](UI_REDESIGN_CHANGELOG.md).
 
 ## Run locally
 

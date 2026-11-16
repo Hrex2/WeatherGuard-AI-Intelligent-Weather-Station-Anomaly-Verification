@@ -13,13 +13,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import sklearn
-from sklearn.ensemble import IsolationForest
-from sklearn.neighbors import LocalOutlierFactor
-from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import StandardScaler
 
 from .faults import inject_fault
-from .models import default_model_configs
+from .models import build_estimator, default_model_configs
 
 BASE_FEATURES = ("temp", "dwpt", "rhum", "prcp", "wspd", "pres",
                  "temp_change_1h", "temp_rolling_mean_6h", "temp_deviation_6h",
@@ -71,19 +68,12 @@ def _fit_campaign_models(train_matrix, scaled_train, configs, n_estimators):
     """Fit each declared model once; training inputs are identical across dose levels."""
     fitted = []
     for config in configs:
-        family, value = config["family"], config["value"]
+        family = config["family"]
+        model = build_estimator(config, n_estimators=n_estimators)
         if family == "IsolationForest":
-            model = IsolationForest(n_estimators=n_estimators, contamination=value,
-                                    random_state=config.get("random_seed", 42), n_jobs=-1)
             model.fit(train_matrix.to_numpy(dtype=float))
-        elif family == "LocalOutlierFactor":
-            model = LocalOutlierFactor(n_neighbors=value, contamination=0.02, novelty=True)
-            model.fit(scaled_train)
-        elif family == "OneClassSVM":
-            model = OneClassSVM(kernel="rbf", gamma="scale", nu=value)
-            model.fit(scaled_train)
         else:
-            raise ValueError(f"unsupported model family: {family}")
+            model.fit(scaled_train)
         fitted.append((config, model))
     return fitted
 
