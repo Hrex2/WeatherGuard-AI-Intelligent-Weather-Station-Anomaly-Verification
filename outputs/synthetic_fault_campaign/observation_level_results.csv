@@ -1,0 +1,5 @@
+experiment_id,fault_type,variable,magnitude,injected_observations,detected_injected_observations,synthetic_detection_rate,missed_injected_observations,newly_flagged_outside_labels,configuration_votes_clean,configuration_votes_faulted,random_seed,dataset_hash
+TEMP_SPIKE_2C_20250902T0730_IST,point_spike,temp,2.0,1,1,1.0,0,10,0,6,42,7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9
+TEMP_SPIKE_5C_20250902T0730_IST,point_spike,temp,5.0,1,1,1.0,0,15,0,9,42,7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9
+TEMP_SPIKE_10C_20250902T0730_IST,point_spike,temp,10.0,1,1,1.0,0,19,0,11,42,7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9
+TEMP_SPIKE_15C_20250902T0730_IST,point_spike,temp,15.0,1,1,1.0,0,20,0,12,42,7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9

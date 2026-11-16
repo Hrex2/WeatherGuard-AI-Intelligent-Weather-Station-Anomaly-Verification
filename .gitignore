@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+outputs/*
+!outputs/.gitkeep
+
+!outputs/synthetic_fault_campaign/
+!outputs/synthetic_fault_campaign/**
+!outputs/station_provenance/
+!outputs/station_provenance/**

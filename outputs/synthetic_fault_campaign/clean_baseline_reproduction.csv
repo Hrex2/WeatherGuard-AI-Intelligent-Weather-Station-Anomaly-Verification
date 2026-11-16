@@ -1,0 +1,2 @@
+prediction_rows,saved_prediction_rows,matching_configuration_timestamp_predictions,mismatching_configuration_timestamp_predictions,mismatch_timestamps,comparison
+100980,100980,100938,42,42,"same training snapshot, train-only scaler, seasonal feature order, and 12 model configurations"

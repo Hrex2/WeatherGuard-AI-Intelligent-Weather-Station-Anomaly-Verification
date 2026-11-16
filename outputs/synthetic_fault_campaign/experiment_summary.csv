@@ -1,0 +1,5 @@
+experiment_id,magnitude,clean_votes,faulted_votes,changed_configuration_predictions,newly_flagged_configuration_predictions,no_longer_flagged_configuration_predictions
+TEMP_SPIKE_2C_20250902T0730_IST,2.0,0,6,10,10,0
+TEMP_SPIKE_5C_20250902T0730_IST,5.0,0,9,15,15,0
+TEMP_SPIKE_10C_20250902T0730_IST,10.0,0,11,20,19,1
+TEMP_SPIKE_15C_20250902T0730_IST,15.0,0,12,21,20,1

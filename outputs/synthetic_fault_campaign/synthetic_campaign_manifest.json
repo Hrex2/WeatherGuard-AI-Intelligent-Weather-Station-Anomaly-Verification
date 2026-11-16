@@ -1,0 +1,64 @@
+{
+  "campaign": "controlled_temperature_point_spikes",
+  "status": "EXECUTED_LOCAL_SYNTHETIC",
+  "dataset_hashes": {
+    "model_df": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "X_train_multi": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "X_test_multi": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "phase01_manifest_audit_passed": true,
+  "timestamp": "2025-09-02 07:30:00+05:30",
+  "magnitudes_celsius": [
+    2.0,
+    5.0,
+    10.0,
+    15.0
+  ],
+  "model_configurations": [
+    "IF_0.01",
+    "IF_0.02",
+    "IF_0.03",
+    "IF_0.05",
+    "LOF_10",
+    "LOF_20",
+    "LOF_30",
+    "LOF_50",
+    "SVM_0.01",
+    "SVM_0.02",
+    "SVM_0.03",
+    "SVM_0.05"
+  ],
+  "random_seed": 42,
+  "n_estimators": 200,
+  "feature_order": [
+    "temp",
+    "dwpt",
+    "rhum",
+    "prcp",
+    "wspd",
+    "pres",
+    "temp_change_1h",
+    "temp_rolling_mean_6h",
+    "temp_deviation_6h",
+    "month_sin",
+    "month_cos"
+  ],
+  "scaler": "StandardScaler fit on X_train_multi only",
+  "python_version": "3.12.9",
+  "pandas_version": "3.0.2",
+  "numpy_version": "2.4.4",
+  "scikit_learn_version": "1.8.0",
+  "clean_predictions": "saved phase03_model_revalidation/model_predictions.csv",
+  "clean_baseline_mismatches": 42,
+  "generated_outputs": [
+    "experiment_registry.csv",
+    "experiment_summary.csv",
+    "configuration_detection_results.csv",
+    "observation_level_results.csv",
+    "event_level_results.csv",
+    "feature_propagation.csv",
+    "prediction_changes.csv",
+    "unaffected_window_checks.csv",
+    "clean_baseline_reproduction.csv"
+  ]
+}

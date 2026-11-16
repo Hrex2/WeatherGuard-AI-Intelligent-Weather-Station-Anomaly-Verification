@@ -1,0 +1,8 @@
+numpy>=1.26
+pandas>=2.2
+scikit-learn>=1.4
+streamlit>=1.56,<2
+plotly>=5.20
+# Optional, only for explicit observation retrieval:
+# meteostat==1.7.6  # previously recorded Colab version; verify runtime/API before use
+# matplotlib>=3.8  # optional figure generation
