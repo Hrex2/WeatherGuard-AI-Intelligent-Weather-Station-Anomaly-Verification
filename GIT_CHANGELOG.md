@@ -15,6 +15,7 @@
 | 2026-11-16 | `codex/autonomous-research-loop` | `d0e5142` | Add six-variable E2 sensitivity sweep and its 22,140-row outputs; update manuscript and research handoff | Pushed and merged to `main` through PR #1; descriptive E1-selected results only |
 | 2026-11-16 | `codex/research-validation-v2` | `4276aec` | Fix E2 continuity, fault-reference segments, evidence completeness, strict CSV cadence, Phase 03 artifact integrity; expose fault matrix and add CI | 66 tests, compileall and manifest verification pass; pushed to origin |
 | 2026-11-16 | `codex/research-validation-v2` | `6486c1e` | Add data-only five-context selector and shared-fit eight-scenario runner; add propagation-window metrics | Preflight selected five contexts; full suite 68 passed; pushed to origin; campaign completed later |
-| 2026-11-16 | `codex/research-validation-v2` | Pending | Save five-context eight-scenario campaign and report; prepare paired independent E2 validation with matched controls | Campaign executed at 5 contexts; 69 tests pass; E2 validation not yet executed; commit/push pending |
+| 2026-11-16 | `codex/research-validation-v2` | `f1b08d1` | Save five-context eight-scenario results/report and E2 evaluator with matched controls | 69 tests had passed before E2 execution; campaign outputs pushed to origin |
+| 2026-11-16 | `codex/research-validation-v2` | Pending | Save E2 outputs and integrate multi-context/E2 summaries into Experiment Lab | E2 executed (6,840 screen evaluations); 69 tests, compileall and diff checks pass; push pending |
 
 Do not merge into `main` automatically. Record only confirmed commits and pushes.

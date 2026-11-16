@@ -4,7 +4,7 @@
 
 - Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
 - Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
-- Worktree was clean at the start of this continuation. Phase 1 commits `4276aec` and `68df516`, and runner commits `6486c1e`/`c55b90a`, are pushed to origin. The five-context outputs and E2 evaluator are local and pending commit/push.
+- Continuation branch `codex/research-validation-v2`; latest pushed commit before current UI integration: `f1b08d1`. Commits `4276aec`, `68df516`, `6486c1e`, `c55b90a`, and `f1b08d1` are pushed to origin. The E2 output files and current UI/docs updates are local and pending commit/push.
 - Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
 ## Verified work reused
@@ -15,7 +15,7 @@
 - The earlier eight-scenario matrix and 22,140-row E2 variable sensitivity were reused, not rerun.
 - No raw verified neighbor time series or verified station coordinates are available; E3 remains unavailable.
 
-## Completed in this continuation (local, not yet pushed)
+## Completed in this continuation
 
 - Corrected E2 stuck-run counting so missing values, irregular intervals, large gaps and explicit `segment_id` changes break continuity. Real-time cadence uses timestamps through the selected reading; retrospective mode may use the declared look-ahead.
 - Corrected stuck-fault injection to use a same-segment contiguous reference; after a boundary, it falls back to the first finite value inside the injection interval and records the source.
@@ -29,13 +29,15 @@
 - The new data-only context selector preflighted five contexts: 2025-04-09, 2025-05-27, 2025-09-04, 2025-11-30 and 2026-02-06. They cover calendar quarters 1–4, are at least 14 days apart, and passed all eight scenario validations. No model fit has run for this campaign.
 - Added shared-fit campaign orchestration, exact context manifests, expected feature-propagation change counts and detection-delay summaries in commits `6486c1e` and `c55b90a`, both pushed to origin. Validation at runner preparation: 68 tests passed and compileall passed.
 - Executed the five-context campaign `fault_matrix_multicontext_46ae5d119d`. Scenario response fractions varied strongly by scenario/context; no changed predictions were outside expected feature-propagation windows; E4 screening changed on 36 injected timestamp-variable rows. See `MULTICONTEXT_FAULT_MATRIX_REPORT.md`. Full suite after E2 matched-control preparation: 69 passed.
-- Implemented E2 paired injection/control analysis and selected 10 matched unmodified controls. E2 evaluation has not yet run.
+- Committed and pushed the five-context outputs, report and E2 evaluator at `f1b08d1`.
+- Ran E2 once: 6,840 screen evaluations, 10 matched controls and 2,880 paired injection/same-time comparisons. Status changed in 1,008/2,880 comparisons, including 270 missing blocks becoming `UNAVAILABLE`. Faulted series were `SUPPORTING` in 961/2,610 available comparisons; same-time unmodified series were `SUPPORTING` in 691/2,880. Matched controls were `SUPPORTING` in 272/1,080 rows. Controls are unadjudicated; these are not accuracy estimates.
+- Integrated the five-context and E2 summaries into Experiment Lab with dataset-hash checks. AppTest assertion and full-suite rerun are pending.
 
 ## Exact next actions
 
-1. Commit and push the five-context outputs/report and E2 evaluator.
-2. Run the E2 paired evaluation once; analyze injection-vs-same-time-clean status changes and the 10 matched controls, keeping all statuses as temporal screens only.
-3. Integrate actual multi-context and E2 results into Experiment Lab, then continue baseline, available-evidence ablation and robustness analyses. E3 waits on traceable neighboring-station data.
+1. Run the full suite, compile checks and diff checks after UI integration; update docs with actual results.
+2. Commit and push E2 outputs, UI integration and synchronized research records.
+3. Continue baseline, available-evidence ablation and robustness analyses. E3 waits on traceable neighboring-station data; real E2 validity waits on adjudicated labels.
 
 ## Remaining research limits
 

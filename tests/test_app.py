@@ -150,6 +150,8 @@ class TestWeatherGuardApplication(unittest.TestCase):
                     self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Experiment Lab":
                 self.assertTrue(any("Saved eight-scenario fault matrix" in str(x.value) for x in app.get("subheader")))
+                self.assertTrue(any("Five-context synthetic fault study" in str(x.value) for x in app.get("subheader")))
+                self.assertTrue(any("Independent temporal-screen comparison" in str(x.value) for x in app.get("markdown")))
 
 
 if __name__ == "__main__":

@@ -50,4 +50,23 @@ The main observed pattern is context sensitivity: persistent offsets, stuck runs
 - Aggregate scenario/family results: `context_scenario_summary.csv`, `context_family_summary.csv`.
 - Reproduction: `python scripts/run_multicontext_fault_matrix.py` (fits once; writes a new unique campaign directory).
 
-Independent E2 evaluation against these injections and matched unmodified windows is tracked separately and remains pending.
+## Independent E2 temporal-screen comparison
+
+The separate E2 screen was run on the five synthetic contexts and 10 matched unmodified controls. It evaluated 6,840 rows over three windows (3/6/12 hours), three robust-deviation cutoffs (2.5/3.5/4.5), two modes (real time/retrospective), the direct injection variable, and all six variables for controls. The paired injection analysis contains 2,880 same-timestamp comparisons.
+
+Across the paired comparisons, 1,008/2,880 (35.0%) changed status after injection. This includes 270 missing-block rows becoming `UNAVAILABLE` (no measurement); therefore, a status change is not a detection. In the remaining comparisons, the faulted series was `SUPPORTING` in 961/2,610 (36.8%) while the same-time unmodified series was `SUPPORTING` in 691/2,880 (24.0%). These are descriptive screen outcomes across repeated settings and five contexts, not independent events or calibrated rates.
+
+| Synthetic condition | Comparisons | Status changed | Faulted `SUPPORTING` | Same-time unmodified `SUPPORTING` |
+|---|---:|---:|---:|---:|
+| Dew-point inconsistency | 270 | 193 | 126 | 31 |
+| Gradual drift | 540 | 80 | 151 | 121 |
+| Intermittent noise | 540 | 103 | 188 | 121 |
+| Missing block | 270 | 270 (`UNAVAILABLE`) | 0 | 92 |
+| Persistent offset | 540 | 73 | 129 | 121 |
+| Point drop | 90 | 38 | 58 | 42 |
+| Point spike | 90 | 26 | 61 | 42 |
+| Stuck sensor | 540 | 225 | 248 | 121 |
+
+Among 1,080 matched-control screen rows, 272 (25.2%) were `SUPPORTING`, 792 were `NO_DETECTED_EVIDENCE`, and 16 were `CONFLICTING`. Controls were selected by time, quarter and recent temperature summaries, not verified as fault-free. The rate of supporting statuses in controls illustrates why E2 evidence is a temporal departure screen and cannot by itself confirm a sensor fault. `CONFLICTING` and `UNAVAILABLE` remain separate states.
+
+Artifacts: `e2_multicontext_fault_detail.csv`, `e2_multicontext_fault_paired.csv`, `e2_multicontext_fault_summary.csv`, `e2_matched_controls.csv`, and `e2_validation_manifest.json` in the campaign directory. Manifest status is `EXECUTED_EXPLORATORY_SYNTHETIC_E2`.

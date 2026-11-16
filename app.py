@@ -268,6 +268,60 @@ def render_experiments(root, data, phase01_hashes):
             st.warning("The saved fault matrix is unavailable or its dataset hashes do not match the verified Phase 01 snapshots.")
     else:
         st.info("The eight-scenario matrix has not been added to this checkout.")
+    multicontext_dir = root / "research_results" / "fault_matrix_multicontext_46ae5d119d"
+    multicontext_manifest_path = multicontext_dir / "campaign_manifest.json"
+    if multicontext_manifest_path.is_file():
+        try:
+            multicontext_manifest = json.loads(multicontext_manifest_path.read_text(encoding="utf-8"))
+            multicontext_hashes = multicontext_manifest.get("dataset_hashes", {})
+            multicontext_verified = (
+                multicontext_hashes.get("model_df") == phase01_hashes.get("observations")
+                and multicontext_hashes.get("X_train_multi") == phase01_hashes.get("train")
+                and multicontext_hashes.get("X_test_multi") == phase01_hashes.get("test")
+            )
+        except (OSError, json.JSONDecodeError):
+            multicontext_verified = False
+            multicontext_manifest = {}
+        st.subheader("Five-context synthetic fault study")
+        if multicontext_verified:
+            context_path = multicontext_dir / "context_scenario_summary.csv"
+            family_context_path = multicontext_dir / "context_family_summary.csv"
+            if context_path.is_file():
+                st.dataframe(pd.read_csv(context_path), hide_index=True, width="stretch")
+            if family_context_path.is_file():
+                with st.expander("Model-family response by context"):
+                    st.dataframe(pd.read_csv(family_context_path), hide_index=True, width="stretch")
+            st.caption("Five preselected synthetic contexts share the same fitted models. Metrics describe responses to known injections; they are not field accuracy or sensor-fault diagnoses.")
+            e2_summary_path = multicontext_dir / "e2_multicontext_fault_summary.csv"
+            e2_paired_path = multicontext_dir / "e2_multicontext_fault_paired.csv"
+            e2_detail_path = multicontext_dir / "e2_multicontext_fault_detail.csv"
+            e2_manifest_path = multicontext_dir / "e2_validation_manifest.json"
+            if e2_summary_path.is_file() and e2_paired_path.is_file() and e2_detail_path.is_file() and e2_manifest_path.is_file():
+                e2_manifest = json.loads(e2_manifest_path.read_text(encoding="utf-8"))
+                st.markdown("**Independent temporal-screen comparison · exploratory synthetic E2**")
+                paired = pd.read_csv(e2_paired_path)
+                e2_by_fault = paired.groupby("experiment_id").agg(
+                    comparisons=("pair_id", "size"),
+                    status_changes=("status_changed_by_injection", "sum"),
+                    supporting_faulted=("synthetic_faulted", lambda s: int((s == "SUPPORTING").sum())),
+                    supporting_same_time=("clean_same_timestamp", lambda s: int((s == "SUPPORTING").sum())),
+                ).reset_index()
+                e2_by_fault["status_change_rate"] = e2_by_fault.status_changes / e2_by_fault.comparisons
+                st.dataframe(e2_by_fault, hide_index=True, width="stretch")
+                detail = pd.read_csv(e2_detail_path)
+                e2_status_counts = detail.groupby(["condition", "status"]).size().rename("count").reset_index()
+                with st.expander("Temporal screen status counts, including matched controls"):
+                    st.dataframe(e2_status_counts, hide_index=True, width="stretch")
+                st.caption(
+                    f"{e2_manifest.get('evaluated_rows', 0):,} screen evaluations; "
+                    f"{e2_manifest.get('controls_selected', 0)} matched unmodified controls. "
+                    "SUPPORTING means temporal departures only; controls are not independently adjudicated clean. "
+                    "UNAVAILABLE values remain unavailable and do not count as evidence."
+                )
+            with st.expander("Campaign provenance"):
+                st.json(multicontext_manifest)
+        else:
+            st.warning("The five-context campaign is unavailable or its dataset hashes do not match the verified Phase 01 snapshots.")
     saved_dir = root / "outputs" / "synthetic_fault_campaign"
     saved_summary = saved_dir / "experiment_summary.csv"
     campaign_manifest_path = saved_dir / "synthetic_campaign_manifest.json"
