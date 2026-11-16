@@ -8,6 +8,10 @@
 - `services/evidence_service.py`: selected-time view assembly from saved artifacts and physical screening; preserves unavailable evidence and defaults to uncertain.
 - `ui/theme.py`: shared visual tokens and evidence/metric components.
 - `services/model_metadata.py` and `research_content/model_profiles.json`: data-backed estimator settings, train/test facts and user-facing model explanations.
+- `services/investigation_service.py`: saved-label heatmap matrices, actual-variable discovery, causal descriptive diagnostics and verified-coordinate lookup.
+- `services/temporal_service.py`: independent measured-series E2 screening, with causal real-time and explicitly retrospective modes.
+- `services/uploaded_analysis.py` and `ui/new_csv_analysis.py`: isolated upload validation, unit conversion, causal feature preparation, explicit fit and provenance outputs.
+- `ui/investigation_workspace.py` and `ui/station_map.py`: interactive historical investigation view and coordinate-gated map.
 - `research_content/literature.json` and `references.bib`: literature summaries, metadata and citations.
 - `src/weather_research/`: preserved scientific backend, including the previous synthetic campaign runner.
 
@@ -20,6 +24,9 @@ The default Research Dataset mode reads only the included processed Phase 01 sna
 - Fitted scikit-learn model objects are absent; a user-triggered protocol run refits from the verified training matrix.
 - Neighbor raw time series, verified coordinates, source provenance, and independent-provider metadata are absent. The UI displays derived comparisons when available and does not assign a spatial support/conflict verdict.
 - Integrated three-way outcome logic is not yet validated end to end. The current observation view abstains to uncertain.
+- Temporal screening uses configurable exploratory robust-deviation defaults; it is not a validated meteorological or hardware-fault criterion. Retrospective checks are labelled separately.
+- Uploaded CSV analysis currently requires hourly cadence and has a separate selected-reading view; it does not yet open in the historical investigation drawer or compare against verified station history.
+- The local refit has 42 saved-label differences, all in Isolation Forest; row-level details are in `research_results/prediction_mismatch_investigation.csv`. Their cause is unresolved because original fitted objects and full training-run provenance are unavailable.
 - Streamlit is 1.56 in the inspected runtime. The skill's version-matched reference discovery requires 1.57 or newer; the app uses the installed Streamlit API and was smoke-tested through AppTest.
 
 ## User-facing navigation

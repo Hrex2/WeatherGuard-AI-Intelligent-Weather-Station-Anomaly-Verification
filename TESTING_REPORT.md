@@ -60,3 +60,14 @@ Software tests use synthetic fixtures only and do not establish scientific valid
 - Model metadata tests checked the 11-feature order; actual train/test counts; all configurations; Isolation Forest settings; LOF neighbor values/novelty/contamination; and One-Class SVM kernel/gamma/nu.
 - `python -m compileall -q app.py services ui src/weather_research tests`: passed.
 - No estimator refit or synthetic campaign was run as part of the UI redesign.
+
+## Autonomous research continuation and investigation workspace — 2026-11-16
+
+- `python -B -m unittest discover -s tests -v`: **55 passed, 0 failed**.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed.
+- Streamlit AppTest visited all six workspaces with no script exceptions; confirmed the investigation charts/variable selector, upload expander, and two-section Model Evaluation view.
+- Temporal service tests cover causal no-future behavior, retrospective persistence/return, stable and gradual series, stuck patterns, missing values, insufficient context, irregular gaps and segment boundaries.
+- Heatmap/upload tests cover date/family filtering, unavailable cells, complete-grid consensus, observed-variable discovery, verified-coordinate refusal, unit conversion, immutable input, duplicate/invalid timestamps, hourly cadence, and chronological training-only imputation.
+- `scripts/analyze_saved_e1.py` ran on saved labels only. Sensitivity counts: 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/12), 15 (12/12); no model refit for this analysis.
+- `scripts/investigate_prediction_mismatches.py` locally refit the existing 12 configurations once to investigate the specific parity issue. It reproduced 42 differences, all in Isolation Forest; cause remains unresolved because historical estimators/scalers and complete historical fit provenance are absent. Saved prediction files were not changed.
+- No CSV model fit, new synthetic fault campaign, spatial retrieval or real-label performance study was run. Direct browser rendering, raw-data reconstruction and external source/repository contact are not verified here.

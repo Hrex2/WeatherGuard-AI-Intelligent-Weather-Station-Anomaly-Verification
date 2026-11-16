@@ -1,0 +1,13 @@
+configuration,family,parameter,parameter_value,anomaly_count,anomaly_pct,normal_count
+IF_0.01,IsolationForest,contamination,0.01,94,1.1170528817587642,8321
+IF_0.02,IsolationForest,contamination,0.02,189,2.2459893048128343,8226
+IF_0.03,IsolationForest,contamination,0.03,270,3.2085561497326207,8145
+IF_0.05,IsolationForest,contamination,0.05,521,6.191325014854426,7894
+LOF_10,LocalOutlierFactor,n_neighbors,10.0,531,6.310160427807486,7884
+LOF_20,LocalOutlierFactor,n_neighbors,20.0,386,4.587046939988117,8029
+LOF_30,LocalOutlierFactor,n_neighbors,30.0,326,3.8740344622697562,8089
+LOF_50,LocalOutlierFactor,n_neighbors,50.0,263,3.1253713606654783,8152
+SVM_0.01,OneClassSVM,nu,0.01,157,1.8657159833630421,8258
+SVM_0.02,OneClassSVM,nu,0.02,279,3.3155080213903747,8136
+SVM_0.03,OneClassSVM,nu,0.03,381,4.527629233511586,8034
+SVM_0.05,OneClassSVM,nu,0.05,575,6.833036244800951,7840
