@@ -87,6 +87,51 @@ def analyze(campaign_dir: Path = CAMPAIGN) -> tuple[pd.DataFrame, pd.DataFrame, 
     detail.to_csv(detail_path, index=False)
     summary.to_csv(summary_path, index=False)
     e2_summary.to_csv(e2_summary_path, index=False)
+    e2_paired = pd.read_csv(campaign_dir / "e2_multicontext_fault_paired.csv")
+    e2_paired["timestamp_utc"] = pd.to_datetime(e2_paired.timestamp, utc=True).map(lambda value: value.isoformat())
+    event_keys = ["context_id", "experiment_id", "timestamp_utc"]
+    e2_available = (e2_paired.assign(e2_available=e2_paired.synthetic_faulted.ne("UNAVAILABLE"))
+                    .groupby(event_keys + ["mode", "window_hours", "robust_z_threshold"], as_index=False)
+                    .e2_available.first())
+    coverage_parts = []
+    e1_units = detail[(detail.baseline == "E1_consensus") & (detail.setting == "8/12")]
+    for key, group in e1_units.groupby(event_keys):
+        ctx, experiment_id, timestamp = key
+        e1_available = int(group.injected_configuration_rows.eq(12).any())
+        e4_available = int(detail[(detail.context_id == ctx) & (detail.experiment_id == experiment_id)
+                                  & (detail.timestamp_utc == timestamp)
+                                  & (detail.baseline == "E4_direct_variable_screen")].shape[0] == 1)
+        for e2row in e2_available[(e2_available.context_id == ctx)
+                                  & (e2_available.experiment_id == experiment_id)
+                                  & (e2_available.timestamp_utc == timestamp)].to_dict("records"):
+            e2ok = int(e2row["e2_available"])
+            common = {"context_id": ctx, "experiment_id": experiment_id, "timestamp_utc": timestamp,
+                      "mode": e2row["mode"], "window_hours": e2row["window_hours"],
+                      "robust_z_threshold": e2row["robust_z_threshold"]}
+            for combination, available in (("A_E1", e1_available),
+                                           ("B_E1_plus_E2", e1_available and e2ok),
+                                           ("D_E1_plus_E4", e1_available and e4_available),
+                                           ("E_E1_plus_E2_plus_E4", e1_available and e2ok and e4_available)):
+                coverage_parts.append({**common, "combination": combination, "evidence_complete": int(available),
+                                       "evidence_groups": combination.count("+") + 1,
+                                       "coverage_limit": "Coverage audit only; no event/fault outcome is assigned"})
+    for combination in ("C_E1_plus_E3", "E1_plus_E2_plus_E3_plus_E4"):
+        for _, unit in e1_units.iterrows():
+            coverage_parts.append({"context_id": unit.context_id, "experiment_id": unit.experiment_id,
+                                   "timestamp_utc": unit.timestamp_utc, "mode": pd.NA,
+                                   "window_hours": pd.NA, "robust_z_threshold": pd.NA,
+                                   "combination": combination, "evidence_complete": 0,
+                                   "evidence_groups": 2 if combination.startswith("C_") else 4,
+                                   "coverage_limit": "Blocked: E3 station observations are unavailable"})
+    coverage = pd.DataFrame(coverage_parts)
+    coverage_path = output / "evidence_coverage_ablation.csv"
+    coverage.to_csv(coverage_path, index=False)
+    coverage_summary = (coverage.groupby(["combination", "mode", "window_hours", "robust_z_threshold"], dropna=False)
+                        .agg(units=("evidence_complete", "size"), complete_units=("evidence_complete", "sum"))
+                        .reset_index())
+    coverage_summary["coverage_fraction"] = coverage_summary.complete_units / coverage_summary.units
+    coverage_summary_path = output / "evidence_coverage_ablation_summary.csv"
+    coverage_summary.to_csv(coverage_summary_path, index=False)
     try:
         code_revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     except (OSError, subprocess.CalledProcessError):
@@ -100,11 +145,13 @@ def analyze(campaign_dir: Path = CAMPAIGN) -> tuple[pd.DataFrame, pd.DataFrame, 
         "dataset_hashes": campaign["dataset_hashes"],
         "source_artifacts": {"campaign_manifest_sha256": sha256(manifest_path),
                              "e2_detail_sha256": sha256(e2_path)},
-        "outputs": [detail_path.name, summary_path.name, e2_summary_path.name],
+        "outputs": [detail_path.name, summary_path.name, e2_summary_path.name,
+                    coverage_path.name, coverage_summary_path.name],
         "interpretation_limit": "Synthetic injection response fractions only. Unmodified rows are not verified negatives; no real-world accuracy, precision, recall, or causal superiority is estimated.",
         "context_count": campaign["context_count"],
         "scenario_count": len(campaign["scenarios"]),
         "injected_timestamp_units": int(detail[detail.baseline.eq("E1_consensus") & detail.setting.eq("8/12")].shape[0]),
+        "ablation_status": "COVERAGE_ONLY; E3-dependent combinations blocked; no interpretation-outcome ablation or utility estimate",
     }
     (output / "synthetic_baseline_comparison_manifest.json").write_text(json.dumps(run_manifest, indent=2) + "\n", encoding="utf-8")
     return detail, summary, run_manifest
