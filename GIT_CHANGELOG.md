@@ -11,6 +11,6 @@
 | 2026-11-16 | `codex/autonomous-research-loop` | `4b85329` | Add exact injection-value and unverified station-label provenance | Targeted matrix tests and compile pass |
 | 2026-11-16 | `codex/autonomous-research-loop` | `9caecaa` | Add baseline-vs-injected broad E4 screening outputs | Targeted matrix tests pass |
 | 2026-11-16 | `codex/autonomous-research-loop` | `f7d24a8` | Save eight-scenario synthetic fault matrix, exact injection values, model comparisons and E4 screen outputs | 57 tests and compileall pass; pushed to origin |
-| 2026-11-16 | `codex/autonomous-research-loop` | Pending | Add six-variable E2 sensitivity sweep and its 22,140-row outputs; update research handoff | Script executed successfully; descriptive E1-selected results only; pending commit/push |
+| 2026-11-16 | `codex/autonomous-research-loop` | `d0e5142` | Add six-variable E2 sensitivity sweep and its 22,140-row outputs; update manuscript and research handoff | Script executed successfully; descriptive E1-selected results only; awaiting remote push verification |
 
 Do not merge into `main` automatically. Record only confirmed commits and pushes.
