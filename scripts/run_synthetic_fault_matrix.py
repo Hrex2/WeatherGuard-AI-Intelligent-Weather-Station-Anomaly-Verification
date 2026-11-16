@@ -18,6 +18,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from weather_research.faults import evaluate_injection, inject_fault
 from weather_research.models import default_model_configs
+from weather_research.quality import physical_quality_flags
 from weather_research.synthetic_campaign import (_fit_campaign_models,
     _predict_campaign_models, _seasonal_matrix, load_verified_snapshots)
 
@@ -115,6 +116,38 @@ def enrich_injection_registry(run_dir, root=ROOT):
     return result
 
 
+def write_physical_screening_results(run_dir, root=ROOT):
+    """Record broad E4 screens for clean and synthetically altered interval rows."""
+    root = Path(root)
+    run_dir = Path(run_dir)
+    snapshots, _, _ = load_verified_snapshots(root)
+    raw, train = snapshots["model_df"], snapshots["X_train_multi"]
+    seed_registry = pd.read_csv(run_dir / "injection_registry.csv", parse_dates=["timestamp"])
+    scenarios = {item["id"]: item for item in SCENARIOS}
+    output = []
+    for experiment_id, existing in seed_registry.groupby("experiment_id", sort=False):
+        scenario = scenarios[experiment_id]
+        times = pd.DatetimeIndex(pd.to_datetime(existing.timestamp, utc=True).dt.tz_convert(str(raw.index.tz)))
+        faulted, _, _ = inject_fault(raw, scenario["variable"], times[0], times[-1],
+            kind=scenario["kind"], magnitude=scenario["magnitude"],
+            random_seed=scenario["seed"], calibration_end=train.index.max())
+        fault_flags = physical_quality_flags(faulted.loc[times])
+        clean_flags = physical_quality_flags(raw.loc[times])
+        if len(fault_flags):
+            compare = fault_flags.merge(clean_flags[["timestamp", "variable", "screening_flag"]],
+                on=["timestamp", "variable"], how="left", validate="one_to_one",
+                suffixes=("_faulted", "_clean"))
+            compare["experiment_id"] = experiment_id
+            compare["fault_type"] = scenario["kind"]
+            compare["target_variable"] = scenario["variable"]
+            compare["synthetic_label"] = compare.timestamp.isin(times)
+            compare["screening_flag_changed_by_injection"] = compare.screening_flag_faulted.ne(compare.screening_flag_clean)
+            output.append(compare)
+    result = pd.concat(output, ignore_index=True) if output else pd.DataFrame()
+    result.to_csv(run_dir / "physical_screening_results.csv", index=False)
+    return result
+
+
 def finalize_existing_run(run_dir):
     """Create aggregate scenario summary and reconcile a completed run manifest."""
     run_dir = Path(run_dir)
@@ -122,8 +155,10 @@ def finalize_existing_run(run_dir):
     metadata_path = run_dir / "run_metadata.json"
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv",
-                           "changed_and_injected_predictions.csv", "injection_registry.csv"]
+                           "changed_and_injected_predictions.csv", "injection_registry.csv",
+                           "physical_screening_results.csv"]
     enrich_injection_registry(run_dir)
+    write_physical_screening_results(run_dir)
     metadata["prediction_rows_retained"] = len(pd.read_csv(run_dir / "changed_and_injected_predictions.csv"))
     metadata["prediction_retention_rule"] = "All injected timestamps and all configuration/timestamp labels that changed from the same-run clean comparator."
     metadata["postprocessing_code_commit"] = subprocess.run(["git", "rev-parse", "HEAD"],
@@ -253,6 +288,7 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
     pd.concat(injection_rows, ignore_index=True).to_csv(run_dir / "injection_registry.csv", index=False)
     write_scenario_summary(run_dir)
     enrich_injection_registry(run_dir, root)
+    write_physical_screening_results(run_dir, root)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
                             capture_output=True, text=True).stdout.strip()
     metadata = {"run_id": run_id, "status": "EXECUTED_LOCAL_SYNTHETIC",
@@ -272,7 +308,8 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
             "Scenario timestamp is one selected held-out interval; results do not estimate population performance.",
             "Ground-truth labels mark modified observations only; causal feature propagation can alter neighboring predictions.",
             "No fitted estimator objects are persisted.", "E3 spatial evidence is not part of these experiments."],
-        "outputs": ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv", "changed_and_injected_predictions.csv", "injection_registry.csv"]}
+        "outputs": ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv",
+                    "changed_and_injected_predictions.csv", "injection_registry.csv", "physical_screening_results.csv"]}
     (run_dir / "run_metadata.json").write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
     return run_dir, metadata
 
