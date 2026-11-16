@@ -61,7 +61,7 @@ The research separates model anomaly flags from event-level interpretation. It o
 - **Weather Data** — date-filtered measurements with units and historical candidate markers.
 - **Investigate a Reading** — guided review of measurements, votes, E1–E4 evidence availability, and technical details.
 - **Model Evaluation** — exactly two primary sections: **Experiments & Results** and **How the Models Work**. The model selector explains Isolation Forest, LOF and One-Class SVM using saved data and actual protocol settings.
-- **Experiment Lab** — saved and explicitly triggered temperature point-spike experiments.
+- **Experiment Lab** — saved temperature dose campaign plus the hash-checked eight-scenario synthetic fault matrix, with injection values and model-family summaries.
 - **Research** — methods, literature summaries, research gap, findings and limitations.
 
 Model metadata is served through `services/model_metadata.py`, sourced from `weather_research.models.build_estimator`, `default_model_configs`, the loaded dataset, and saved configuration results. Plain-language profile copy is maintained in `research_content/model_profiles.json`.
@@ -75,6 +75,8 @@ Saved-label E1 threshold counts are 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/1
 The initial E2 candidate sensitivity table evaluates 123 saved model candidates across five prior windows and three robust-deviation cutoffs in real-time and retrospective modes. See `research_results/e2_candidate_sensitivity_summary.csv`; this selected sample does not provide independent temporal accuracy validation.
 
 The additional eight-scenario synthetic fault run and its limits are documented in [SYNTHETIC_FAULT_MATRIX_REPORT.md](SYNTHETIC_FAULT_MATRIX_REPORT.md). Scenario outputs are isolated under `research_results/fault_matrix_02bd147f5cce/` and are explicitly synthetic, single-context results.
+
+The Phase 1 validation audit on `codex/research-validation-v2` corrects temporal run continuity, same-segment stuck injection, unavailable-evidence completeness, and strict hourly upload validation. A Phase 03 integrity manifest now hashes 11 saved CSV artifacts while explicitly preserving their unknown historical generation provenance. The complete current suite passes **66 tests**; CI runs those tests and compilation checks. See [RESEARCH_GAP_ANALYSIS.md](RESEARCH_GAP_ANALYSIS.md) and [NEXT_SESSION.md](NEXT_SESSION.md) for phase status and remaining limits.
 
 ## Run locally
 

@@ -37,6 +37,9 @@ def inject_fault(frame: pd.DataFrame, variable: str, start, end=None, kind="spik
         if segment_col in frame and frame.iloc[pos][segment_col].nunique(dropna=False)!=1:
             raise ValueError("temporal injection interval crosses a segment boundary")
     rng=np.random.default_rng(random_seed)
+    stuck_reference_value=np.nan
+    stuck_reference_timestamp=None
+    stuck_reference_source=None
     if kind in {"spike","point_positive_offset","point_negative_offset"} and len(pos)!=1:
         raise ValueError(f"{kind} must target exactly one timestamp")
     if kind=="spike": changed=values+float(magnitude)
@@ -46,8 +49,32 @@ def inject_fault(frame: pd.DataFrame, variable: str, start, end=None, kind="spik
     elif kind in {"negative_offset","step_negative"}: changed=values-float(magnitude)
     elif kind=="drift": changed=values+np.linspace(0,float(magnitude),len(values))
     elif kind=="stuck":
-        prior=original.loc[original.index<out.index[pos[0]]].dropna()
-        stuck_value=float(prior.iloc[-1]) if len(prior) else (float(values[0]) if len(values) else np.nan)
+        first_position=int(pos[0])
+        target_segment=frame.iloc[first_position][segment_col] if segment_col in frame else None
+        candidate_positions=[]
+        for prior_position in range(first_position-1,-1,-1):
+            interval=frame.index[prior_position+1]-frame.index[prior_position]
+            if interval != pd.Timedelta(expected_interval):
+                break
+            if segment_col in frame:
+                candidate_segment=frame.iloc[prior_position][segment_col]
+                same_segment=(pd.isna(candidate_segment) and pd.isna(target_segment)) or candidate_segment==target_segment
+                if not same_segment:
+                    break
+            candidate_positions.append(prior_position)
+        prior_positions=[p for p in candidate_positions if pd.notna(original.iloc[p])]
+        if prior_positions:
+            reference_position=prior_positions[0]
+            stuck_value=float(original.iloc[reference_position])
+            stuck_reference_timestamp=frame.index[reference_position]
+            stuck_reference_source="last valid reading in the same contiguous segment"
+        elif len(values) and np.isfinite(values[0]):
+            stuck_value=float(values[0])
+            stuck_reference_timestamp=frame.index[first_position]
+            stuck_reference_source="first finite value inside injection interval; no prior same-segment reading"
+        else:
+            raise ValueError("stuck injection needs a finite reference from the same segment or first target value")
+        stuck_reference_value=stuck_value
         changed=np.repeat(stuck_value,len(values))
     elif kind=="repeated_spikes":
         if repetition_interval < 1: raise ValueError("repetition_interval must be positive")
@@ -86,6 +113,9 @@ def inject_fault(frame: pd.DataFrame, variable: str, start, end=None, kind="spik
                            "injection_interval_end":interval_end,
                            "injected_timestamps_json":json.dumps(injected_timestamps),
                            "random_seed":random_seed,"magnitude":magnitude,
+                           "stuck_reference_value":stuck_reference_value,
+                           "stuck_reference_timestamp":stuck_reference_timestamp,
+                           "stuck_reference_source":stuck_reference_source,
                            "calibration_end":calibration_end,
                            "reference":"unaltered held-out raw value; training rows are not modified"})
     return out,labels,registry

@@ -90,6 +90,8 @@ class TestUploadedDataPreparation(unittest.TestCase):
         self.assertEqual(prepared["metadata"]["feature_order"], ["temp", "dwpt", "rhum", "prcp", "wspd", "pres", "temp_change_1h", "temp_rolling_mean_6h", "temp_deviation_6h", "month_sin", "month_cos"])
         self.assertLess(prepared["train"].index.max(), prepared["test"].index.min())
         self.assertTrue(np.isfinite(prepared["test"].to_numpy()).all())
+        self.assertEqual(prepared["metadata"]["usable_rows"], 120)
+        self.assertEqual(prepared["metadata"]["excluded_rows"], 0)
 
     def test_unit_conversion_and_training_only_medians(self):
         frame = self.frame.copy()
@@ -107,9 +109,16 @@ class TestUploadedDataPreparation(unittest.TestCase):
         bad.loc[0, "time"] = "not a date"
         with self.assertRaisesRegex(ValueError, "invalid or missing timestamps"):
             prepare_uploaded_weather_data(bad, "time", self.mapping, self.units)
+        mixed_timezone = self.frame.copy()
+        mixed_timezone.loc[1, "time"] = "2024-01-01T01:00:00Z"
+        with self.assertRaisesRegex(ValueError, "mix timezone-aware and timezone-naive"):
+            prepare_uploaded_weather_data(mixed_timezone, "time", self.mapping, self.units)
         irregular = self.frame.copy()
-        irregular["time"] = pd.date_range("2024-01-01", periods=120, freq="30min").astype(str)
-        with self.assertRaisesRegex(ValueError, "requires hourly observations"):
+        hourly = pd.date_range("2024-01-01", periods=120, freq="h")
+        hourly = hourly.to_series()
+        hourly.iloc[60:] += pd.Timedelta(hours=1)
+        irregular["time"] = hourly.astype(str).to_numpy()
+        with self.assertRaisesRegex(ValueError, "every adjacent timestamp.*1 interval.*1 hourly timestamp"):
             prepare_uploaded_weather_data(irregular, "time", self.mapping, self.units)
 
 

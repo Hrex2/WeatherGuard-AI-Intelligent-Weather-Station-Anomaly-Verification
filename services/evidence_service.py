@@ -8,7 +8,7 @@ from services.temporal_service import temporal_verification
 
 
 def observation_evidence(timestamp, observations, predictions, stability, episodes,
-                         spatial_tables):
+                         spatial_tables, primary_variable=None):
     """Assemble available evidence for one timestamp without fabricating a verdict."""
     ts = pd.Timestamp(timestamp)
     model_rows = predictions.loc[predictions.timestamp.eq(ts)].copy()
@@ -17,8 +17,9 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
     episode_rows = episodes.loc[(episodes.start <= ts) & (episodes.end >= ts)]
     row = observations.loc[[ts]] if ts in observations.index else observations.iloc[0:0]
     quality = physical_quality_flags(row) if len(row) else pd.DataFrame()
-    primary_variable = "temp" if "temp" in observations.columns else next(
-        (name for name in ("dwpt", "rhum", "prcp", "wspd", "pres") if name in observations.columns), None)
+    if primary_variable not in observations.columns:
+        primary_variable = "temp" if "temp" in observations.columns else next(
+            (name for name in ("dwpt", "rhum", "prcp", "wspd", "pres") if name in observations.columns), None)
     temporal = (temporal_verification(observations, ts, primary_variable, mode="real_time")
                 if primary_variable else {"status": "UNAVAILABLE", "reason": "No supported weather variable is available."})
     spatial_rows = []
@@ -60,4 +61,10 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
         "evidence_states": states,
         "outcome": "UNCERTAIN_INSUFFICIENT_EVIDENCE",
         "outcome_reason": "The integrated E1–E4 decision rule is not yet validated, and neighbor provenance/coverage is incomplete.",
+        "evidence_meanings": {
+            "E1": "Model-configuration stability indicates detector agreement only; it is not event truth or probability.",
+            "E2": "SUPPORTING indicates a temporal departure or repeated-value screen; it does not identify a regional weather event or diagnose hardware.",
+            "E3": "Spatial support requires verified, time-aligned neighboring station observations and provenance.",
+            "E4": "A physical-quality flag indicates a broad rule violation only; it is not a sensor diagnosis.",
+        },
     }

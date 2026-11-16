@@ -18,8 +18,12 @@ def temporal_verification(observations: pd.DataFrame, timestamp, variable: str,
     ``real_time`` references only prior observations plus the selected reading.
     ``retrospective`` may inspect following measurements and labels that result
     as retrospective investigation; it cannot be used for live detection.
-    A local cadence is the median positive interval, and gaps >1.5×cadence break
-    context. Thresholds are screening defaults, not validated domain rules.
+    Cadence is the median positive interval in the selected look-back window
+    (plus the requested look-ahead only in retrospective mode), falling back to
+    the series median when needed. Gaps >1.5×cadence and explicit segment-ID
+    changes break context. A stuck run also stops at missing values and any
+    interval differing from local cadence by more than 10% (minimum tolerance
+    one minute). Thresholds are screening defaults, not validated domain rules.
     """
     if variable not in observations.columns:
         raise KeyError(f"Weather variable is not available: {variable}")
@@ -41,11 +45,21 @@ def temporal_verification(observations: pd.DataFrame, timestamp, variable: str,
 
     values = pd.to_numeric(observations[variable], errors="coerce")
     diffs = observations.index.to_series().diff().dropna()
-    cadence = diffs[diffs > pd.Timedelta(0)].median() if len(diffs) else pd.NaT
+    cadence_window_start = ts - pd.Timedelta(hours=window_hours)
+    cadence_window_end = ts + pd.Timedelta(hours=lookahead_hours if mode == "retrospective" else 0)
+    local_diffs = diffs.loc[(diffs.index > cadence_window_start) & (diffs.index <= cadence_window_end)]
+    local_diffs = local_diffs[local_diffs > pd.Timedelta(0)]
+    cadence = local_diffs.median() if len(local_diffs) else (diffs[diffs > pd.Timedelta(0)].median() if len(diffs) else pd.NaT)
     if pd.isna(cadence):
         return _unavailable(ts, variable, mode, "Sampling cadence cannot be estimated from the available observations.")
     gap_limit = cadence * 1.5
-    segment = observations.index.to_series().diff().gt(gap_limit).cumsum()
+    interval_breaks = observations.index.to_series().diff().gt(gap_limit)
+    if "segment_id" in observations.columns:
+        segment_ids = observations["segment_id"]
+        segment_changes = segment_ids.ne(segment_ids.shift())
+        segment_changes &= ~(segment_ids.isna() & segment_ids.shift().isna())
+        interval_breaks |= segment_changes
+    segment = interval_breaks.cumsum()
     same_segment = segment.eq(segment.loc[ts])
     in_segment = observations.index[same_segment.to_numpy()]
     prior_times = in_segment[(in_segment < ts) & (in_segment >= ts - pd.Timedelta(hours=window_hours))]
@@ -80,10 +94,17 @@ def temporal_verification(observations: pd.DataFrame, timestamp, variable: str,
     change = float(current - previous)
     sudden = abs(robust_z) >= robust_z_threshold
 
-    # Count the selected value plus its consecutive equal-valued predecessors.
+    # Count in the original ordered series. A missing value or irregular interval
+    # breaks the run; dropping missing values here would incorrectly bridge it.
     run = 1
-    for value in prior.iloc[::-1]:
-        if not np.isclose(float(value), float(current), rtol=0.0, atol=1e-12):
+    selected_position = observations.index.get_loc(ts)
+    expected_tolerance = max(pd.Timedelta(minutes=1), cadence * 0.1)
+    for position in range(selected_position - 1, -1, -1):
+        interval = observations.index[position + 1] - observations.index[position]
+        if segment.iloc[position] != segment.iloc[selected_position] or abs(interval - cadence) > expected_tolerance:
+            break
+        previous_value = values.iloc[position]
+        if pd.isna(previous_value) or not np.isclose(float(previous_value), float(current), rtol=0.0, atol=1e-12):
             break
         run += 1
     stuck = run >= stuck_min_run and prior.nunique() > 1

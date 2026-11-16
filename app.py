@@ -233,7 +233,41 @@ def render_investigation(data, root):
 
 def render_experiments(root, data, phase01_hashes):
     render_header("WeatherGuard AI  /  experiment lab", "Experiment Lab", "Run controlled, explicitly simulated injections on held-out observations.")
-    st.warning("SIMULATED DATA — NOT A REAL-WORLD SENSOR FAULT. This initial lab supports temperature point-spike dose tests only; other fault groups remain unimplemented.")
+    st.warning("SIMULATED DATA — NOT REAL-WORLD FAULT VALIDATION. Synthetic results test detector behavior on declared injections; they do not estimate field accuracy or diagnose hardware.")
+    matrix_dir = root / "research_results" / "fault_matrix_02bd147f5cce"
+    matrix_manifest_path = matrix_dir / "run_metadata.json"
+    if matrix_manifest_path.is_file():
+        try:
+            matrix_manifest = json.loads(matrix_manifest_path.read_text(encoding="utf-8"))
+            matrix_hashes = matrix_manifest.get("dataset_hashes", {})
+            matrix_verified = (
+                matrix_manifest.get("phase01_audit_passed") is True
+                and matrix_hashes.get("model_df") == phase01_hashes.get("observations")
+                and matrix_hashes.get("X_train_multi") == phase01_hashes.get("train")
+                and matrix_hashes.get("X_test_multi") == phase01_hashes.get("test")
+            )
+        except (OSError, json.JSONDecodeError):
+            matrix_verified = False
+            matrix_manifest = {}
+        st.subheader("Saved eight-scenario fault matrix · one held-out context")
+        if matrix_verified:
+            summary_path = matrix_dir / "scenario_summary.csv"
+            family_path = matrix_dir / "family_scenario_summary.csv"
+            if summary_path.is_file():
+                st.dataframe(pd.read_csv(summary_path), hide_index=True, width="stretch")
+            if family_path.is_file():
+                with st.expander("Model-family response"):
+                    st.dataframe(pd.read_csv(family_path), hide_index=True, width="stretch")
+            with st.expander("Injection values and experiment provenance"):
+                registry_path = matrix_dir / "injection_registry.csv"
+                if registry_path.is_file():
+                    st.dataframe(pd.read_csv(registry_path), hide_index=True, width="stretch")
+                st.json(matrix_manifest)
+            st.caption("The original campaign remains in a separate section below. The matrix is a single-context synthetic study; VILD0 is an unverified inherited dataset label.")
+        else:
+            st.warning("The saved fault matrix is unavailable or its dataset hashes do not match the verified Phase 01 snapshots.")
+    else:
+        st.info("The eight-scenario matrix has not been added to this checkout.")
     saved_dir = root / "outputs" / "synthetic_fault_campaign"
     saved_summary = saved_dir / "experiment_summary.csv"
     campaign_manifest_path = saved_dir / "synthetic_campaign_manifest.json"
@@ -331,9 +365,8 @@ def render_experiments(root, data, phase01_hashes):
                         table = pd.read_csv(path)
                         st.dataframe(table, hide_index=True, width="stretch")
     st.markdown("#### Implemented injection coverage")
-    st.dataframe(pd.DataFrame([{"Fault type":"Point temperature spike", "Status":"Implemented and executed", "Notes":"Controlled same timestamp; four supported magnitudes; 12 existing configurations"},
-                               {"Fault type":"Other variable point faults", "Status":"Pending", "Notes":"Not exposed as runnable options"},
-                               {"Fault type":"Step, drift, stuck, noise, dropout", "Status":"Pending", "Notes":"Backend primitives/tests exist in part; campaign evaluation not wired"}]), hide_index=True, width="stretch")
+    st.dataframe(pd.DataFrame([{"Fault type":"Point temperature spike", "Status":"Saved campaign and interactive dose runner", "Notes":"Separate from the eight-scenario matrix above"},
+                               {"Fault type":"Spike, drop, offset, stuck, drift, missing block, noise, dew-point inconsistency", "Status":"Saved synthetic matrix; one held-out context", "Notes":"No multi-context validation or field-performance claim"}]), hide_index=True, width="stretch")
 
 
 def _campaign_is_verified(root, hashes):

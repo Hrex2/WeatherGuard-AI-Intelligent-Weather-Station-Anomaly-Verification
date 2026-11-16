@@ -55,7 +55,21 @@ def prepare_uploaded_weather_data(frame: pd.DataFrame, timestamp_column: str,
         raise ValueError("Enter a valid timezone name for timestamps without timezone information")
 
     copied = frame.copy(deep=True)
-    parsed = pd.to_datetime(copied[timestamp_column], errors="coerce")
+    parsed_items = []
+    timezone_awareness = set()
+    for value in copied[timestamp_column]:
+        try:
+            item = pd.Timestamp(value)
+        except (TypeError, ValueError, OverflowError):
+            item = pd.NaT
+        parsed_items.append(item)
+        if pd.notna(item):
+            timezone_awareness.add(item.tzinfo is not None)
+    if len(timezone_awareness) > 1:
+        raise ValueError("Timestamp values mix timezone-aware and timezone-naive values; normalize them to one consistent timezone first")
+    all_timezone_aware = timezone_awareness == {True}
+    parsed = pd.to_datetime(pd.Series(parsed_items, index=copied.index), errors="coerce",
+                            utc=all_timezone_aware)
     if parsed.isna().any():
         raise ValueError(f"{int(parsed.isna().sum())} row(s) have invalid or missing timestamps")
     try:
@@ -94,8 +108,18 @@ def prepare_uploaded_weather_data(frame: pd.DataFrame, timestamp_column: str,
     if not len(intervals):
         raise ValueError("At least two timestamped observations are required")
     cadence = intervals.median()
-    if cadence != pd.Timedelta(hours=1):
-        raise ValueError(f"This model protocol requires hourly observations; uploaded median interval is {cadence}. No model feature set was changed.")
+    expected_interval = pd.Timedelta(hours=1)
+    irregular_intervals = intervals.ne(expected_interval)
+    implied_missing_hours = int(sum(max(int(interval / expected_interval) - 1, 0)
+                                    for interval in intervals if interval > expected_interval
+                                    and interval % expected_interval == pd.Timedelta(0)))
+    if irregular_intervals.any():
+        raise ValueError(
+            "This model protocol requires every adjacent timestamp to be exactly one elapsed hour; "
+            f"median interval is {cadence}, {int(irregular_intervals.sum())} interval(s) are irregular, "
+            f"and {implied_missing_hours} hourly timestamp(s) are implied missing. "
+            "No observations were resampled or interpolated; split or correct the source data before analysis."
+        )
 
     segmented = add_segments(out, max_gap="1h")
     engineered = engineer_features(segmented, rolling_observations=6, expected_interval="1h")
@@ -121,6 +145,8 @@ def prepare_uploaded_weather_data(frame: pd.DataFrame, timestamp_column: str,
         "source_rows": int(len(copied)),
         "timestamp_start": str(out.index.min()), "timestamp_end": str(out.index.max()),
         "median_cadence": str(cadence), "duplicates": 0,
+        "hourly_interval_count": int(len(intervals)), "irregular_interval_count": 0,
+        "implied_missing_hour_count": 0, "usable_rows": int(len(out)), "excluded_rows": 0,
         "missing_values_by_variable": source_missing,
         "unit_mapping": unit_summary,
         "feature_ready_rows": int(len(feature_ready)),

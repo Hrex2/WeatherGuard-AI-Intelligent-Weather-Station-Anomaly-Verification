@@ -1,0 +1,25 @@
+name: Research quality checks
+
+on:
+  push:
+    branches: [main, codex/research-validation-v2]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install application and test dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run regression suite and Streamlit smoke tests
+        run: python -m unittest discover -s tests -v
+      - name: Compile application, services, research code, tests and scripts
+        run: python -m compileall -q app.py services ui src/weather_research tests scripts

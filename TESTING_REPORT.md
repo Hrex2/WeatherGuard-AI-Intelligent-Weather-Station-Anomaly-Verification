@@ -85,3 +85,16 @@ Software tests use synthetic fixtures only and do not establish scientific valid
 - Scenario preflight validated held-out intervals and broad bounds before model fitting. The full suite passed **57/57**, including scenario preflight, immutable input and neutral metric-label tests; Python compilation passed.
 - The run recorded exact original/injected values, labels, seeds, feature order, training/test spans, data hashes, package versions and model settings. Full duplicate holdout prediction grids were compacted to injected and changed rows only.
 - Results are single-context synthetic screening observations. No verified clean labels or real-world fault labels exist; do not interpret unmodified-row flags as false positives or synthetic label recall as real-world accuracy.
+
+## Research validation master loop — Phase 1 audit (2026-11-16)
+
+- Refreshed GitHub state: `main` is `0a27959`, merge PR #1; the prior `codex/autonomous-research-loop` remains preserved. Started `codex/research-validation-v2` from the latest main with a clean worktree.
+- `python -B -m unittest discover -s tests -v`: **66 passed, 0 failed**. Includes regression cases for missing/irregular/segment-separated stuck runs, cadence changes, timezone-aware indexes, same-segment stuck injection, unavailable spatial evidence, strict CSV interval validation, selected-variable E2 and the Experiment Lab matrix.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed.
+- `git diff --check`: passed.
+- Phase 03 integrity manifest verified **11 CSV artifacts** against SHA-256, ordered columns, row counts, available timestamp/configuration counts, and Phase 01 reference hashes. Manifest explicitly says `HASHED_INTEGRITY_ONLY_HISTORICAL_PROVENANCE_UNKNOWN`.
+- Streamlit AppTest visited all six workspaces without page exceptions and confirmed the saved eight-scenario matrix appears in Experiment Lab.
+- Dataset snapshots, saved predictions, and the old synthetic matrix were not regenerated or overwritten. No model campaign was fit during this phase.
+- CI was added in `.github/workflows/research-quality.yml`; hosted Actions status has not yet been observed.
+
+The eight audit findings AUD-01 through AUD-08 are corrected. AUD-09 remains a documented selection-dependence limit; AUD-10 remains blocked by the absence of verified neighboring-station raw data; AUD-11 status records have been synchronized. Software verification does not establish scientific validity.

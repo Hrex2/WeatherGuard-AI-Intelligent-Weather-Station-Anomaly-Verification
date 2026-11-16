@@ -1,38 +1,39 @@
 # Next Session Handoff — 2026-11-16
 
-## Recovery point
+## Repository checkpoint
 
-- Baseline `main` / `origin/main`: `830d315`.
-- Active branch: `codex/autonomous-research-loop`, pushed to origin.
-- Last pushed research commit: `1552405`; the E2 multi-variable sweep is currently local and pending commit/push.
-- Synthetic matrix outputs and report are committed and pushed. The working tree was clean after push; inspect `git status` before proceeding.
+- Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
+- Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
+- Worktree was clean at the start of this continuation. Phase 1 audit changes are local and not yet committed or pushed.
+- Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
-## Completed before this session
+## Verified work reused
 
-- Phase 01 processed snapshots pass manifest hash/count/schema checks.
-- Phase 03 saved model grid has 100,980 rows, 8,415 timestamps, 12 configurations.
-- Controlled synthetic temperature point-spike run exists and must be reused, not blindly regenerated.
-- Current repository lacks raw primary acquisition, verified station coordinates, and raw neighboring station observations. E3 must stay unavailable.
+- Phase 01 data hashes and row/column contracts remain unchanged.
+- Historical Phase 03 prediction grid remains unchanged (100,980 labels; 8,415 timestamps × 12 configurations); current local refit mismatch remains 42 Isolation Forest labels and unexplained without saved estimators/scaler provenance.
+- E1 threshold counts remain 432/214/123/51/15 for 4/6/8/10/12 of 12.
+- The earlier eight-scenario matrix and 22,140-row E2 variable sensitivity were reused, not rerun.
+- No raw verified neighbor time series or verified station coordinates are available; E3 remains unavailable.
 
-## This session
+## Completed in this continuation (local, not yet pushed)
 
-- Added saved-prediction heatmap investigation, variable diagnostics, verified-coordinate map state, and separate CSV validation/explicit model-fit workflow.
-- Added focused service tests and app navigation assertions.
-- Reproduced all 42 prediction mismatches; they are exclusively Isolation Forest (6/4/12/20 by contamination), while LOF and SVM match. The cause remains unresolved due absent historical fitted objects/scaler and full run provenance. See `research_results/prediction_mismatch_investigation.csv` and `.json`.
-- Derived E1 saved-label family/configuration and threshold sensitivity tables. 4/6/8/10/12 counts are 432/214/123/51/15.
-- Implemented independent E2 real-time and retrospective temporal screening and connected it to the selected-reading evidence panel.
-- Evaluated 123 8/12 candidates across five temporal windows, three robust-deviation cutoffs and both modes (3,690 rows). At 6h/3.5, real-time: 47 supporting, 76 no-detection; retrospective: 43 supporting, 76 no-detection, 4 persistence-conflicting. This is descriptive sensitivity only.
-- Extended the same sensitivity sweep to all six measured variables (temperature, dew point, relative humidity, precipitation, wind speed, pressure), yielding 22,140 rows. At 6h/3.5 real-time support counts were 47/44/46/44/39/26 respectively; retrospective conflict counts were 4/11/5/32/17/7. See `research_results/e2_variable_sensitivity.json` and CSV summaries. These remain E1-selected descriptive sensitivities, not independent event validation.
-- Ran eight synthetic fault scenarios at one held-out interval using a shared local model fit. See `SYNTHETIC_FAULT_MATRIX_REPORT.md`; outputs include config/family metrics, exact values, changed predictions and E4 screening. No real-world validation is implied.
-- Added the continuation plans, gap analysis, decisions, tracker, manuscript draft, testing report and handoff.
+- Corrected E2 stuck-run counting so missing values, irregular intervals, large gaps and explicit `segment_id` changes break continuity. Real-time cadence uses timestamps through the selected reading; retrospective mode may use the declared look-ahead.
+- Corrected stuck-fault injection to use a same-segment contiguous reference; after a boundary, it falls back to the first finite value inside the injection interval and records the source.
+- Changed uploaded CSV validation to require every adjacent timestamp interval to be exactly one elapsed hour. It reports irregular intervals/implied missing hours and never interpolates. Successful validation records usable/excluded row counts.
+- Added a Phase 03 integrity manifest for 11 saved CSV outputs, linked to Phase 01 hashes. Status explicitly states hash identity only; historical generation provenance is unknown.
+- Corrected evidence completeness so `UNAVAILABLE` spatial evidence is not counted as available. Clarified that E2 temporal departures do not establish regional weather or diagnose a fault.
+- Wired the selected variable through the shared evidence service and surfaced the saved eight-scenario matrix in Experiment Lab after hash checks.
+- Added CI workflow `.github/workflows/research-quality.yml`.
+- Regression suite: 66 passed; `compileall`, `git diff --check`, and Phase 03 manifest checks passed.
 
 ## Exact next actions
 
-1. Repeat selected synthetic scenarios at multiple held-out contexts to evaluate context sensitivity without turning single-context counts into general performance claims.
-2. Repeat multi-variable E2 on independent synthetic injections and, if reference labels become available, independently labeled events; quantify E1 selection dependence.
-3. Complete E1 overlap interpretation; continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
-4. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
+1. Commit and push the Phase 1 audit/correctness milestone on this branch; confirm remote status.
+2. Select up to five held-out contexts using predeclared data-only strata (temperature level and recent variability), require continuous hourly context, and preflight all eight scenarios before fitting.
+3. Fit the existing 12-configuration protocol once and reuse it for the clean comparator and all contexts; save exact context/scenario manifests without touching the original single-context run.
+4. Validate E2 on injected observations and comparable unmodified windows, retaining synthetic-only interpretation.
+5. Continue baseline, available-evidence ablation and robustness analyses; E3 waits on traceable neighboring-station data.
 
-## Current scientific limits
+## Remaining research limits
 
-No real-observation fault labels; no fitted historical estimator objects; local refit parity is reproduced but causally unexplained; VILD0 coordinates and validated neighboring series are unavailable. E2 cutoffs are exploratory. Synthetic outputs do not establish field accuracy. The CSV workflow uses a separate selected-result view rather than the historical drawer.
+No real-observation fault labels; no verified neighboring-station series/coordinates; no persisted historical estimators; no causal resolution of the 42-label refit mismatch. E2 cutoffs remain exploratory. Synthetic label metrics do not establish field accuracy. Ablation, baseline comparison, robustness and full manuscript/reference verification are incomplete.
