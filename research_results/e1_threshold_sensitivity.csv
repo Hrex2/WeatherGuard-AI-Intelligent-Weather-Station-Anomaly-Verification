@@ -1,0 +1,6 @@
+threshold,timestamps,pct_of_test_timestamps,interpretation
+4/12,432,5.133689839572193,Sensitivity threshold only; not an optimal cutoff or calibrated probability.
+6/12,214,2.5430778371954843,Sensitivity threshold only; not an optimal cutoff or calibrated probability.
+8/12,123,1.4616755793226381,Sensitivity threshold only; not an optimal cutoff or calibrated probability.
+10/12,51,0.6060606060606061,Sensitivity threshold only; not an optimal cutoff or calibrated probability.
+12/12,15,0.17825311942959002,Sensitivity threshold only; not an optimal cutoff or calibrated probability.

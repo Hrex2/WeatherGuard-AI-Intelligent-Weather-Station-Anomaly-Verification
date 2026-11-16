@@ -1,0 +1,4 @@
+family,any_config_count,all_four_count,mean_config_votes,mean_fraction_flagged
+IsolationForest,521,94,0.12762923351158645,0.03190730837789661
+LocalOutlierFactor,635,182,0.17896613190730837,0.04474153297682709
+OneClassSVM,575,157,0.16541889483065952,0.04135472370766488

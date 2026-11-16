@@ -1,0 +1,33 @@
+{
+  "input": "saved 8/12 candidate timestamps and processed observations",
+  "candidate_timestamps": 123,
+  "evaluated_rows": 3690,
+  "variable": "temp",
+  "windows_hours": [
+    1,
+    3,
+    6,
+    12,
+    24
+  ],
+  "robust_deviation_thresholds": [
+    2.5,
+    3.5,
+    4.5
+  ],
+  "modes": [
+    "real_time",
+    "retrospective"
+  ],
+  "lookahead_hours": 6,
+  "data_hashes": {
+    "observations": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "train": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "test": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "interpretation_limit": "Descriptive sensitivity on model-selected timestamps; not independent event/fault validation and not threshold calibration.",
+  "files": [
+    "research_results/e2_candidate_sensitivity.csv",
+    "research_results/e2_candidate_sensitivity_summary.csv"
+  ]
+}

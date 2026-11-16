@@ -1,0 +1,44 @@
+{
+  "run_type": "NEW_LOCAL_EXECUTION",
+  "executed_at_utc": "2026-11-16T10:37:58.790282+00:00",
+  "random_seed": 42,
+  "n_estimators": 200,
+  "feature_order": [
+    "temp",
+    "dwpt",
+    "rhum",
+    "prcp",
+    "wspd",
+    "pres",
+    "temp_change_1h",
+    "temp_rolling_mean_6h",
+    "temp_deviation_6h",
+    "month_sin",
+    "month_cos"
+  ],
+  "configuration_sha256": "5d344057cb029087c223f61cba02cb4edf771ee011d8dff60eebab0e18956bd8",
+  "training_start": "2021-01-06 01:30:00+05:30",
+  "training_end": "2025-03-14 23:30:00+05:30",
+  "testing_start": "2025-03-21 23:30:00+05:30",
+  "testing_end": "2026-03-09 23:30:00+05:30",
+  "train_rows": 36434,
+  "test_rows": 8415,
+  "scaler": "StandardScaler fitted only to 11-feature training matrix",
+  "scikit_learn_version": "1.8.0",
+  "elapsed_seconds": 153.57181510000373,
+  "saved_prediction_rows": 100980,
+  "matching_rows": 100938,
+  "mismatching_rows": 42,
+  "mismatch_timestamps": 42,
+  "mismatch_by_family": {
+    "IsolationForest": 42
+  },
+  "mismatch_by_configuration": {
+    "IF_0.01": 6,
+    "IF_0.02": 4,
+    "IF_0.03": 12,
+    "IF_0.05": 20
+  },
+  "finding": "The discrepancy is reproduced, but cannot be causally attributed because historical estimator/scaler objects, exact fit provenance, and original package versions are absent.",
+  "row_level_csv": "research_results/prediction_mismatch_investigation.csv"
+}

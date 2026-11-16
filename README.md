@@ -68,6 +68,14 @@ Model metadata is served through `services/model_metadata.py`, sourced from `wea
 
 See the implementation notes in [UI_UX_AUDIT_AND_REDESIGN.md](UI_UX_AUDIT_AND_REDESIGN.md), the [Model Evaluation design](MODEL_EVALUATION_DESIGN.md), and [UI redesign changelog](UI_REDESIGN_CHANGELOG.md).
 
+The interactive investigation, independent temporal screening, upload limitations and parity audit are documented in [ANOMALY_INVESTIGATION_DESIGN.md](ANOMALY_INVESTIGATION_DESIGN.md). `scripts/analyze_saved_e1.py` produces E1 agreement and threshold sensitivity tables from saved predictions without refitting. `scripts/investigate_prediction_mismatches.py` reproduces the specific local-vs-saved comparison and records per-row feature vectors; the known 42 differences are all Isolation Forest and remain unexplained without the original estimator/scaler provenance.
+
+Saved-label E1 threshold counts are 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/12), and 15 (12/12) of 8,415 test timestamps. At least one configuration flags 521 timestamps for Isolation Forest, 635 for LOF and 575 for One-Class SVM. These describe model outputs, not labeled performance or probabilities. See [RESEARCH_MASTER_PLAN.md](RESEARCH_MASTER_PLAN.md), [RESEARCH_GAP_ANALYSIS.md](RESEARCH_GAP_ANALYSIS.md), [EXPERIMENT_TRACKER.md](EXPERIMENT_TRACKER.md), [RESEARCH_DECISIONS.md](RESEARCH_DECISIONS.md), [GIT_CHANGELOG.md](GIT_CHANGELOG.md), and [NEXT_SESSION.md](NEXT_SESSION.md) for continuation state.
+
+The initial E2 candidate sensitivity table evaluates 123 saved model candidates across five prior windows and three robust-deviation cutoffs in real-time and retrospective modes. See `research_results/e2_candidate_sensitivity_summary.csv`; this selected sample does not provide independent temporal accuracy validation.
+
+The additional eight-scenario synthetic fault run and its limits are documented in [SYNTHETIC_FAULT_MATRIX_REPORT.md](SYNTHETIC_FAULT_MATRIX_REPORT.md). Scenario outputs are isolated under `research_results/fault_matrix_02bd147f5cce/` and are explicitly synthetic, single-context results.
+
 ## Run locally
 
 ```powershell

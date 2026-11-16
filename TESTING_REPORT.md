@@ -60,3 +60,28 @@ Software tests use synthetic fixtures only and do not establish scientific valid
 - Model metadata tests checked the 11-feature order; actual train/test counts; all configurations; Isolation Forest settings; LOF neighbor values/novelty/contamination; and One-Class SVM kernel/gamma/nu.
 - `python -m compileall -q app.py services ui src/weather_research tests`: passed.
 - No estimator refit or synthetic campaign was run as part of the UI redesign.
+
+## Autonomous research continuation and investigation workspace — 2026-11-16
+
+- `python -B -m unittest discover -s tests -v`: **55 passed, 0 failed**.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed.
+- Streamlit AppTest visited all six workspaces with no script exceptions; confirmed the investigation charts/variable selector, upload expander, and two-section Model Evaluation view.
+- Temporal service tests cover causal no-future behavior, retrospective persistence/return, stable and gradual series, stuck patterns, missing values, insufficient context, irregular gaps and segment boundaries.
+- Heatmap/upload tests cover date/family filtering, unavailable cells, complete-grid consensus, observed-variable discovery, verified-coordinate refusal, unit conversion, immutable input, duplicate/invalid timestamps, hourly cadence, and chronological training-only imputation.
+- `scripts/analyze_saved_e1.py` ran on saved labels only. Sensitivity counts: 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/12), 15 (12/12); no model refit for this analysis.
+- `scripts/investigate_prediction_mismatches.py` locally refit the existing 12 configurations once to investigate the specific parity issue. It reproduced 42 differences, all in Isolation Forest; cause remains unresolved because historical estimators/scalers and complete historical fit provenance are absent. Saved prediction files were not changed.
+- No CSV model fit, spatial retrieval or real-label performance study was run in this checkpoint. The separately documented synthetic fault matrix was run afterward. Direct browser rendering, raw-data reconstruction and external source/repository contact are not verified here.
+
+## E2 temporal sensitivity — 2026-11-16
+
+- `python scripts/evaluate_e2_sensitivity.py`: passed; evaluated 123 saved 8/12 candidate timestamps across five prior windows, three robust-deviation thresholds, and real-time/retrospective modes (3,690 result rows).
+- At the six-hour/3.5 scaled-MAD default: real-time returned 47 supporting and 76 no-detected-departure statuses. Retrospective returned 43 supporting, 76 no-detected-evidence, and 4 return-to-baseline conflicts.
+- The one-hour window returned unavailable for all 123 candidates because the configured minimum is three prior observations. This is a data/context availability result, not a negative temporal finding.
+- Candidate timestamps were selected by E1 consensus, so the analysis is not independent evidence validation. It is descriptive sensitivity only and does not establish a calibrated threshold or real-world accuracy.
+
+## Additional synthetic fault matrix — 2026-11-16
+
+- `python scripts/run_synthetic_fault_matrix.py` completed one shared local 12-configuration fit and eight held-out synthetic scenarios. Run ID: `fault_matrix_02bd147f5cce`.
+- Scenario preflight validated held-out intervals and broad bounds before model fitting. The full suite passed **57/57**, including scenario preflight, immutable input and neutral metric-label tests; Python compilation passed.
+- The run recorded exact original/injected values, labels, seeds, feature order, training/test spans, data hashes, package versions and model settings. Full duplicate holdout prediction grids were compacted to injected and changed rows only.
+- Results are single-context synthetic screening observations. No verified clean labels or real-world fault labels exist; do not interpret unmodified-row flags as false positives or synthetic label recall as real-world accuracy.

@@ -1,0 +1,20 @@
+{
+  "source": "Saved Phase 03 binary labels; no refit performed.",
+  "prediction_rows": 100980,
+  "timestamps": 8415,
+  "configurations": 12,
+  "data_hashes": {
+    "observations": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "train": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "test": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "any_model_timestamps": 1211,
+  "threshold_counts": {
+    "4/12": 432,
+    "6/12": 214,
+    "8/12": 123,
+    "10/12": 51,
+    "12/12": 15
+  },
+  "limitation": "Agreement describes saved binary model outputs, not calibrated event or sensor-failure probabilities."
+}

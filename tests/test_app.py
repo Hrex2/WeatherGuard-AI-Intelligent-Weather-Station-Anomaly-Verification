@@ -47,7 +47,7 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(result["evidence_states"]["E3"], "UNAVAILABLE")
         self.assertEqual(result["outcome"], "UNCERTAIN_INSUFFICIENT_EVIDENCE")
 
-    def test_subthreshold_votes_are_not_reported_as_conflicting_and_episodes_are_context(self):
+    def test_subthreshold_votes_are_not_conflicting_and_e2_does_not_use_consensus_episodes(self):
         ts = self.data["stability"].iloc[0].timestamp
         predictions = self.data["predictions"].loc[self.data["predictions"].timestamp.eq(ts)].copy()
         predictions["is_candidate"] = False
@@ -56,7 +56,10 @@ class TestWeatherGuardApplication(unittest.TestCase):
                                       self.data["stability"], self.data["episodes"], {})
         self.assertEqual(result["vote_count"], 3)
         self.assertEqual(result["evidence_states"]["E1"], "NO_DETECTED_EVIDENCE")
-        self.assertEqual(result["evidence_states"]["E2"], "UNAVAILABLE")
+        self.assertEqual(result["evidence_states"]["E2"], result["temporal_result"]["status"])
+        without_episodes = observation_evidence(ts, self.data["observations"], predictions,
+                                               self.data["stability"], pd.DataFrame(columns=["start", "end"]), {})
+        self.assertEqual(result["evidence_states"]["E2"], without_episodes["evidence_states"]["E2"])
 
     def test_missing_values_alone_do_not_support_sensor_fault_evidence(self):
         ts = self.data["observations"].index[0]
@@ -101,11 +104,18 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
         self.assertEqual([title.value for title in app.title], ["Home"])
         self.assertEqual(app.radio[0].options, ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"])
-        for workspace in ("Weather Data", "Investigate a Reading", "Experiment Lab", "Research", "Model Evaluation"):
+        # Visit the tabbed workspace before workspaces with their own tab sets;
+        # AppTest retains inactive tab elements in a single shared test object.
+        for workspace in ("Weather Data", "Model Evaluation", "Investigate a Reading", "Experiment Lab", "Research"):
             app.radio[0].set_value(workspace).run()
             self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Weather Data":
                 self.assertGreater(len(app.get("plotly_chart")), 0)
+                self.assertTrue(any("Analyze a new station CSV" in str(x.value) for x in app.get("subheader")))
+            if workspace == "Investigate a Reading":
+                self.assertGreaterEqual(len(app.get("plotly_chart")), 4)
+                self.assertTrue(any("Find an unusual observation" in str(x.value) for x in app.get("subheader")))
+                self.assertIsNotNone(app.selectbox(key="investigation_variable"))
             if workspace == "Model Evaluation":
                 self.assertEqual([tab.label for tab in app.tabs], ["A. Experiments & Results", "B. How the Models Work"])
                 self.assertGreater(len(app.get("plotly_chart")), 0)
