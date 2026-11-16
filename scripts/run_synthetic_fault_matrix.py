@@ -74,17 +74,56 @@ def write_scenario_summary(run_dir):
     summary["injected_label_recall"] = summary.injected_and_flagged / (summary.injected_and_flagged + summary.injected_not_flagged).replace(0, np.nan)
     summary["unmodified_observation_flag_rate"] = summary.unmodified_observation_flags / (summary.unmodified_observation_flags + summary.unmodified_observation_unflagged).replace(0, np.nan)
     summary.to_csv(run_dir / "scenario_summary.csv", index=False)
-    return summary
+    family_summary = configuration_metrics.groupby(["experiment_id", "family"], as_index=False).agg(
+        configuration_count=("name", "nunique"), injected_and_flagged=("injected_and_flagged_count", "sum"),
+        injected_not_flagged=("injected_not_flagged_count", "sum"),
+        changed_predictions=("changed_predictions", "sum"),
+        newly_flagged_outside_labels=("new_flags_outside_injected_labels", "sum"))
+    family_summary["injected_label_recall"] = family_summary.injected_and_flagged / (
+        family_summary.injected_and_flagged + family_summary.injected_not_flagged).replace(0, np.nan)
+    family_summary.to_csv(run_dir / "family_scenario_summary.csv", index=False)
+    return summary, family_summary
+
+
+def enrich_injection_registry(run_dir, root=ROOT):
+    """Attach exact original/altered values to every injection interval row."""
+    root = Path(root)
+    run_dir = Path(run_dir)
+    snapshots, _, _ = load_verified_snapshots(root)
+    raw = snapshots["model_df"]
+    seed_registry = pd.read_csv(run_dir / "injection_registry.csv", parse_dates=["timestamp"])
+    all_rows = []
+    scenario_by_id = {item["id"]: item for item in SCENARIOS}
+    for experiment_id, existing in seed_registry.groupby("experiment_id", sort=False):
+        scenario = scenario_by_id[experiment_id]
+        variable = scenario["variable"]
+        row_times = pd.DatetimeIndex(pd.to_datetime(existing.timestamp, utc=True).dt.tz_convert(str(raw.index.tz)))
+        end = row_times[-1]
+        faulted, _, _ = inject_fault(raw, variable, row_times[0], end,
+            kind=scenario["kind"], magnitude=scenario["magnitude"],
+            random_seed=scenario["seed"], calibration_end=snapshots["X_train_multi"].index.max())
+        existing = existing.copy()
+        existing["timestamp"] = row_times
+        existing["target_variable"] = variable
+        existing["severity"] = scenario["magnitude"]
+        existing["original_value"] = raw[variable].reindex(row_times).to_numpy()
+        existing["injected_value"] = faulted[variable].reindex(row_times).to_numpy()
+        existing["faulted_value_is_missing"] = pd.isna(existing.injected_value)
+        all_rows.append(existing)
+    result = pd.concat(all_rows, ignore_index=True)
+    result.to_csv(run_dir / "injection_registry.csv", index=False)
+    return result
 
 
 def finalize_existing_run(run_dir):
     """Create aggregate scenario summary and reconcile a completed run manifest."""
     run_dir = Path(run_dir)
-    summary = write_scenario_summary(run_dir)
+    summary, family_summary = write_scenario_summary(run_dir)
     metadata_path = run_dir / "run_metadata.json"
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv",
+    metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv",
                            "changed_and_injected_predictions.csv", "injection_registry.csv"]
+    enrich_injection_registry(run_dir)
     metadata["prediction_rows_retained"] = len(pd.read_csv(run_dir / "changed_and_injected_predictions.csv"))
     metadata["prediction_retention_rule"] = "All injected timestamps and all configuration/timestamp labels that changed from the same-run clean comparator."
     metadata["postprocessing_code_commit"] = subprocess.run(["git", "rev-parse", "HEAD"],
@@ -110,10 +149,9 @@ def compact_completed_run(run_dir):
     full_path.unlink()
     metadata_path = run_dir / "run_metadata.json"
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    summary = write_scenario_summary(run_dir)
-    summary_path = run_dir / "scenario_summary.csv"
-    summary.to_csv(summary_path, index=False)
-    metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv", "changed_and_injected_predictions.csv", "injection_registry.csv"]
+    write_scenario_summary(run_dir)
+    metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv",
+                           "changed_and_injected_predictions.csv", "injection_registry.csv"]
     metadata["prediction_rows_retained"] = int(len(compact))
     metadata["prediction_retention_rule"] = "All injected timestamps and all configuration/timestamp labels that changed from the same-run clean comparator."
     metadata_path.write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
@@ -212,6 +250,7 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
     pd.concat(prediction_rows, ignore_index=True).to_csv(run_dir / "changed_and_injected_predictions.csv", index=False)
     pd.concat(injection_rows, ignore_index=True).to_csv(run_dir / "injection_registry.csv", index=False)
     write_scenario_summary(run_dir)
+    enrich_injection_registry(run_dir, root)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
                             capture_output=True, text=True).stdout.strip()
     metadata = {"run_id": run_id, "status": "EXECUTED_LOCAL_SYNTHETIC",
@@ -231,7 +270,7 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
             "Scenario timestamp is one selected held-out interval; results do not estimate population performance.",
             "Ground-truth labels mark modified observations only; causal feature propagation can alter neighboring predictions.",
             "No fitted estimator objects are persisted.", "E3 spatial evidence is not part of these experiments."],
-        "outputs": ["configuration_metrics.csv", "scenario_summary.csv", "changed_and_injected_predictions.csv", "injection_registry.csv"]}
+        "outputs": ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv", "changed_and_injected_predictions.csv", "injection_registry.csv"]}
     (run_dir / "run_metadata.json").write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
     return run_dir, metadata
 
