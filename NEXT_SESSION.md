@@ -4,8 +4,8 @@
 
 - Baseline `main` / `origin/main`: `830d315`.
 - Active branch: `codex/autonomous-research-loop`, pushed to origin.
-- Last validated research commit before current local work: `9caecaa`; implementation commit: `b1d83fe`.
-- Current synthetic matrix outputs and report are not yet committed or pushed; inspect `git status` first.
+- Last validated research commit: `f7d24a8`; investigation implementation commit: `b1d83fe`.
+- Synthetic matrix outputs and report are committed and pushed. The working tree was clean after push; inspect `git status` before proceeding.
 
 ## Completed before this session
 
@@ -27,11 +27,10 @@
 
 ## Exact next actions
 
-1. Commit and push the validated synthetic matrix report and result artifacts; verify the remote branch hash.
-2. Repeat selected synthetic scenarios at multiple held-out contexts to evaluate context sensitivity without turning single-context counts into general performance claims.
-3. Extend E2 sensitivity to other observed variables and explicitly account for E1 candidate-selection dependence.
-4. Complete E1 overlap interpretation; continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
-5. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
+1. Repeat selected synthetic scenarios at multiple held-out contexts to evaluate context sensitivity without turning single-context counts into general performance claims.
+2. Extend E2 sensitivity to other observed variables and explicitly account for E1 candidate-selection dependence.
+3. Complete E1 overlap interpretation; continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
+4. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
 
 ## Current scientific limits
 

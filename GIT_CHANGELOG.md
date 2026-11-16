@@ -10,6 +10,6 @@
 | 2026-11-16 | `codex/autonomous-research-loop` | `f09b9cd` | Compact fault outputs and use neutral unmodified-observation metric labels | 57 tests passed; full run outputs compacted |
 | 2026-11-16 | `codex/autonomous-research-loop` | `4b85329` | Add exact injection-value and unverified station-label provenance | Targeted matrix tests and compile pass |
 | 2026-11-16 | `codex/autonomous-research-loop` | `9caecaa` | Add baseline-vs-injected broad E4 screening outputs | Targeted matrix tests pass |
-| 2026-11-16 | `codex/autonomous-research-loop` | Current synthetic-matrix result/documentation changeset | Save versioned outputs and interpret one-context synthetic results with limits | Commit and push status pending |
+| 2026-11-16 | `codex/autonomous-research-loop` | `f7d24a8` | Save eight-scenario synthetic fault matrix, exact injection values, model comparisons and E4 screen outputs | 57 tests and compileall pass; pushed to origin |
 
 Do not merge into `main` automatically. Record only confirmed commits and pushes.
