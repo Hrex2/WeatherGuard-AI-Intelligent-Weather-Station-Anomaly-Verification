@@ -46,6 +46,80 @@ def validate_scenarios(raw, train, test, target):
     return True
 
 
+def normalize_metric_table(metrics):
+    """Use neutral labels for unmodified rows; they are not verified negatives."""
+    rename = {"tp": "injected_and_flagged_count", "fp": "unmodified_observation_flags",
+              "fn": "injected_not_flagged_count", "tn": "unmodified_observation_unflagged",
+              "synthetic_point_recall": "injected_label_recall",
+              "clean_false_positive_rate": "unmodified_observation_flag_rate"}
+    out = metrics.rename(columns={old: new for old, new in rename.items() if old in metrics.columns}).copy()
+    return out.drop(columns=["sampling_unit", "recall_wilson_95pct_ci",
+                             "false_positive_rate_wilson_95pct_ci"], errors="ignore")
+
+
+def write_scenario_summary(run_dir):
+    run_dir = Path(run_dir)
+    configuration_metrics = normalize_metric_table(pd.read_csv(run_dir / "configuration_metrics.csv"))
+    configuration_metrics.to_csv(run_dir / "configuration_metrics.csv", index=False)
+    summary = configuration_metrics.groupby("experiment_id", as_index=False).agg(
+        fault_type=("kind", "first"), variable=("variable", "first"),
+        magnitude=("magnitude", "first"), duration_observations=("duration_observations", "first"),
+        configurations=("name", "nunique"), injected_and_flagged=("injected_and_flagged_count", "sum"),
+        unmodified_observation_flags=("unmodified_observation_flags", "sum"),
+        injected_not_flagged=("injected_not_flagged_count", "sum"),
+        unmodified_observation_unflagged=("unmodified_observation_unflagged", "sum"),
+        changed_predictions=("changed_predictions", "sum"),
+        newly_flagged_outside_labels=("new_flags_outside_injected_labels", "sum"),
+        withdrawn_clean_flags=("withdrawn_clean_flags", "sum"))
+    summary["injected_label_recall"] = summary.injected_and_flagged / (summary.injected_and_flagged + summary.injected_not_flagged).replace(0, np.nan)
+    summary["unmodified_observation_flag_rate"] = summary.unmodified_observation_flags / (summary.unmodified_observation_flags + summary.unmodified_observation_unflagged).replace(0, np.nan)
+    summary.to_csv(run_dir / "scenario_summary.csv", index=False)
+    return summary
+
+
+def finalize_existing_run(run_dir):
+    """Create aggregate scenario summary and reconcile a completed run manifest."""
+    run_dir = Path(run_dir)
+    summary = write_scenario_summary(run_dir)
+    metadata_path = run_dir / "run_metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv",
+                           "changed_and_injected_predictions.csv", "injection_registry.csv"]
+    metadata["prediction_rows_retained"] = len(pd.read_csv(run_dir / "changed_and_injected_predictions.csv"))
+    metadata["prediction_retention_rule"] = "All injected timestamps and all configuration/timestamp labels that changed from the same-run clean comparator."
+    metadata["postprocessing_code_commit"] = subprocess.run(["git", "rev-parse", "HEAD"],
+        cwd=ROOT, check=True, capture_output=True, text=True).stdout.strip()
+    metadata["postprocessing_note"] = "Model predictions and counts are unchanged; aggregate summaries were derived and unmodified timestamps compacted for traceability without storing a duplicate full prediction grid."
+    metadata_path.write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
+    return summary
+
+
+def compact_completed_run(run_dir):
+    """Keep only injected or changed prediction rows in an older full-grid run."""
+    run_dir = Path(run_dir)
+    full_path = run_dir / "paired_predictions.csv"
+    if not full_path.is_file():
+        raise FileNotFoundError(f"Full paired prediction file is missing: {full_path}")
+    rows = pd.read_csv(full_path)
+    injected = rows.synthetic_fault_label.astype(bool)
+    changed = rows.is_candidate.astype(bool).ne(rows.clean_is_candidate.astype(bool))
+    compact = rows.loc[injected | changed].copy()
+    compact["prediction_changed"] = changed.loc[compact.index].to_numpy()
+    compact_path = run_dir / "changed_and_injected_predictions.csv"
+    compact.to_csv(compact_path, index=False)
+    full_path.unlink()
+    metadata_path = run_dir / "run_metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    summary = write_scenario_summary(run_dir)
+    summary_path = run_dir / "scenario_summary.csv"
+    summary.to_csv(summary_path, index=False)
+    metadata["outputs"] = ["configuration_metrics.csv", "scenario_summary.csv", "changed_and_injected_predictions.csv", "injection_registry.csv"]
+    metadata["prediction_rows_retained"] = int(len(compact))
+    metadata["prediction_retention_rule"] = "All injected timestamps and all configuration/timestamp labels that changed from the same-run clean comparator."
+    metadata_path.write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
+    return compact_path, int(len(compact))
+
+
 def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
     root = Path(root)
     snapshots, manifest, hashes = load_verified_snapshots(root)
@@ -103,6 +177,12 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
         for config in configs:
             cfg = labeled.loc[labeled.configuration.eq(config["name"])]
             metric = evaluate_injection(cfg.is_candidate.astype(bool), labels_test.reindex(cfg.index).fillna(False))
+            metric = {"injected_and_flagged_count": metric["tp"],
+                      "unmodified_observation_flags": metric["fp"],
+                      "injected_not_flagged_count": metric["fn"],
+                      "unmodified_observation_unflagged": metric["tn"],
+                      "injected_label_recall": metric["synthetic_point_recall"],
+                      "unmodified_observation_flag_rate": metric["clean_false_positive_rate"]}
             changed = cfg.is_candidate.astype(bool).ne(cfg.clean_is_candidate.astype(bool))
             outside = ~labels_test.reindex(cfg.index).fillna(False).astype(bool)
             counts = {"changed_predictions": int(changed.sum()),
@@ -113,17 +193,25 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
                    "end_timestamp": str(end), "duration_observations": int(registry.value_modified.sum()),
                    "faulted_configuration_votes": int(cfg.loc[cfg.index.isin(labels_test.index[labels_test]), "is_candidate"].sum())}
             scenario_rows.append(row)
-            prediction_rows.append(paired.loc[paired.configuration.eq(config["name"])].assign(
-                experiment_id=scenario["id"], fault_type=scenario["kind"], variable=scenario["variable"],
-                synthetic_fault_label=labels_test.reindex(paired.loc[paired.configuration.eq(config["name"]), "timestamp"]).to_numpy()))
+            config_predictions = paired.loc[paired.configuration.eq(config["name"])].copy()
+            config_predictions["synthetic_fault_label"] = labels_test.reindex(config_predictions.timestamp).to_numpy()
+            config_predictions["prediction_changed"] = config_predictions.is_candidate.astype(bool).ne(
+                config_predictions.clean_is_candidate.astype(bool)).to_numpy()
+            # Retain all injected timestamps and changed labels; avoid a
+            # redundant full 8,415×12 grid for every scenario.
+            audit_rows = config_predictions.loc[
+                config_predictions.synthetic_fault_label | config_predictions.prediction_changed].copy()
+            prediction_rows.append(audit_rows.assign(
+                experiment_id=scenario["id"], fault_type=scenario["kind"], variable=scenario["variable"]))
         registry = registry.copy()
         registry["experiment_id"] = scenario["id"]
         injection_rows.append(registry)
         metadata_rows.extend(scenario_rows)
 
     pd.DataFrame(metadata_rows).to_csv(run_dir / "configuration_metrics.csv", index=False)
-    pd.concat(prediction_rows, ignore_index=True).to_csv(run_dir / "paired_predictions.csv", index=False)
+    pd.concat(prediction_rows, ignore_index=True).to_csv(run_dir / "changed_and_injected_predictions.csv", index=False)
     pd.concat(injection_rows, ignore_index=True).to_csv(run_dir / "injection_registry.csv", index=False)
+    write_scenario_summary(run_dir)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
                             capture_output=True, text=True).stdout.strip()
     metadata = {"run_id": run_id, "status": "EXECUTED_LOCAL_SYNTHETIC",
@@ -143,7 +231,7 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
             "Scenario timestamp is one selected held-out interval; results do not estimate population performance.",
             "Ground-truth labels mark modified observations only; causal feature propagation can alter neighboring predictions.",
             "No fitted estimator objects are persisted.", "E3 spatial evidence is not part of these experiments."],
-        "outputs": ["configuration_metrics.csv", "paired_predictions.csv", "injection_registry.csv"]}
+        "outputs": ["configuration_metrics.csv", "scenario_summary.csv", "changed_and_injected_predictions.csv", "injection_registry.csv"]}
     (run_dir / "run_metadata.json").write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
     return run_dir, metadata
 

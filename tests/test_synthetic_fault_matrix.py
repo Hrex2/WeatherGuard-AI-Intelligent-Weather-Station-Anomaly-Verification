@@ -10,7 +10,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
-from scripts.run_synthetic_fault_matrix import SCENARIOS, validate_scenarios
+from scripts.run_synthetic_fault_matrix import (SCENARIOS, normalize_metric_table,
+                                                validate_scenarios)
 from weather_research.synthetic_campaign import load_verified_snapshots
 
 
@@ -30,6 +31,16 @@ class TestSyntheticFaultMatrix(unittest.TestCase):
         self.assertEqual({scenario["kind"] for scenario in SCENARIOS},
                          {"spike", "point_negative_offset", "positive_offset", "stuck", "drift", "dropout", "noise_burst"})
         self.assertTrue(raw.equals(before))
+
+    def test_metrics_do_not_label_unmodified_observations_as_verified_negatives(self):
+        source = pd.DataFrame({"tp": [2], "fp": [3], "fn": [1], "tn": [9],
+            "synthetic_point_recall": [2 / 3], "clean_false_positive_rate": [0.25],
+            "recall_wilson_95pct_ci": ["not used"], "false_positive_rate_wilson_95pct_ci": ["not used"]})
+        result = normalize_metric_table(source)
+        self.assertIn("unmodified_observation_flags", result)
+        self.assertIn("unmodified_observation_flag_rate", result)
+        self.assertNotIn("false_positive_rate_wilson_95pct_ci", result)
+        self.assertNotIn("fp", result)
 
 
 if __name__ == "__main__":
