@@ -4,7 +4,7 @@
 
 - Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
 - Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
-- Continuation branch `codex/research-validation-v2`; latest pushed commit before current UI integration: `f1b08d1`. Commits `4276aec`, `68df516`, `6486c1e`, `c55b90a`, and `f1b08d1` are pushed to origin. The E2 output files and current UI/docs updates are local and pending commit/push.
+- Continuation branch `codex/research-validation-v2`; latest confirmed remote commit `e5ad7d2`. Commits `4276aec`, `68df516`, `6486c1e`, `c55b90a`, `f1b08d1`, and `e5ad7d2` are pushed. Draft PR #2 is open to `main`, unmerged. Local commits `8d4deaf` (baseline comparison) and `c3c5b01` (coverage ablation) plus generated output/UI/docs changes are not yet pushed.
 - Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
 ## Verified work reused
@@ -30,15 +30,18 @@
 - Added shared-fit campaign orchestration, exact context manifests, expected feature-propagation change counts and detection-delay summaries in commits `6486c1e` and `c55b90a`, both pushed to origin. Validation at runner preparation: 68 tests passed and compileall passed.
 - Executed the five-context campaign `fault_matrix_multicontext_46ae5d119d`. Scenario response fractions varied strongly by scenario/context; no changed predictions were outside expected feature-propagation windows; E4 screening changed on 36 injected timestamp-variable rows. See `MULTICONTEXT_FAULT_MATRIX_REPORT.md`. Full suite after E2 matched-control preparation: 69 passed.
 - Committed and pushed the five-context outputs, report and E2 evaluator at `f1b08d1`.
+- Committed and pushed the E2 results and hash-gated Experiment Lab view at `e5ad7d2`.
 - Ran E2 once: 6,840 screen evaluations, 10 matched controls and 2,880 paired injection/same-time comparisons. Status changed in 1,008/2,880 comparisons, including 270 missing blocks becoming `UNAVAILABLE`. Faulted series were `SUPPORTING` in 961/2,610 available comparisons; same-time unmodified series were `SUPPORTING` in 691/2,880. Matched controls were `SUPPORTING` in 272/1,080 rows. Controls are unadjudicated; these are not accuracy estimates.
-- Integrated the five-context and E2 summaries into Experiment Lab with dataset-hash checks. AppTest assertion and full-suite rerun are pending.
+- Added synthetic baseline response and E1/E2/E4 setting comparisons for 160 context × scenario × labelled-timestamp units. At 8/12, point spike/drop/dew-point labels were all flagged; offset/noise were 0.067; missing/drift/stuck 0. E4 direct-variable broad rules flagged missing blocks only. No real accuracy estimates.
+- Added coverage-only ablation: E1 160/160; E1+E2 145/160 per setting; E1+E4 160/160; E1+E2+E4 145/160; E3 combinations blocked at 0/160. This is evidence availability, not an outcome utility study.
+- Experiment Lab now shows multi-context, E2 pair/status, baseline, setting sensitivity and coverage tables after dataset hash checks. Full suite passes 69/69; compileall and `git diff --check` pass. AppTest navigates all six workspaces and checks the new view content.
 
 ## Exact next actions
 
-1. Run the full suite, compile checks and diff checks after UI integration; update docs with actual results.
-2. Commit and push E2 outputs, UI integration and synchronized research records.
-3. Continue baseline, available-evidence ablation and robustness analyses. E3 waits on traceable neighboring-station data; real E2 validity waits on adjudicated labels.
+1. Commit and push the baseline/coverage outputs, final Experiment Lab update and synchronized docs; verify the remote head and update the draft PR description.
+2. Continue robustness sensitivity and E4 rule review; keep sensitivity statements tied to these synthetic contexts and existing broad rules.
+3. Continue manuscript/reference verification. E3 waits on traceable neighboring-station data; real E2 validation and outcome-level ablation wait on adjudicated labels.
 
 ## Remaining research limits
 
-No real-observation fault labels; no verified neighboring-station series/coordinates; no persisted historical estimators; no causal resolution of the 42-label refit mismatch. E2 cutoffs remain exploratory. Synthetic label metrics do not establish field accuracy. Ablation, baseline comparison, robustness and full manuscript/reference verification are incomplete.
+No real-observation fault labels; no verified neighboring-station series/coordinates; no persisted historical estimators; no causal resolution of the 42-label refit mismatch. E2 cutoffs remain exploratory. Synthetic baseline results and availability-only ablation do not establish field accuracy or evidence utility. Robustness beyond the current E1/E2 synthetic settings, E4 operational limits and full manuscript/reference verification remain incomplete.

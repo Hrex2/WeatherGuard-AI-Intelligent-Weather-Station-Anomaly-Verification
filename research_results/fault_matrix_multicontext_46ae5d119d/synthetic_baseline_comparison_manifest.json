@@ -1,0 +1,28 @@
+{
+  "status": "EXECUTED_SYNTHETIC_BASELINE_AND_SENSITIVITY_COMPARISON",
+  "campaign_id": "fault_matrix_multicontext_46ae5d119d",
+  "code_revision": "c3c5b014e2fd26ee4ceb182363486438d9e1b588",
+  "objective": "Compare fixed model-family and E1 consensus response, direct-variable E4 screening, and E2 settings on identical synthetic injection timestamps.",
+  "experimental_unit": "context \u00d7 scenario \u00d7 synthetically labelled timestamp; E2 setting rows are repeated screens over those same timestamps",
+  "dataset_hashes": {
+    "model_df": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "X_train_multi": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "X_test_multi": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "source_artifacts": {
+    "campaign_manifest_sha256": "cc11565f66bda72d2d50820cc252c79eb3eb93efa454d2d0d999cb439d5f11b7",
+    "e2_detail_sha256": "f048d53e5fcac1f178447dd6412a9a8330353b730ff8f35dfc3b3a31b913f994"
+  },
+  "outputs": [
+    "synthetic_baseline_response_detail.csv",
+    "synthetic_baseline_response_summary.csv",
+    "synthetic_e2_setting_sensitivity.csv",
+    "evidence_coverage_ablation.csv",
+    "evidence_coverage_ablation_summary.csv"
+  ],
+  "interpretation_limit": "Synthetic injection response fractions only. Unmodified rows are not verified negatives; no real-world accuracy, precision, recall, or causal superiority is estimated.",
+  "context_count": 5,
+  "scenario_count": 8,
+  "injected_timestamp_units": 160,
+  "ablation_status": "COVERAGE_ONLY; E3-dependent combinations blocked; no interpretation-outcome ablation or utility estimate"
+}

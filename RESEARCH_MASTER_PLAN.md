@@ -19,8 +19,8 @@ The Phase 01 manifest and hashes are checked by the application loader. The proc
 | E4 physical screening | Broad measurement/relationship screens implemented and compared on synthetic injections | Validate variable-specific rules with traceable station metadata; do not diagnose hardware from screening flags |
 | Synthetic campaign | Temperature dose series plus five-context × eight-scenario matrix executed; aggregate summaries and context runs are saved | Interpret only as explicitly synthetic detector behavior; no field-accuracy claims |
 | Integrated E1–E4 interpretation | Partially implemented | Require independent evidence, retain abstention and audit statuses |
-| Baseline, ablation, robustness | Not implemented as final studies | Define estimands and use available evidence only; no claims without labels |
-| Investigation UI and separate CSV analysis | AppTest-verified; selected-variable E2 wired; hourly uploads now enforce every adjacent interval; multi-context and E2 summaries displayed after hash checks | Continue UI review and preserve synthetic/historical separation |
+| Baseline, ablation, robustness | Synthetic baseline response and E1/E2/E4 setting sensitivity executed; coverage-only ablation shows E2 availability and the E3 block | No outcome-level ablation or real-world accuracy is supportable without E3 observations and adjudicated labels |
+| Investigation UI and separate CSV analysis | Multi-context, E2 paired screens, synthetic baseline, setting sensitivity and evidence-coverage tables shown after hash checks | Continue UI review and preserve synthetic/historical separation |
 | Manuscript | Not drafted as a full report | Draft only traceable results and disclose unavailable phases |
 
 ## Quality gates
