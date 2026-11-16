@@ -4,6 +4,7 @@ from __future__ import annotations
 import pandas as pd
 
 from weather_research.quality import physical_quality_flags
+from services.temporal_service import temporal_verification
 
 
 def observation_evidence(timestamp, observations, predictions, stability, episodes,
@@ -16,6 +17,10 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
     episode_rows = episodes.loc[(episodes.start <= ts) & (episodes.end >= ts)]
     row = observations.loc[[ts]] if ts in observations.index else observations.iloc[0:0]
     quality = physical_quality_flags(row) if len(row) else pd.DataFrame()
+    primary_variable = "temp" if "temp" in observations.columns else next(
+        (name for name in ("dwpt", "rhum", "prcp", "wspd", "pres") if name in observations.columns), None)
+    temporal = (temporal_verification(observations, ts, primary_variable, mode="real_time")
+                if primary_variable else {"status": "UNAVAILABLE", "reason": "No supported weather variable is available."})
     spatial_rows = []
     for station, table in spatial_tables.items():
         if table is not None and len(table) and "candidate_time" in table:
@@ -30,9 +35,8 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
     states = {
         "E1": "UNAVAILABLE" if vote_count is None else (
             "SUPPORTING_EVIDENCE" if vote_count >= 8 else "NO_DETECTED_EVIDENCE"),
-        # Saved episodes are built from E1 consensus candidates, so they are
-        # context only and cannot serve as independent temporal evidence.
-        "E2": "UNAVAILABLE",
+        # Independently calculated from measured series; episodes are ignored.
+        "E2": temporal["status"],
         "E3": "UNAVAILABLE" if not len(spatial) else "NO_DETECTED_EVIDENCE",
         "E4": "UNAVAILABLE" if not len(quality) or has_missing_only else (
             "SUPPORTING_EVIDENCE" if len(physical_violations) else "NO_DETECTED_EVIDENCE"),
@@ -49,6 +53,7 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
         "stability_row": stability_rows.iloc[0] if len(stability_rows) else None,
         "episodes": episode_rows,
         "quality_flags": quality,
+        "temporal_result": temporal,
         "missing_quality_values": int(quality.missing.sum()) if len(quality) else None,
         "physical_screening_violations": physical_violations,
         "spatial_rows": spatial,

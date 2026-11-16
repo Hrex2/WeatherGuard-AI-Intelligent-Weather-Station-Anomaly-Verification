@@ -20,6 +20,9 @@ from services.data_service import load_project_data
 from services.model_service import run_saved_protocol
 from services.evidence_service import observation_evidence
 from services.model_metadata import build_model_education
+from ui.investigation_workspace import render_investigation_workspace
+from ui.new_csv_analysis import render_new_csv_analysis
+from ui.station_map import render_station_map
 from ui.theme import apply_theme, metric_card, evidence_panel
 
 st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="expanded")
@@ -117,6 +120,8 @@ def render_home(data, manifest, hashes):
         st.dataframe(recent.sort_values("Historical time", ascending=False), hide_index=True, width="stretch")
     else:
         st.info("No saved rows meet the 8/12 candidate threshold.")
+    with st.expander("Station geography"):
+        render_station_map(ROOT, "VILD0")
     with st.expander("Dataset and prediction verification details"):
         st.json({"phase01_manifest_audit_passed": manifest.get("audit_passed"), "sha256": hashes,
                  "saved_prediction_rows": len(predictions), "unique_timestamps": predictions.timestamp.nunique(),
@@ -164,6 +169,8 @@ def render_weather_data(data):
     st.caption(f"Showing {len(view):,} historical rows; {int(view[variable].isna().sum()):,} missing values for {labels[variable][0].lower()} in this range. Gold markers indicate model agreement, not confirmed faults.")
     with st.expander("View measurement rows"):
         st.dataframe(view[[variable]].rename(columns={variable: f"{labels[variable][0]} ({labels[variable][1]})"}), width="stretch")
+    with st.expander("New Data Analysis · validate and analyze a station CSV"):
+        render_new_csv_analysis(ROOT)
 
 
 def render_research(data):
@@ -221,73 +228,7 @@ def render_research(data):
 
 
 def render_investigation(data, root):
-    render_header("WeatherGuard AI / guided review", "Investigate a Reading", "Follow the evidence step by step. The model flags unusual patterns; it does not diagnose a broken sensor.")
-    observations = data["observations"]
-    stability = data["stability"].set_index("timestamp").sort_index()
-    prediction_times = pd.DatetimeIndex(data["predictions"].timestamp.unique()).sort_values()
-    candidates = stability.loc[stability.configuration_votes.ge(8)].index.intersection(prediction_times)
-    previous = pd.Timestamp(st.session_state.get("selected_observation", candidates[-1] if len(candidates) else prediction_times[-1]))
-    choices = prediction_times
-    if previous not in choices:
-        previous = candidates[-1] if len(candidates) else choices[-1]
-    selected = st.selectbox("Choose a historical reading", choices, index=choices.get_loc(previous),
-                            format_func=_fmt_ts, key="selected_observation_widget")
-    st.session_state["selected_observation"] = selected
-
-    st.subheader("1. What was observed?")
-    st.caption("Station VILD0 · processed historical dataset · source instrument/provider provenance is incomplete.")
-    values = observations.loc[selected]
-    units = {"temp": "°C", "dwpt": "°C", "rhum": "%", "prcp": "mm", "wspd": "km/h", "pres": "hPa"}
-    names = {"temp": "Air temperature", "dwpt": "Dew point", "rhum": "Relative humidity", "prcp": "Precipitation", "wspd": "Wind speed", "pres": "Air pressure"}
-    metrics = st.columns(6)
-    for slot, variable in zip(metrics, units):
-        value = values.get(variable, pd.NA)
-        slot.metric(names[variable], "Missing" if pd.isna(value) else f"{value:g} {units[variable]}")
-    st.caption(f"Historical timestamp: {_fmt_ts(selected)}. The observation is shared with Weather Data through the selected-reading control.")
-
-    spatial_tables = {}
-    for station in ("42099", "42101"):
-        path = root / "phase03_model_revalidation" / f"spatial_comparison_{station}.csv"
-        if path.is_file():
-            try:
-                spatial_tables[station] = pd.read_csv(path, parse_dates=["candidate_time", "station_time"])
-            except (OSError, ValueError, KeyError):
-                st.warning(f"A derived comparison for station {station} could not be loaded; spatial evidence remains unavailable.")
-    bundle = observation_evidence(selected, observations, data["predictions"], data["stability"], data["episodes"], spatial_tables)
-    st.subheader("2. Why was it flagged?")
-    if bundle["vote_count"] is None:
-        st.info("No saved model predictions are available for this timestamp.")
-    else:
-        st.markdown(f"**{bundle['vote_count']} of 12 model configurations** marked this reading as unusual.")
-        st.caption("Eight or more votes meet the project's current 8/12 candidate threshold. Votes describe model agreement, not the probability of a fault.")
-    if len(bundle["model_rows"]):
-        with st.expander("See the exact configuration predictions"):
-            st.dataframe(bundle["model_rows"][["configuration", "family", "parameter", "parameter_value", "is_candidate"]], hide_index=True, width="stretch")
-
-    st.subheader("3. What other evidence is available?")
-    st.caption("These evidence groups are prompts for investigation. Missing information is shown as unavailable, not as evidence against the reading.")
-    evidence_descriptions = {
-        "Do the models agree? (E1)": (bundle["evidence_states"]["E1"], f"{bundle['vote_count'] if bundle['vote_count'] is not None else 'No saved votes'} of 12 configurations. This agreement is not a probability."),
-        "Does it make sense over time? (E2)": ("UNAVAILABLE", f"Saved episode matches: {len(bundle['episodes'])}. Episodes are built from E1 candidates, so they are context rather than independent temporal evidence."),
-        "Do nearby stations show something similar? (E3)": ("UNAVAILABLE", "Raw neighbor series, verified provenance, and a validated comparison rule are not available."),
-        "Is the measurement physically reasonable? (E4)": (bundle["evidence_states"]["E4"], f"Broad screening flags: {int(bundle['quality_flags'].screening_flag.sum()) if len(bundle['quality_flags']) else 'unavailable'}. Missing values alone are not treated as fault evidence."),
-    }
-    for title, (state, explanation) in evidence_descriptions.items():
-        evidence_panel(title, state, explanation)
-    with st.expander("Technical screening details"):
-        if len(bundle["quality_flags"]):
-            st.dataframe(bundle["quality_flags"], hide_index=True, width="stretch")
-        else:
-            st.info("Physical screening is unavailable for this reading.")
-
-    st.subheader("4. What can we conclude?")
-    st.info("Uncertain / insufficient evidence. " + bundle["outcome_reason"])
-    st.caption("An unusual pattern is not proof of a sensor fault. No validated combined evidence rule or real-observation fault labels are available.")
-    with st.expander("5. Technical details and research limits"):
-        st.markdown("**Research codes:** E1 model stability; E2 temporal consistency; E3 spatial corroboration; E4 physical sensor quality. **Current status:** E1 vote counts are available; E2 is not independent of E1; E3 is unavailable; E4 is broad screening only. The overall outcome remains uncertain.")
-        if len(bundle["spatial_rows"]):
-            st.markdown("**Exploratory derived station comparisons** (not used to assign E3 support or conflict):")
-            st.dataframe(bundle["spatial_rows"], hide_index=True, width="stretch")
+    render_investigation_workspace(data, root)
 
 
 def render_experiments(root, data, phase01_hashes):

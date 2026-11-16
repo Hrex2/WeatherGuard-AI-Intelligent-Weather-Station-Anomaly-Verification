@@ -1,0 +1,117 @@
+"""Regression coverage for the interactive investigation and CSV services."""
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT), str(ROOT / "src")]
+
+from services.data_service import load_project_data
+from services.investigation_service import (available_weather_variables,
+                                             model_heatmap_data,
+                                             variable_diagnostics,
+                                             verified_station_location)
+from services.uploaded_analysis import (BASE_VARIABLES,
+                                        prepare_uploaded_weather_data)
+
+
+class TestInvestigationServices(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.data, _, _ = load_project_data(ROOT)
+
+    def test_heatmap_uses_saved_grid_and_family_filter(self):
+        pred = self.data["predictions"]
+        first, last = pred.timestamp.min(), pred.timestamp.max()
+        all_models = model_heatmap_data(pred, first, last)
+        self.assertEqual(all_models["full_matrix"].shape, (8415, 12))
+        self.assertEqual(len(all_models["configurations"]), 12)
+        first_family = pred.family.iloc[0]
+        family = model_heatmap_data(pred, first, first + pd.Timedelta(hours=24), [first_family])
+        self.assertEqual(set(family["configurations"]), set(pred.loc[pred.family.eq(first_family), "configuration"].unique()))
+        self.assertLessEqual(len(family["all_timestamps"]), 25)
+        self.assertTrue(model_heatmap_data(pred, first, first + pd.Timedelta(hours=24), []).get("full_matrix").empty)
+
+    def test_heatmap_missing_cells_and_consensus_only_on_complete_twelve(self):
+        pred = self.data["predictions"].head(12).copy()
+        pred["is_candidate"] = pred.is_candidate.astype("boolean")
+        pred.loc[pred.index[0], "is_candidate"] = pd.NA
+        first = pred.timestamp.min()
+        result = model_heatmap_data(pred, first, first)
+        self.assertTrue(pd.isna(result["full_matrix"].loc[first, pred.iloc[0].configuration]))
+        self.assertTrue(pd.isna(result["agreement"].loc[first, "consensus_8_of_12"]))
+        partial = pred.iloc[:3].copy()
+        partial_result = model_heatmap_data(partial, first, first)
+        self.assertTrue(pd.isna(partial_result["agreement"].loc[first, "consensus_8_of_12"]))
+
+    def test_heatmap_date_range(self):
+        pred = self.data["predictions"]
+        first = pred.timestamp.min()
+        result = model_heatmap_data(pred, first, first + pd.Timedelta(hours=5))
+        self.assertTrue(result["all_timestamps"].min() >= first)
+        self.assertTrue(result["all_timestamps"].max() <= first + pd.Timedelta(hours=5))
+
+    def test_variables_are_discovered_from_real_columns_and_causal(self):
+        obs = self.data["observations"].iloc[:30].copy()
+        variables = available_weather_variables(obs)
+        self.assertEqual(set(variables), {"temp", "dwpt", "rhum", "prcp", "wspd", "pres"})
+        result = variable_diagnostics(obs, "temp")
+        self.assertTrue(pd.isna(result["series"].iloc[0].previous_rolling_mean))
+        self.assertEqual(result["series"].iloc[1].previous_rolling_mean, result["series"].iloc[0].value)
+        with self.assertRaises(KeyError):
+            variable_diagnostics(obs, "snow")
+
+    def test_verified_map_refuses_unverified_coordinates(self):
+        result = verified_station_location(ROOT, "VILD0")
+        self.assertFalse(result["available"])
+        self.assertEqual(result["reason"], "Station coordinates unavailable.")
+
+
+class TestUploadedDataPreparation(unittest.TestCase):
+    def setUp(self):
+        self.frame = pd.DataFrame({
+            "time": pd.date_range("2024-01-01", periods=120, freq="h").astype(str),
+            "t": np.linspace(10, 20, 120), "d": np.linspace(2, 8, 120),
+            "rh": np.linspace(40, 70, 120), "rain": np.zeros(120),
+            "wind": np.linspace(1, 5, 120), "pressure": np.linspace(1000, 1005, 120),
+        })
+        self.mapping = dict(zip(BASE_VARIABLES, ["t", "d", "rh", "rain", "wind", "pressure"]))
+        self.units = {name: unit for name, unit in zip(["t", "d", "rh", "rain", "wind", "pressure"], ["°C", "°C", "%", "mm", "km/h", "hPa"])}
+
+    def test_validation_prepares_ordered_chronological_train_test_and_does_not_mutate(self):
+        original = self.frame.copy(deep=True)
+        prepared = prepare_uploaded_weather_data(self.frame, "time", self.mapping, self.units)
+        pd.testing.assert_frame_equal(self.frame, original)
+        self.assertEqual(prepared["metadata"]["feature_order"], ["temp", "dwpt", "rhum", "prcp", "wspd", "pres", "temp_change_1h", "temp_rolling_mean_6h", "temp_deviation_6h", "month_sin", "month_cos"])
+        self.assertLess(prepared["train"].index.max(), prepared["test"].index.min())
+        self.assertTrue(np.isfinite(prepared["test"].to_numpy()).all())
+
+    def test_unit_conversion_and_training_only_medians(self):
+        frame = self.frame.copy()
+        frame["t"] = frame["t"] * 9 / 5 + 32
+        units = {**self.units, "t": "°F"}
+        converted = prepare_uploaded_weather_data(frame, "time", self.mapping, units)
+        self.assertAlmostEqual(converted["observations"].temp.iloc[0], 10)
+
+    def test_duplicate_bad_and_nonhourly_timestamps_fail_closed(self):
+        duplicate = self.frame.copy()
+        duplicate.loc[1, "time"] = duplicate.loc[0, "time"]
+        with self.assertRaisesRegex(ValueError, "Duplicate timestamps"):
+            prepare_uploaded_weather_data(duplicate, "time", self.mapping, self.units)
+        bad = self.frame.copy()
+        bad.loc[0, "time"] = "not a date"
+        with self.assertRaisesRegex(ValueError, "invalid or missing timestamps"):
+            prepare_uploaded_weather_data(bad, "time", self.mapping, self.units)
+        irregular = self.frame.copy()
+        irregular["time"] = pd.date_range("2024-01-01", periods=120, freq="30min").astype(str)
+        with self.assertRaisesRegex(ValueError, "requires hourly observations"):
+            prepare_uploaded_weather_data(irregular, "time", self.mapping, self.units)
+
+
+if __name__ == "__main__":
+    unittest.main()
