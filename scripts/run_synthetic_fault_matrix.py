@@ -129,6 +129,8 @@ def finalize_existing_run(run_dir):
     metadata["postprocessing_code_commit"] = subprocess.run(["git", "rev-parse", "HEAD"],
         cwd=ROOT, check=True, capture_output=True, text=True).stdout.strip()
     metadata["postprocessing_note"] = "Model predictions and counts are unchanged; aggregate summaries were derived and unmodified timestamps compacted for traceability without storing a duplicate full prediction grid."
+    metadata["station_id_dataset_label"] = "VILD0"
+    metadata["station_provenance_status"] = "UNVERIFIED; inherited label from processed snapshot, not an independently audited station identity."
     metadata_path.write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")
     return summary
 
