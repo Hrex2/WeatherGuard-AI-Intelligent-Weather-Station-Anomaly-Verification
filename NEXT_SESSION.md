@@ -4,7 +4,7 @@
 
 - Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
 - Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
-- Worktree was clean at the start of this continuation. Phase 1 audit changes are local and not yet committed or pushed.
+- Worktree was clean at the start of this continuation. Phase 1 audit commit `4276aec` is local and push is pending; the multi-context runner refactor is a separate uncommitted Phase 2 change.
 - Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
 ## Verified work reused
@@ -28,7 +28,7 @@
 
 ## Exact next actions
 
-1. Commit and push the Phase 1 audit/correctness milestone on this branch; confirm remote status.
+1. Push Phase 1 commit `4276aec` and the changelog/handoff update; confirm remote status.
 2. Select up to five held-out contexts using predeclared data-only strata (temperature level and recent variability), require continuous hourly context, and preflight all eight scenarios before fitting.
 3. Fit the existing 12-configuration protocol once and reuse it for the clean comparator and all contexts; save exact context/scenario manifests without touching the original single-context run.
 4. Validate E2 on injected observations and comparable unmodified windows, retaining synthetic-only interpretation.

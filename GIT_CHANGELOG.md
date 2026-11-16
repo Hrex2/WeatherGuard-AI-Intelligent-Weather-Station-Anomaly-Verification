@@ -13,6 +13,6 @@
 | 2026-11-16 | `codex/autonomous-research-loop` | `9caecaa` | Add baseline-vs-injected broad E4 screening outputs | Targeted matrix tests pass |
 | 2026-11-16 | `codex/autonomous-research-loop` | `f7d24a8` | Save eight-scenario synthetic fault matrix, exact injection values, model comparisons and E4 screen outputs | 57 tests and compileall pass; pushed to origin |
 | 2026-11-16 | `codex/autonomous-research-loop` | `d0e5142` | Add six-variable E2 sensitivity sweep and its 22,140-row outputs; update manuscript and research handoff | Pushed and merged to `main` through PR #1; descriptive E1-selected results only |
-| 2026-11-16 | `codex/research-validation-v2` | Pending | Fix E2 continuity, fault-reference segments, evidence completeness, strict CSV cadence, Phase 03 artifact integrity; expose fault matrix and add CI | 66 tests, compileall and manifest verification pass; phase commit/push pending |
+| 2026-11-16 | `codex/research-validation-v2` | `4276aec` | Fix E2 continuity, fault-reference segments, evidence completeness, strict CSV cadence, Phase 03 artifact integrity; expose fault matrix and add CI | 66 tests, compileall and manifest verification pass; push pending |
 
 Do not merge into `main` automatically. Record only confirmed commits and pushes.
