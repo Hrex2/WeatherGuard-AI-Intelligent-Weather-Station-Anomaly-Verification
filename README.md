@@ -74,6 +74,8 @@ Saved-label E1 threshold counts are 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/1
 
 The initial E2 candidate sensitivity table evaluates 123 saved model candidates across five prior windows and three robust-deviation cutoffs in real-time and retrospective modes. See `research_results/e2_candidate_sensitivity_summary.csv`; this selected sample does not provide independent temporal accuracy validation.
 
+The additional eight-scenario synthetic fault run and its limits are documented in [SYNTHETIC_FAULT_MATRIX_REPORT.md](SYNTHETIC_FAULT_MATRIX_REPORT.md). Scenario outputs are isolated under `research_results/fault_matrix_02bd147f5cce/` and are explicitly synthetic, single-context results.
+
 ## Run locally
 
 ```powershell

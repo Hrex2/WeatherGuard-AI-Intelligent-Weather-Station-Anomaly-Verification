@@ -41,6 +41,8 @@ On the 8,415 saved test timestamps, the number meeting each agreement threshold 
 
 A current-environment reproduction differs from saved predictions at 42 of 100,980 cells, at 42 timestamps. All differences occur in Isolation Forest (6 for IF_0.01, 4 for IF_0.02, 12 for IF_0.03, and 20 for IF_0.05); LOF and One-Class SVM match. Row-level features and execution metadata are in `research_results/prediction_mismatch_investigation.csv`. The archived fitted estimator/scaler and complete historical execution environment are absent, so the discrepancy is reproduced but not causally explained. Historical labels were not overwritten.
 
+An additional synthetic matrix tested eight patterns once at a held-out interval. Across twelve configurations, injected-label flag rates ranged from 0/36 for a three-observation missing block to 11/12 for both a +10 °C point spike and a −10 °C point drop. A six-observation stuck pattern received 5/72 configuration/time flags; a +20 °C dew-point perturbation received 24/36. These are results for one synthetic interval, not real-world performance. The complete table, family comparison and exact injections are in `SYNTHETIC_FAULT_MATRIX_REPORT.md` and `research_results/fault_matrix_02bd147f5cce/`.
+
 ## 7. Independent temporal screen (implementation result, exploratory)
 
 The temporal service uses observations only, estimates the local median cadence, and refuses to bridge gaps larger than 1.5 times that cadence. Real-time mode compares a selected reading with prior context only. Retrospective mode is explicitly separate and can assess persistence or return toward the earlier median. A 3.5 scaled-MAD departure threshold, six-hour context, three-row minimum and four-equal-reading stuck screen are exploratory implementation defaults. Synthetic tests establish code behavior and no-lookahead invariance, not meteorological validity. E2 statuses do not diagnose hardware.
@@ -51,9 +53,11 @@ An initial sensitivity run evaluated all 123 saved 8/12 candidates across 1/3/6/
 
 VILD0 coordinates are null in the provenance manifest, and verified neighboring observations are not available. The application correctly shows no map marker and keeps E3 unavailable. E4 uses broad physical screening rules and simple checks; no calibration history or labeled fault truth is present. The integrated interpretation remains uncertain where independent evidence is insufficient. The research does not currently demonstrate the three outcome categories as validated predictions.
 
+In the additional synthetic matrix, existing E4 screening flags changed on 11 injected timestamp-variable rows. This included all three missing-temperature rows and cross-variable dew-point/temperature flags for selected point-drop, stuck, noise and dew-point perturbation injections. These results show the rule implementation responds to the selected synthetic conditions; they do not validate physical limits or diagnose a faulty sensor.
+
 ## 9. Conclusions and future work
 
-The current project demonstrates reproducible artifact checks, saved model-stability summaries, interactive review and a separate temporal screening implementation. It does not establish real-world anomaly-detection performance or a validated event/fault classifier. Next priorities are E2 window/threshold evaluation, additional controlled synthetic fault scenarios, E3 source-data acquisition with provenance, and integrated evaluation against independently adjudicated outcomes. Ablation, robustness, full manuscript reference verification and field validation remain outstanding.
+The current project demonstrates reproducible artifact checks, saved model-stability summaries, interactive review, independent temporal screening and an initial eight-scenario synthetic matrix. It does not establish real-world anomaly-detection performance or a validated event/fault classifier. Next priorities are repeating synthetic scenarios across multiple contexts, evaluating E2 on other available variables, E3 source-data acquisition with provenance, and integrated evaluation against independently adjudicated outcomes. Ablation, robustness, full manuscript reference verification and field validation remain outstanding.
 
 ## Traceability
 

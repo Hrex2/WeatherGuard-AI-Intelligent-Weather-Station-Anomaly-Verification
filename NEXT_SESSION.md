@@ -4,8 +4,8 @@
 
 - Baseline `main` / `origin/main`: `830d315`.
 - Active branch: `codex/autonomous-research-loop`, pushed to origin.
-- Last validated research commit: `3b0e2de`; implementation commit: `b1d83fe`.
-- Working tree was clean after pushing these commits; inspect `git status` before proceeding.
+- Last validated research commit before current local work: `9caecaa`; implementation commit: `b1d83fe`.
+- Current synthetic matrix outputs and report are not yet committed or pushed; inspect `git status` first.
 
 ## Completed before this session
 
@@ -22,14 +22,15 @@
 - Derived E1 saved-label family/configuration and threshold sensitivity tables. 4/6/8/10/12 counts are 432/214/123/51/15.
 - Implemented independent E2 real-time and retrospective temporal screening and connected it to the selected-reading evidence panel.
 - Evaluated 123 8/12 candidates across five temporal windows, three robust-deviation cutoffs and both modes (3,690 rows). At 6h/3.5, real-time: 47 supporting, 76 no-detection; retrospective: 43 supporting, 76 no-detection, 4 persistence-conflicting. This is descriptive sensitivity only.
+- Ran eight synthetic fault scenarios at one held-out interval using a shared local model fit. See `SYNTHETIC_FAULT_MATRIX_REPORT.md`; outputs include config/family metrics, exact values, changed predictions and E4 screening. No real-world validation is implied.
 - Added the continuation plans, gap analysis, decisions, tracker, manuscript draft, testing report and handoff.
 
 ## Exact next actions
 
-1. Extend the E2 sensitivity to other observed variables and clearly interpret candidate selection dependence.
-2. Extend the existing synthetic runner to additional fault types (reusing `inject_fault` and isolated run manifests); do not rerun the validated temperature point-spike campaign without a specific reason.
-3. Complete E1 interpretation/overlap review and validate E4 behavior across available variables.
-4. Continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
+1. Commit and push the validated synthetic matrix report and result artifacts; verify the remote branch hash.
+2. Repeat selected synthetic scenarios at multiple held-out contexts to evaluate context sensitivity without turning single-context counts into general performance claims.
+3. Extend E2 sensitivity to other observed variables and explicitly account for E1 candidate-selection dependence.
+4. Complete E1 overlap interpretation; continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
 5. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
 
 ## Current scientific limits
