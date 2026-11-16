@@ -3,8 +3,9 @@
 ## Recovery point
 
 - Baseline `main` / `origin/main`: `830d315`.
-- Active branch: `codex/autonomous-research-loop`.
-- The active branch has a validated but not yet committed application/research milestone; inspect `git status` before proceeding.
+- Active branch: `codex/autonomous-research-loop`, pushed to origin.
+- Last validated research commit: `05fefdb`; implementation commit: `b1d83fe`.
+- Working tree was clean after pushing these commits; inspect `git status` before proceeding.
 
 ## Completed before this session
 
@@ -24,12 +25,11 @@
 
 ## Exact next actions
 
-1. Inspect the working tree, then commit the validated milestone on `codex/autonomous-research-loop` and push it; confirm the remote branch hash.
-2. Evaluate E2 window/threshold sensitivity on the actual observation series and maintain the distinction between software tests and scientific validation.
-3. Extend the existing synthetic runner to additional fault types (reusing `inject_fault` and isolated run manifests); do not rerun the validated temperature point-spike campaign without a specific reason.
-4. Complete E1 interpretation/overlap review and validate E4 behavior across available variables.
-5. Continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
-6. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
+1. Evaluate E2 window/threshold sensitivity on the actual observation series and distinguish software tests from scientific validation.
+2. Extend the existing synthetic runner to additional fault types (reusing `inject_fault` and isolated run manifests); do not rerun the validated temperature point-spike campaign without a specific reason.
+3. Complete E1 interpretation/overlap review and validate E4 behavior across available variables.
+4. Continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
+5. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
 
 ## Current scientific limits
 
