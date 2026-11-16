@@ -72,6 +72,8 @@ The interactive investigation, independent temporal screening, upload limitation
 
 Saved-label E1 threshold counts are 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/12), and 15 (12/12) of 8,415 test timestamps. At least one configuration flags 521 timestamps for Isolation Forest, 635 for LOF and 575 for One-Class SVM. These describe model outputs, not labeled performance or probabilities. See [RESEARCH_MASTER_PLAN.md](RESEARCH_MASTER_PLAN.md), [RESEARCH_GAP_ANALYSIS.md](RESEARCH_GAP_ANALYSIS.md), [EXPERIMENT_TRACKER.md](EXPERIMENT_TRACKER.md), [RESEARCH_DECISIONS.md](RESEARCH_DECISIONS.md), [GIT_CHANGELOG.md](GIT_CHANGELOG.md), and [NEXT_SESSION.md](NEXT_SESSION.md) for continuation state.
 
+The initial E2 candidate sensitivity table evaluates 123 saved model candidates across five prior windows and three robust-deviation cutoffs in real-time and retrospective modes. See `research_results/e2_candidate_sensitivity_summary.csv`; this selected sample does not provide independent temporal accuracy validation.
+
 ## Run locally
 
 ```powershell

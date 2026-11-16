@@ -21,11 +21,12 @@
 - Reproduced all 42 prediction mismatches; they are exclusively Isolation Forest (6/4/12/20 by contamination), while LOF and SVM match. The cause remains unresolved due absent historical fitted objects/scaler and full run provenance. See `research_results/prediction_mismatch_investigation.csv` and `.json`.
 - Derived E1 saved-label family/configuration and threshold sensitivity tables. 4/6/8/10/12 counts are 432/214/123/51/15.
 - Implemented independent E2 real-time and retrospective temporal screening and connected it to the selected-reading evidence panel.
+- Evaluated 123 8/12 candidates across five temporal windows, three robust-deviation cutoffs and both modes (3,690 rows). At 6h/3.5, real-time: 47 supporting, 76 no-detection; retrospective: 43 supporting, 76 no-detection, 4 persistence-conflicting. This is descriptive sensitivity only.
 - Added the continuation plans, gap analysis, decisions, tracker, manuscript draft, testing report and handoff.
 
 ## Exact next actions
 
-1. Evaluate E2 window/threshold sensitivity on the actual observation series and distinguish software tests from scientific validation.
+1. Extend the E2 sensitivity to other observed variables and clearly interpret candidate selection dependence.
 2. Extend the existing synthetic runner to additional fault types (reusing `inject_fault` and isolated run manifests); do not rerun the validated temperature point-spike campaign without a specific reason.
 3. Complete E1 interpretation/overlap review and validate E4 behavior across available variables.
 4. Continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.

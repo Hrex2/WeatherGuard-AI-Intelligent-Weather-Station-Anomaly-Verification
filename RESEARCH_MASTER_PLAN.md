@@ -14,7 +14,7 @@ The Phase 01 manifest and hashes are checked by the application loader. The proc
 | Preserve Phase 01 and historical Phase 03 artifacts | Already completed and validated for hashes/schema | Keep immutable; verify loader regression |
 | Prediction parity (42/100,980) | Reproduced; causal explanation unresolved | Preserve row-level audit; historical fit/scaler provenance is absent |
 | E1 comparison and threshold sensitivity | Saved-label comparison generated | Review family/configuration overlap and 4/6/8/10/12 threshold sensitivity |
-| Independent E2 temporal verification | Implemented and software-tested | Evaluate window/threshold sensitivity and scientific meaning; cutoffs are exploratory |
+| Independent E2 temporal verification | Implemented and initial temperature sensitivity evaluated (123 candidates × 5 windows × 3 thresholds × 2 modes) | Extend to other available variables; evaluate scientific meaning with independent evidence; cutoffs are exploratory |
 | E3 station corroboration | Blocked by unverified raw station data/provenance | Preserve unavailable state pending traceable station exports |
 | E4 physical screening | Implemented, classification needs validation | Test multi-variable ranges, relationships, stuck and change flags; do not diagnose hardware |
 | Synthetic campaign | Temperature point spike executed | Extend fault types with independent run IDs/manifests and retain synthetic-only labels |
