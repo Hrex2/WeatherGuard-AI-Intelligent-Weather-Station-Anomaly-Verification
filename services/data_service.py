@@ -79,7 +79,14 @@ def verify_phase03_integrity(phase03: Path, dataset_hashes: dict | None = None) 
     recorded = {entry["filename"]: entry for entry in manifest.get("artifacts", [])}
     current_files = {path.name for path in phase03.glob("*.csv")}
     if current_files != set(recorded):
-        raise ValueError("Phase 03 artifact file list does not match its integrity manifest")
+        missing = sorted(set(recorded) - current_files)
+        unmanifested = sorted(current_files - set(recorded))
+        details = []
+        if missing:
+            details.append("missing: " + ", ".join(missing))
+        if unmanifested:
+            details.append("unmanifested: " + ", ".join(unmanifested))
+        raise ValueError("Phase 03 artifact file list does not match its integrity manifest (" + "; ".join(details) + ")")
     for filename, entry in recorded.items():
         path = phase03 / filename
         if sha256_file(path) != entry.get("sha256"):

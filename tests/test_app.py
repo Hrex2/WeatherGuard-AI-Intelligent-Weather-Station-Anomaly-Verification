@@ -57,6 +57,9 @@ class TestWeatherGuardApplication(unittest.TestCase):
             pd.DataFrame({"timestamp": ["2025-01-01"], "configuration": ["A"], "label": [1]}).to_csv(folder / "predictions.csv", index=False)
             with self.assertRaisesRegex(ValueError, "SHA-256 verification failed"):
                 verify_phase03_integrity(folder, refs)
+            (folder / "predictions.csv").unlink()
+            with self.assertRaisesRegex(ValueError, "missing: predictions.csv"):
+                verify_phase03_integrity(folder, refs)
 
     def test_unavailable_spatial_inputs_keep_uncertain_outcome(self):
         ts = self.data["observations"].index[-1]
@@ -80,7 +83,7 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(result["evidence_states"]["E2"], without_episodes["evidence_states"]["E2"])
 
     def test_shared_evidence_service_uses_selected_variable_and_explains_scope(self):
-        ts = self.data["observations"].index[100]
+        ts = self.data["predictions"].timestamp.iloc[100]
         result = observation_evidence(ts, self.data["observations"], self.data["predictions"],
             self.data["stability"], self.data["episodes"], {}, primary_variable="dwpt")
         self.assertEqual(result["temporal_result"]["variable"], "dwpt")
@@ -95,6 +98,59 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(result["evidence_states"]["E4"], "UNAVAILABLE")
         self.assertGreater(result["missing_quality_values"], 0)
         self.assertEqual(len(result["physical_screening_violations"]), 0)
+
+    def test_missing_selected_observation_is_unavailable_through_integrated_evidence(self):
+        ts = self.data["predictions"].timestamp.iloc[100]
+        observations = self.data["observations"].copy()
+        observations.loc[ts, "temp"] = float("nan")
+        result = observation_evidence(ts, observations, self.data["predictions"],
+            self.data["stability"], self.data["episodes"], {}, primary_variable="temp")
+        self.assertEqual(result["temporal_result"]["status"], "UNAVAILABLE")
+        self.assertFalse(result["temporal_result"]["stuck_pattern"])
+        self.assertEqual(result["evidence_states"]["E2"], "UNAVAILABLE")
+        self.assertEqual(result["evidence_states"]["E3"], "UNAVAILABLE")
+        self.assertEqual(result["evidence_states"]["E4"], "UNAVAILABLE")
+        self.assertEqual(len(result["physical_screening_violations"]), 0)
+        self.assertEqual(result["evidence_available_count"], 1)
+        self.assertFalse(result["evidence_complete"])
+        self.assertEqual(result["outcome"], "UNCERTAIN_INSUFFICIENT_EVIDENCE")
+
+        no_history = observations.copy()
+        position = no_history.index.get_loc(ts)
+        no_history.iloc[position - 6:position, no_history.columns.get_loc("temp")] = float("nan")
+        no_history.loc[ts, "temp"] = self.data["observations"].loc[ts, "temp"]
+        unavailable = observation_evidence(ts, no_history, self.data["predictions"],
+            self.data["stability"], self.data["episodes"], {}, primary_variable="temp")
+        self.assertEqual(unavailable["temporal_result"]["status"], "UNAVAILABLE")
+        self.assertFalse(unavailable["temporal_result"]["stuck_pattern"])
+
+    def test_missing_value_inside_repeated_sequence_does_not_bridge_stuck_pattern(self):
+        ts = pd.date_range("2025-01-01", periods=9, freq="h", tz="UTC")[-1]
+        observations = pd.DataFrame({"temp": [10, 11, 12, 15, 15, float("nan"), 15, 15, 15]},
+                                    index=pd.date_range("2025-01-01", periods=9, freq="h", tz="UTC"))
+        predictions = pd.DataFrame({"timestamp": [ts], "is_candidate": [True]})
+        stability = pd.DataFrame({"timestamp": [ts]})
+        episodes = pd.DataFrame(columns=["start", "end"])
+        result = observation_evidence(ts, observations, predictions, stability, episodes, {}, primary_variable="temp")
+        self.assertEqual(result["temporal_result"]["stuck_run_length"], 3)
+        self.assertFalse(result["temporal_result"]["stuck_pattern"])
+        self.assertNotEqual(result["evidence_states"]["E2"], "SUPPORTING")
+
+    def test_sampling_gap_at_selected_boundary_is_unavailable_and_not_stuck(self):
+        base = pd.Timestamp("2025-01-01", tz="UTC")
+        index = pd.DatetimeIndex([base, base + pd.Timedelta(hours=1),
+                                  base + pd.Timedelta(hours=2), base + pd.Timedelta(hours=27)])
+        ts = index[-1]
+        observations = pd.DataFrame({"temp": [10, 11, 12, 12]}, index=index)
+        predictions = pd.DataFrame(columns=["timestamp", "is_candidate"])
+        stability = pd.DataFrame(columns=["timestamp"])
+        episodes = pd.DataFrame(columns=["start", "end"])
+        result = observation_evidence(ts, observations, predictions, stability, episodes, {}, primary_variable="temp")
+        self.assertEqual(result["temporal_result"]["status"], "UNAVAILABLE")
+        self.assertEqual(result["temporal_result"]["prior_count"], 0)
+        self.assertFalse(result["temporal_result"]["stuck_pattern"])
+        self.assertEqual(result["evidence_states"]["E3"], "UNAVAILABLE")
+        self.assertEqual(result["outcome"], "UNCERTAIN_INSUFFICIENT_EVIDENCE")
 
     def test_saved_synthetic_campaign_separates_anywhere_and_unaffected_window_changes(self):
         results = pd.read_csv(ROOT / "outputs" / "synthetic_fault_campaign" / "event_level_results.csv")
@@ -152,6 +208,8 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 self.assertTrue(any("Saved eight-scenario fault matrix" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Five-context synthetic fault study" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Independent temporal-screen comparison" in str(x.value) for x in app.get("markdown")))
+                self.assertTrue(any("Synthetic baseline and setting sensitivity" in str(x.value) for x in app.get("markdown")))
+                self.assertTrue(any("Coverage does not measure interpretive benefit" in str(x.value) for x in app.get("caption")))
 
 
 if __name__ == "__main__":

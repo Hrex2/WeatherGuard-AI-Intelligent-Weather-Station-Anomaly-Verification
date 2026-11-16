@@ -292,10 +292,12 @@ def render_experiments(root, data, phase01_hashes):
                 with st.expander("Model-family response by context"):
                     st.dataframe(pd.read_csv(family_context_path), hide_index=True, width="stretch")
             st.caption("Five preselected synthetic contexts share the same fitted models. Metrics describe responses to known injections; they are not field accuracy or sensor-fault diagnoses.")
-            e2_summary_path = multicontext_dir / "e2_multicontext_fault_summary.csv"
-            e2_paired_path = multicontext_dir / "e2_multicontext_fault_paired.csv"
-            e2_detail_path = multicontext_dir / "e2_multicontext_fault_detail.csv"
-            e2_manifest_path = multicontext_dir / "e2_validation_manifest.json"
+            reviewed_e2_dir = multicontext_dir / "e2_validation_review_1"
+            e2_dir = reviewed_e2_dir if (reviewed_e2_dir / "e2_validation_manifest.json").is_file() else multicontext_dir
+            e2_summary_path = e2_dir / "e2_multicontext_fault_summary.csv"
+            e2_paired_path = e2_dir / "e2_multicontext_fault_paired.csv"
+            e2_detail_path = e2_dir / "e2_multicontext_fault_detail.csv"
+            e2_manifest_path = e2_dir / "e2_validation_manifest.json"
             if e2_summary_path.is_file() and e2_paired_path.is_file() and e2_detail_path.is_file() and e2_manifest_path.is_file():
                 e2_manifest = json.loads(e2_manifest_path.read_text(encoding="utf-8"))
                 st.markdown("**Independent temporal-screen comparison · exploratory synthetic E2**")
@@ -312,6 +314,30 @@ def render_experiments(root, data, phase01_hashes):
                 e2_status_counts = detail.groupby(["condition", "status"]).size().rename("count").reset_index()
                 with st.expander("Temporal screen status counts, including matched controls"):
                     st.dataframe(e2_status_counts, hide_index=True, width="stretch")
+                baseline_manifest_path = multicontext_dir / "synthetic_baseline_comparison_manifest.json"
+                baseline_summary_path = multicontext_dir / "synthetic_baseline_response_summary.csv"
+                e2_sensitivity_path = multicontext_dir / "synthetic_e2_setting_sensitivity.csv"
+                coverage_summary_path = multicontext_dir / "evidence_coverage_ablation_summary.csv"
+                if (baseline_manifest_path.is_file() and baseline_summary_path.is_file()
+                        and e2_sensitivity_path.is_file() and coverage_summary_path.is_file()):
+                    baseline_manifest = json.loads(baseline_manifest_path.read_text(encoding="utf-8"))
+                    baseline_hashes_match = baseline_manifest.get("dataset_hashes") == multicontext_hashes
+                    if baseline_hashes_match:
+                        st.markdown("**Synthetic baseline and setting sensitivity**")
+                        baseline_summary = pd.read_csv(baseline_summary_path)
+                        consensus = baseline_summary[baseline_summary.baseline.eq("E1_consensus")]
+                        st.dataframe(consensus, hide_index=True, width="stretch")
+                        with st.expander("Model-family and direct-variable E4 responses"):
+                            other_baselines = baseline_summary[~baseline_summary.baseline.eq("E1_consensus")]
+                            st.dataframe(other_baselines, hide_index=True, width="stretch")
+                        with st.expander("E2 temporal-screen setting sensitivity"):
+                            st.dataframe(pd.read_csv(e2_sensitivity_path), hide_index=True, width="stretch")
+                        with st.expander("Evidence coverage ablation (not an outcome ablation)"):
+                            st.dataframe(pd.read_csv(coverage_summary_path), hide_index=True, width="stretch")
+                            st.caption("E3-dependent combinations are blocked because verified neighboring-station evidence is unavailable. Coverage does not measure interpretive benefit.")
+                        st.caption("Fractions describe response to declared synthetic injection labels. They are not field accuracy, and unmodified observations are not verified negatives.")
+                    else:
+                        st.warning("The baseline comparison does not match the verified five-context campaign hashes.")
                 st.caption(
                     f"{e2_manifest.get('evaluated_rows', 0):,} screen evaluations; "
                     f"{e2_manifest.get('controls_selected', 0)} matched unmodified controls. "

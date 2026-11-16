@@ -13,7 +13,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 from scripts.run_synthetic_fault_matrix import (SCENARIOS, normalize_metric_table,
                                                 validate_scenarios, write_scenario_summary)
 from scripts.run_multicontext_fault_matrix import select_heldout_contexts
-from scripts.evaluate_e2_multicontext_faults import select_matched_controls
+from scripts.evaluate_e2_multicontext_faults import build_paired_e2_table, select_matched_controls
 from weather_research.synthetic_campaign import load_verified_snapshots
 
 
@@ -87,6 +87,33 @@ class TestSyntheticFaultMatrix(unittest.TestCase):
             self.assertTrue(timestamp in self.snapshots["X_test_multi"].index)
             self.assertTrue(all(abs(timestamp - context["timestamp"]) >= pd.Timedelta(days=14)
                                 for context in contexts))
+
+    def test_e2_pair_builder_requires_one_unlabeled_clean_and_one_labeled_fault_row(self):
+        common = {"pair_id": "ctx:scenario:time:temp", "context_id": "ctx",
+                  "experiment_id": "scenario", "timestamp": pd.Timestamp("2025-01-01", tz="UTC"),
+                  "variable": "temp", "mode": "real_time", "window_hours": 6,
+                  "robust_z_threshold": 3.5}
+        detail = pd.DataFrame([
+            {**common, "condition": "clean_same_timestamp", "status": "NO_DETECTED_EVIDENCE", "synthetic_label": False},
+            {**common, "condition": "synthetic_faulted", "status": "SUPPORTING", "synthetic_label": True},
+        ])
+        paired = build_paired_e2_table(detail)
+        self.assertEqual(len(paired), 1)
+        self.assertTrue(paired.status_changed_by_injection.iloc[0])
+
+    def test_e2_pair_builder_rejects_duplicates_missing_sides_and_fault_labeled_clean_rows(self):
+        common = {"pair_id": "ctx:scenario:time:temp", "context_id": "ctx",
+                  "experiment_id": "scenario", "timestamp": pd.Timestamp("2025-01-01", tz="UTC"),
+                  "variable": "temp", "mode": "real_time", "window_hours": 6,
+                  "robust_z_threshold": 3.5}
+        clean = {**common, "condition": "clean_same_timestamp", "status": "NO_DETECTED_EVIDENCE", "synthetic_label": False}
+        faulted = {**common, "condition": "synthetic_faulted", "status": "SUPPORTING", "synthetic_label": True}
+        with self.assertRaisesRegex(ValueError, "Duplicate E2 paired condition"):
+            build_paired_e2_table(pd.DataFrame([clean, clean, faulted]))
+        with self.assertRaisesRegex(ValueError, "incomplete clean/faulted pairs"):
+            build_paired_e2_table(pd.DataFrame([clean]))
+        with self.assertRaisesRegex(ValueError, "must not carry fault labels"):
+            build_paired_e2_table(pd.DataFrame([{**clean, "synthetic_label": True}, faulted]))
 
 
 if __name__ == "__main__":

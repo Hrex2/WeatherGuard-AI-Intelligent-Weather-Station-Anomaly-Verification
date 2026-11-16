@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import subprocess
 from pathlib import Path
 
@@ -22,6 +23,46 @@ WINDOWS_HOURS = (3, 6, 12)
 ROBUST_THRESHOLDS = (2.5, 3.5, 4.5)
 MODES = ("real_time", "retrospective")
 MATCH_SEPARATION = pd.Timedelta(days=14)
+
+
+def build_paired_e2_table(detail):
+    """Pivot exactly one clean/faulted row per paired setting; reject incomplete pairs."""
+    pair_keys = ["pair_id", "context_id", "experiment_id", "timestamp", "variable",
+                 "mode", "window_hours", "robust_z_threshold"]
+    required = set(pair_keys + ["condition", "status", "synthetic_label"])
+    if not required.issubset(detail.columns):
+        raise ValueError(f"E2 paired detail is missing columns: {sorted(required - set(detail.columns))}")
+    paired_rows = detail.loc[detail.condition.isin(["clean_same_timestamp", "synthetic_faulted"])].copy()
+    if paired_rows[pair_keys].isna().any().any() or paired_rows.status.isna().any():
+        raise ValueError("E2 paired rows contain missing identifiers or statuses")
+    if paired_rows.loc[paired_rows.condition.eq("clean_same_timestamp"), "synthetic_label"].astype(bool).any():
+        raise ValueError("Unmodified same-time comparison rows must not carry fault labels")
+    if not paired_rows.loc[paired_rows.condition.eq("synthetic_faulted"), "synthetic_label"].astype(bool).all():
+        raise ValueError("Synthetic faulted comparison rows must retain their injected labels")
+    duplicate_mask = paired_rows.duplicated(pair_keys + ["condition"], keep=False)
+    if duplicate_mask.any():
+        duplicate = paired_rows.loc[duplicate_mask, pair_keys + ["condition"]].iloc[0].to_dict()
+        raise ValueError(f"Duplicate E2 paired condition row: {duplicate}")
+    condition_counts = paired_rows.groupby(pair_keys, dropna=False).condition.nunique()
+    incomplete = condition_counts[condition_counts.ne(2)]
+    if len(incomplete):
+        raise ValueError(f"E2 comparison has {len(incomplete)} incomplete clean/faulted pairs")
+    paired = paired_rows.pivot(index=pair_keys, columns="condition", values="status").reset_index()
+    required_conditions = {"clean_same_timestamp", "synthetic_faulted"}
+    if not required_conditions.issubset(paired.columns):
+        raise ValueError("E2 pivot is missing a clean or synthetic-faulted condition")
+    if paired[list(required_conditions)].isna().any().any():
+        raise ValueError("E2 pivot produced null paired statuses")
+    paired["status_changed_by_injection"] = paired.synthetic_faulted.ne(paired.clean_same_timestamp)
+    return paired
+
+
+def _sha256(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def select_matched_controls(raw, test, contexts, controls_per_context=2):
@@ -89,6 +130,10 @@ def _evaluate_reading(series, timestamp, variable, condition, context_id,
 
 def evaluate_multicontext_e2(campaign_dir, root=ROOT, controls_per_context=2):
     root, campaign_dir = Path(root), Path(campaign_dir)
+    output_dir = campaign_dir / "e2_validation_review_1"
+    if output_dir.exists():
+        raise FileExistsError(f"Refusing to overwrite preserved E2 review outputs: {output_dir}")
+    output_dir.mkdir()
     campaign_manifest = json.loads((campaign_dir / "campaign_manifest.json").read_text(encoding="utf-8"))
     if campaign_manifest.get("status") != "EXECUTED_LOCAL_SYNTHETIC_MULTICONTEXT":
         raise ValueError("The multi-context synthetic campaign must complete before E2 evaluation")
@@ -99,7 +144,7 @@ def evaluate_multicontext_e2(campaign_dir, root=ROOT, controls_per_context=2):
     contexts = [{**metrics_by_id.get(item["context_id"], {}), **item}
                 for item in campaign_manifest["contexts"]]
     controls = select_matched_controls(raw, test, contexts, controls_per_context)
-    controls_path = campaign_dir / "e2_matched_controls.csv"
+    controls_path = output_dir / "e2_matched_controls.csv"
     controls.to_csv(controls_path, index=False)
     rows = []
     for context in contexts:
@@ -114,7 +159,7 @@ def evaluate_multicontext_e2(campaign_dir, root=ROOT, controls_per_context=2):
                 pair_id = f"{context_id}:{scenario['id']}:{timestamp.isoformat()}:{scenario['variable']}"
                 variable = scenario["variable"]
                 rows.extend(_evaluate_reading(raw, timestamp, variable, "clean_same_timestamp",
-                    context_id, scenario["id"], True, pair_id))
+                    context_id, scenario["id"], False, pair_id))
                 rows.extend(_evaluate_reading(faulted, timestamp, variable, "synthetic_faulted",
                     context_id, scenario["id"], True, pair_id))
     for control in controls.to_dict("records"):
@@ -123,16 +168,15 @@ def evaluate_multicontext_e2(campaign_dir, root=ROOT, controls_per_context=2):
             rows.extend(_evaluate_reading(raw, timestamp, variable, "matched_unmodified_control",
                 control["matched_context_id"], None, False, None))
     detail = pd.DataFrame(rows)
-    paired_rows = detail.loc[detail.condition.isin(["clean_same_timestamp", "synthetic_faulted"])]
-    paired = paired_rows.pivot_table(index=["pair_id", "context_id", "experiment_id", "timestamp",
-        "variable", "mode", "window_hours", "robust_z_threshold"], columns="condition",
-        values="status", aggfunc="first").reset_index()
-    paired["status_changed_by_injection"] = paired.synthetic_faulted.ne(paired.clean_same_timestamp)
+    paired = build_paired_e2_table(detail)
     summary = detail.groupby(["condition", "experiment_id", "variable", "mode", "window_hours",
         "robust_z_threshold", "status"], dropna=False).size().rename("reading_count").reset_index()
-    detail.to_csv(campaign_dir / "e2_multicontext_fault_detail.csv", index=False)
-    paired.to_csv(campaign_dir / "e2_multicontext_fault_paired.csv", index=False)
-    summary.to_csv(campaign_dir / "e2_multicontext_fault_summary.csv", index=False)
+    detail_path = output_dir / "e2_multicontext_fault_detail.csv"
+    paired_path = output_dir / "e2_multicontext_fault_paired.csv"
+    summary_path = output_dir / "e2_multicontext_fault_summary.csv"
+    detail.to_csv(detail_path, index=False)
+    paired.to_csv(paired_path, index=False)
+    summary.to_csv(summary_path, index=False)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
                             capture_output=True, text=True).stdout.strip()
     manifest = {
@@ -163,10 +207,14 @@ def evaluate_multicontext_e2(campaign_dir, root=ROOT, controls_per_context=2):
             "Only temperature and dew point were directly perturbed by the existing scenario set; other variables appear in matched-control summaries only.",
             "E2 thresholds are exploratory and multiple readings within an event are temporally dependent.",
         ],
-        "outputs": ["e2_matched_controls.csv", "e2_multicontext_fault_detail.csv",
-                    "e2_multicontext_fault_paired.csv", "e2_multicontext_fault_summary.csv"],
+        "output_directory": output_dir.name,
+        "outputs": ["e2_matched_controls.csv", detail_path.name,
+                    paired_path.name, summary_path.name],
+        "output_integrity": {path.name: {"sha256": _sha256(path), "rows": int(sum(1 for _ in path.open(encoding="utf-8")) - 1)}
+                             for path in (controls_path, detail_path, paired_path, summary_path)},
+        "preserved_prior_e2_outputs": "Original unversioned E2 files remain unchanged; this reviewed run is stored in e2_validation_review_1.",
     }
-    (campaign_dir / "e2_validation_manifest.json").write_text(json.dumps(manifest, indent=2, default=str) + "\n", encoding="utf-8")
+    (output_dir / "e2_validation_manifest.json").write_text(json.dumps(manifest, indent=2, default=str) + "\n", encoding="utf-8")
     return manifest, detail, paired, summary
 
 

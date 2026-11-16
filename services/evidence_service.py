@@ -47,6 +47,7 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
     # values for display, but do not use them to assert support or conflict.
     if len(spatial):
         states["E3"] = "UNAVAILABLE"
+    evidence_available_count = sum(state != "UNAVAILABLE" for state in states.values())
     return {
         "timestamp": ts,
         "model_rows": model_rows,
@@ -59,6 +60,8 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
         "physical_screening_violations": physical_violations,
         "spatial_rows": spatial,
         "evidence_states": states,
+        "evidence_available_count": evidence_available_count,
+        "evidence_complete": evidence_available_count == len(states),
         "outcome": "UNCERTAIN_INSUFFICIENT_EVIDENCE",
         "outcome_reason": "The integrated E1–E4 decision rule is not yet validated, and neighbor provenance/coverage is incomplete.",
         "evidence_meanings": {
