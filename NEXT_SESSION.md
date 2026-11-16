@@ -4,7 +4,7 @@
 
 - Baseline `main` / `origin/main`: `830d315`.
 - Active branch: `codex/autonomous-research-loop`, pushed to origin.
-- Last validated research commit: `f7d24a8`; investigation implementation commit: `b1d83fe`.
+- Last pushed research commit: `1552405`; the E2 multi-variable sweep is currently local and pending commit/push.
 - Synthetic matrix outputs and report are committed and pushed. The working tree was clean after push; inspect `git status` before proceeding.
 
 ## Completed before this session
@@ -22,13 +22,14 @@
 - Derived E1 saved-label family/configuration and threshold sensitivity tables. 4/6/8/10/12 counts are 432/214/123/51/15.
 - Implemented independent E2 real-time and retrospective temporal screening and connected it to the selected-reading evidence panel.
 - Evaluated 123 8/12 candidates across five temporal windows, three robust-deviation cutoffs and both modes (3,690 rows). At 6h/3.5, real-time: 47 supporting, 76 no-detection; retrospective: 43 supporting, 76 no-detection, 4 persistence-conflicting. This is descriptive sensitivity only.
+- Extended the same sensitivity sweep to all six measured variables (temperature, dew point, relative humidity, precipitation, wind speed, pressure), yielding 22,140 rows. At 6h/3.5 real-time support counts were 47/44/46/44/39/26 respectively; retrospective conflict counts were 4/11/5/32/17/7. See `research_results/e2_variable_sensitivity.json` and CSV summaries. These remain E1-selected descriptive sensitivities, not independent event validation.
 - Ran eight synthetic fault scenarios at one held-out interval using a shared local model fit. See `SYNTHETIC_FAULT_MATRIX_REPORT.md`; outputs include config/family metrics, exact values, changed predictions and E4 screening. No real-world validation is implied.
 - Added the continuation plans, gap analysis, decisions, tracker, manuscript draft, testing report and handoff.
 
 ## Exact next actions
 
 1. Repeat selected synthetic scenarios at multiple held-out contexts to evaluate context sensitivity without turning single-context counts into general performance claims.
-2. Extend E2 sensitivity to other observed variables and explicitly account for E1 candidate-selection dependence.
+2. Repeat multi-variable E2 on independent synthetic injections and, if reference labels become available, independently labeled events; quantify E1 selection dependence.
 3. Complete E1 overlap interpretation; continue baseline comparison, ablation and robustness only with explicit estimands and honest limitations.
 4. E3 waits on traceable neighbor observations; literature reference verification and full manuscript review remain pending.
 

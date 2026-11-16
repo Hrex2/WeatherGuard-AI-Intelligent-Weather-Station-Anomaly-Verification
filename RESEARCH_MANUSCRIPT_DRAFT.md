@@ -49,6 +49,8 @@ The temporal service uses observations only, estimates the local median cadence,
 
 An initial sensitivity run evaluated all 123 saved 8/12 candidates across 1/3/6/12/24-hour windows, 2.5/3.5/4.5 robust-deviation cutoffs, and both modes (3,690 results). The one-hour window was unavailable for every candidate because the configured three-row context minimum could not be met. At six hours and 3.5, real-time screening marked 47 supporting and 76 with no detected departure. Retrospective screening marked 43 supporting, 76 with no detected evidence, and 4 conflicting with persistence. These model-selected observations are not independent labels; the results demonstrate sensitivity to screening settings, not temporal verification accuracy.
 
+A follow-up crossed the same 123 E1-selected candidates with all six measured variables, five windows, three cutoffs and both modes (22,140 results). At six hours and 3.5, real-time support counts for temperature, dew point, relative humidity, precipitation, wind speed and pressure were 47, 44, 46, 44, 39 and 26; retrospective conflict counts were 4, 11, 5, 32, 17 and 7. This is a variable-sensitivity description on a model-selected sample. It does not estimate independent event/fault detection performance or calibrate E2 thresholds. Full details and grouped counts are in `research_results/e2_variable_sensitivity.csv`, `research_results/e2_variable_sensitivity_summary.csv` and the JSON manifest; the run is reproducible with `scripts/evaluate_e2_variable_sensitivity.py`.
+
 ## 8. Spatial, physical and integrated interpretation (limitations)
 
 VILD0 coordinates are null in the provenance manifest, and verified neighboring observations are not available. The application correctly shows no map marker and keeps E3 unavailable. E4 uses broad physical screening rules and simple checks; no calibration history or labeled fault truth is present. The integrated interpretation remains uncertain where independent evidence is insufficient. The research does not currently demonstrate the three outcome categories as validated predictions.
@@ -57,7 +59,7 @@ In the additional synthetic matrix, existing E4 screening flags changed on 11 in
 
 ## 9. Conclusions and future work
 
-The current project demonstrates reproducible artifact checks, saved model-stability summaries, interactive review, independent temporal screening and an initial eight-scenario synthetic matrix. It does not establish real-world anomaly-detection performance or a validated event/fault classifier. Next priorities are repeating synthetic scenarios across multiple contexts, evaluating E2 on other available variables, E3 source-data acquisition with provenance, and integrated evaluation against independently adjudicated outcomes. Ablation, robustness, full manuscript reference verification and field validation remain outstanding.
+The current project demonstrates reproducible artifact checks, saved model-stability summaries, interactive review, independent temporal screening across six variables and an initial eight-scenario synthetic matrix. It does not establish real-world anomaly-detection performance or a validated event/fault classifier. Next priorities are repeating synthetic scenarios across multiple contexts, evaluating E2 against independent references, E3 source-data acquisition with provenance, and integrated evaluation against independently adjudicated outcomes. Ablation, robustness, full manuscript reference verification and field validation remain outstanding.
 
 ## Traceability
 
