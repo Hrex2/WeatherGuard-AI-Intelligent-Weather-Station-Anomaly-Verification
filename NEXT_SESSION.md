@@ -4,7 +4,7 @@
 
 - Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
 - Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
-- Worktree was clean at the start of this continuation. Phase 1 commits `4276aec` and `68df516` are pushed to origin. Phase 2 runner commit `6486c1e` is local; its push is pending.
+- Worktree was clean at the start of this continuation. Phase 1 commits `4276aec` and `68df516`, and runner commits `6486c1e`/`c55b90a`, are pushed to origin. The five-context outputs and E2 evaluator are local and pending commit/push.
 - Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
 ## Verified work reused
@@ -27,14 +27,15 @@
 - Regression suite: 66 passed; `compileall`, `git diff --check`, and Phase 03 manifest checks passed.
 - Phase 1 commits `4276aec` and `68df516` were pushed to `origin/codex/research-validation-v2`.
 - The new data-only context selector preflighted five contexts: 2025-04-09, 2025-05-27, 2025-09-04, 2025-11-30 and 2026-02-06. They cover calendar quarters 1–4, are at least 14 days apart, and passed all eight scenario validations. No model fit has run for this campaign.
-- Added shared-fit campaign orchestration, exact context manifests, expected feature-propagation change counts and detection-delay summaries. Latest full local suite: 68 passed; compileall passed. These Phase 2 code changes are still uncommitted.
+- Added shared-fit campaign orchestration, exact context manifests, expected feature-propagation change counts and detection-delay summaries in commits `6486c1e` and `c55b90a`, both pushed to origin. Validation at runner preparation: 68 tests passed and compileall passed.
+- Executed the five-context campaign `fault_matrix_multicontext_46ae5d119d`. Scenario response fractions varied strongly by scenario/context; no changed predictions were outside expected feature-propagation windows; E4 screening changed on 36 injected timestamp-variable rows. See `MULTICONTEXT_FAULT_MATRIX_REPORT.md`. Full suite after E2 matched-control preparation: 69 passed.
+- Implemented E2 paired injection/control analysis and selected 10 matched unmodified controls. E2 evaluation has not yet run.
 
 ## Exact next actions
 
-1. Push runner commit `6486c1e`, then confirm remote status.
-2. Execute the five-context eight-scenario campaign once using one shared fit; save exact injection/context manifests without touching the original single-context run.
-3. Validate E2 on injected observations and comparable unmodified windows, retaining synthetic-only interpretation.
-4. Continue baseline, available-evidence ablation and robustness analyses; E3 waits on traceable neighboring-station data.
+1. Commit and push the five-context outputs/report and E2 evaluator.
+2. Run the E2 paired evaluation once; analyze injection-vs-same-time-clean status changes and the 10 matched controls, keeping all statuses as temporal screens only.
+3. Integrate actual multi-context and E2 results into Experiment Lab, then continue baseline, available-evidence ablation and robustness analyses. E3 waits on traceable neighboring-station data.
 
 ## Remaining research limits
 

@@ -107,3 +107,12 @@ The eight audit findings AUD-01 through AUD-08 are corrected. AUD-09 remains a d
 - Added changes outside the declared feature-propagation window and synthetic-label detection-delay fields, with a regression for aggregate preservation.
 - `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed. `python -B -m unittest discover -s tests -v`: **68 passed, 0 failed**.
 - Runner and tests are not yet committed/pushed; next step is commit and push the validated runner before executing the campaign.
+
+## Five-context synthetic matrix execution — 2026-11-16
+
+- Campaign `fault_matrix_multicontext_46ae5d119d` completed with five preselected contexts across quarters 1–4 and all eight existing fault scenarios. One train-only fit and clean holdout comparator were reused across all 40 context/scenario combinations.
+- Scenario fractions across configuration × injected-timestamp decisions varied by context: point spike 0.667–1.000, point drop 0.667–0.917, persistent offset 0.042–0.361, stuck 0–0.319, drift 0–0.056, missing block 0–0.333, noise 0–0.292, and dew-point offset 0.667–0.806. These are synthetic responses, not real-world accuracy.
+- No model label changes occurred outside the declared feature-propagation window across the campaign. E4 broad screening changed on 36 injected timestamp-variable rows. The same-run unmodified observation flag rate is not a validated false-positive rate.
+- Context/run artifacts and interpretation are in `MULTICONTEXT_FAULT_MATRIX_REPORT.md` and `research_results/fault_matrix_multicontext_46ae5d119d/`; original single-context outputs remain intact.
+- Added E2 injection/control paired evaluator and selected 10 matched unmodified controls by calendar quarter, time-of-day, recent temperature level/variability and missingness, with 14-day separation from injection contexts. E2 execution is still pending.
+- Latest complete local validation: `python -B -m unittest discover -s tests -v`: **69 passed, 0 failed**; compileall passed.

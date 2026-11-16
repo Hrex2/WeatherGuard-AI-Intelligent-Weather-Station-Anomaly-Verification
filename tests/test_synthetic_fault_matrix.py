@@ -13,6 +13,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 from scripts.run_synthetic_fault_matrix import (SCENARIOS, normalize_metric_table,
                                                 validate_scenarios, write_scenario_summary)
 from scripts.run_multicontext_fault_matrix import select_heldout_contexts
+from scripts.evaluate_e2_multicontext_faults import select_matched_controls
 from weather_research.synthetic_campaign import load_verified_snapshots
 
 
@@ -71,6 +72,21 @@ class TestSyntheticFaultMatrix(unittest.TestCase):
             summary, family = write_scenario_summary(run_dir)
             self.assertEqual(summary.iloc[0].changed_outside_expected_feature_window, 0)
             self.assertIn("changed_outside_expected_feature_window", family.columns)
+
+    def test_e2_controls_match_quarter_time_and_do_not_overlap_fault_contexts(self):
+        contexts = select_heldout_contexts(ROOT).to_dict("records")
+        controls = select_matched_controls(self.snapshots["model_df"],
+            self.snapshots["X_test_multi"], contexts, controls_per_context=2)
+        self.assertEqual(len(controls), 10)
+        for row in controls.to_dict("records"):
+            timestamp = row["timestamp"]
+            matched = next(context for context in contexts if context["context_id"] == row["matched_context_id"])
+            target = matched["timestamp"]
+            self.assertEqual(timestamp.quarter, target.quarter)
+            self.assertEqual((timestamp.hour, timestamp.minute), (target.hour, target.minute))
+            self.assertTrue(timestamp in self.snapshots["X_test_multi"].index)
+            self.assertTrue(all(abs(timestamp - context["timestamp"]) >= pd.Timedelta(days=14)
+                                for context in contexts))
 
 
 if __name__ == "__main__":

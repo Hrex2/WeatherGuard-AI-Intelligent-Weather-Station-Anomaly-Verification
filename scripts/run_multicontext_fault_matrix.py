@@ -54,6 +54,9 @@ def _candidate_context_table(raw: pd.DataFrame, test: pd.DataFrame) -> pd.DataFr
         rows.append({
             "timestamp": raw.index[position],
             "calendar_quarter": int(raw.index[position].quarter),
+            "calendar_month": int(raw.index[position].month),
+            "hour_of_day": int(raw.index[position].hour),
+            "minute_of_hour": int(raw.index[position].minute),
             "temperature_median_24h": float(np.median(prior_temp)),
             "temperature_sd_6h": float(np.std(prior_temp[-6:], ddof=0)),
             "missing_fraction_24h": float(np.isnan(prior_values).mean()),
@@ -205,6 +208,11 @@ def run_multicontext_fault_matrix(root=ROOT, max_contexts=5):
             scenario_tables.append(scenario)
             family_tables.append(family)
             run_records.append({"context_id": row["context_id"], "timestamp": str(row["timestamp"]),
+                                "calendar_quarter": int(row["calendar_quarter"]),
+                                "temperature_median_24h": float(row["temperature_median_24h"]),
+                                "temperature_sd_6h": float(row["temperature_sd_6h"]),
+                                "missing_fraction_24h": float(row["missing_fraction_24h"]),
+                                "precipitation_missing_24h": int(row["precipitation_missing_24h"]),
                                 "run_directory": str(run_dir.relative_to(root)), "run_id": metadata["run_id"]})
             manifest["completed_context_runs"] = list(run_records)
             save_manifest()
