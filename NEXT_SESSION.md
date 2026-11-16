@@ -4,7 +4,7 @@
 
 - Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
 - Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
-- Worktree was clean at the start of this continuation. Phase 1 commits `4276aec` and `68df516` are pushed to origin. Phase 2 runner changes are local and not yet committed or pushed.
+- Worktree was clean at the start of this continuation. Phase 1 commits `4276aec` and `68df516` are pushed to origin. Phase 2 runner commit `6486c1e` is local; its push is pending.
 - Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
 ## Verified work reused
@@ -31,7 +31,7 @@
 
 ## Exact next actions
 
-1. Review, commit and push the preflighted multi-context runner, then confirm remote status.
+1. Push runner commit `6486c1e`, then confirm remote status.
 2. Execute the five-context eight-scenario campaign once using one shared fit; save exact injection/context manifests without touching the original single-context run.
 3. Validate E2 on injected observations and comparable unmodified windows, retaining synthetic-only interpretation.
 4. Continue baseline, available-evidence ablation and robustness analyses; E3 waits on traceable neighboring-station data.
