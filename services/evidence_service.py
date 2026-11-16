@@ -23,15 +23,19 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
             if len(match):
                 spatial_rows.append(match.assign(station_id=station))
     spatial = pd.concat(spatial_rows, ignore_index=True) if spatial_rows else pd.DataFrame()
+    physical_violations = quality.loc[
+        quality.screening_flag & ~quality.missing
+    ] if len(quality) else quality
+    has_missing_only = bool(len(quality) and quality.missing.any() and not len(physical_violations))
     states = {
         "E1": "UNAVAILABLE" if vote_count is None else (
-            "NO_DETECTED_EVIDENCE" if vote_count == 0 else
-            "SUPPORTING_EVIDENCE" if vote_count >= 8 else "CONFLICTING_EVIDENCE"),
-        "E2": "UNAVAILABLE" if vote_count is None else (
-            "SUPPORTING_EVIDENCE" if len(episode_rows) else "NO_DETECTED_EVIDENCE"),
+            "SUPPORTING_EVIDENCE" if vote_count >= 8 else "NO_DETECTED_EVIDENCE"),
+        # Saved episodes are built from E1 consensus candidates, so they are
+        # context only and cannot serve as independent temporal evidence.
+        "E2": "UNAVAILABLE",
         "E3": "UNAVAILABLE" if not len(spatial) else "NO_DETECTED_EVIDENCE",
-        "E4": "UNAVAILABLE" if not len(quality) else (
-            "SUPPORTING_EVIDENCE" if quality.screening_flag.any() else "NO_DETECTED_EVIDENCE"),
+        "E4": "UNAVAILABLE" if not len(quality) or has_missing_only else (
+            "SUPPORTING_EVIDENCE" if len(physical_violations) else "NO_DETECTED_EVIDENCE"),
     }
     # The spatial comparisons are exploratory, with no preregistered residual
     # threshold or demonstrated independent provider provenance. Preserve their
@@ -45,6 +49,8 @@ def observation_evidence(timestamp, observations, predictions, stability, episod
         "stability_row": stability_rows.iloc[0] if len(stability_rows) else None,
         "episodes": episode_rows,
         "quality_flags": quality,
+        "missing_quality_values": int(quality.missing.sum()) if len(quality) else None,
+        "physical_screening_violations": physical_violations,
         "spatial_rows": spatial,
         "evidence_states": states,
         "outcome": "UNCERTAIN_INSUFFICIENT_EVIDENCE",

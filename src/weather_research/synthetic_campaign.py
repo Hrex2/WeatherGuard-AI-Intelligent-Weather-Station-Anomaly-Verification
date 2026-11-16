@@ -212,16 +212,6 @@ def run_temperature_spike_campaign(root, output_dir=None,
                          "newly_flagged_outside_labels": int(np.sum(changed & ~base)),
                          "configuration_votes_clean": clean_at_target, "configuration_votes_faulted": votes,
                          "random_seed": random_seed, "dataset_hash": hashes["model_df"]})
-        event_rows.append({"experiment_id": experiment_id, "event_detected": injected_detected,
-                           "event_start": str(target), "event_end": str(target), "duration_observations": 1,
-                           "event_detection_delay_hours": 0.0 if injected_detected else np.nan,
-                           "fraction_event_duration_detected": float(injected_detected),
-                           "unaffected_window_changed_configuration_predictions": int(diff.sum()),
-                           "unaffected_window_false_alarm_timestamps": int(
-                               paired.loc[(paired["timestamp"] != target)
-                                          & paired["is_candidate"].astype(bool)
-                                          & ~paired["clean_is_candidate"].astype(bool), "timestamp"].nunique()),
-                           "evaluation_window": "all 8415 test timestamps; configuration changes compared to matching local clean refit"})
         changes.extend(paired.loc[diff, ["experiment_id", "timestamp", "configuration", "family",
                                          "is_candidate", "clean_is_candidate"]].to_dict("records"))
         pos_target = raw.index.get_loc(target)
@@ -234,6 +224,17 @@ def run_temperature_spike_campaign(root, output_dir=None,
             affected_timestamps.append(raw.index[pos])
         within_affected_window = preds["timestamp"].isin(affected_timestamps).to_numpy()
         outside_features = ~within_affected_window
+        event_rows.append({"experiment_id": experiment_id, "event_detected": injected_detected,
+                           "event_start": str(target), "event_end": str(target), "duration_observations": 1,
+                           "event_detection_delay_hours": 0.0 if injected_detected else np.nan,
+                           "fraction_event_duration_detected": float(injected_detected),
+                           "unaffected_window_changed_configuration_predictions": int(diff[outside_features].sum()),
+                           "changed_configuration_predictions_anywhere": int(diff.sum()),
+                           "unaffected_window_false_alarm_timestamps": int(
+                               paired.loc[(paired["timestamp"] != target)
+                                          & paired["is_candidate"].astype(bool)
+                                          & ~paired["clean_is_candidate"].astype(bool), "timestamp"].nunique()),
+                           "evaluation_window": "timestamps outside the injected observation's expected feature-propagation window, compared to matching local clean refit"})
         unaffected.append({"experiment_id": experiment_id,
                            "outside_target_changed_configuration_predictions": int(diff[~candidate.to_numpy()].sum()),
                            "changed_timestamps_outside_target": int(preds.loc[~candidate].assign(_changed=diff[~candidate.to_numpy()]).groupby("timestamp")["_changed"].any().sum()),

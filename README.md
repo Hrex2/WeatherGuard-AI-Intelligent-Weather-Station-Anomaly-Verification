@@ -39,7 +39,15 @@ Phase 02 currently has an explicitly incomplete [provenance report](PHASE02_PROV
 
 # WeatherGuard AI application
 
-**WeatherGuard AI — Intelligent Weather Station Anomaly Verification** is a Streamlit interface over the existing research package and archived experiment artifacts. The interface uses the included VILD0 processed snapshots and Phase 03 saved outputs. It does not fetch data on startup and does not present the snapshots as raw acquisition or a live feed.
+**WeatherGuard AI — Intelligent Weather Station Anomaly Verification** is a Streamlit interface over the existing research package and archived experiment artifacts. The interface uses the included VILD0 processed snapshots and Phase 03 saved outputs. Phase 01 manifest hashes, row counts and column order are enforced before the app presents those snapshots as verified. It does not fetch data on startup and does not present the snapshots as raw acquisition or a live feed.
+
+## Friday classroom demonstration
+
+- [Audit and implementation notes](FRIDAY_DEMO_AUDIT.md)
+- [7–10 minute walkthrough and setup](FRIDAY_DEMO_GUIDE.md)
+- [11-slide presentation outline](FRIDAY_PRESENTATION_OUTLINE.md)
+- [Teacher Q&A preparation](FRIDAY_QA_PREPARATION.md)
+- [Backup plan](FRIDAY_BACKUP_PLAN.md)
 
 ## Research framing
 

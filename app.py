@@ -255,20 +255,72 @@ def render_investigation(data, root):
         st.dataframe(bundle["spatial_rows"], hide_index=True, width="stretch")
 
 
-def render_experiments(root):
+def render_experiments(root, data, phase01_hashes):
     render_header("WeatherGuard AI  /  experiment lab", "Experiment Lab", "Run controlled, explicitly simulated injections on held-out observations.")
     st.warning("SIMULATED DATA — NOT A REAL-WORLD SENSOR FAULT. This initial lab supports temperature point-spike dose tests only; other fault groups remain unimplemented.")
     saved_dir = root / "outputs" / "synthetic_fault_campaign"
     saved_summary = saved_dir / "experiment_summary.csv"
-    if saved_summary.is_file():
+    campaign_manifest_path = saved_dir / "synthetic_campaign_manifest.json"
+    saved_campaign_verified = False
+    if campaign_manifest_path.is_file():
+        try:
+            campaign_manifest = json.loads(campaign_manifest_path.read_text(encoding="utf-8"))
+            expected_campaign_hashes = campaign_manifest.get("dataset_hashes", {})
+            saved_campaign_verified = (
+                campaign_manifest.get("phase01_manifest_audit_passed") is True
+                and expected_campaign_hashes.get("model_df") == phase01_hashes.get("observations")
+                and expected_campaign_hashes.get("X_train_multi") == phase01_hashes.get("train")
+                and expected_campaign_hashes.get("X_test_multi") == phase01_hashes.get("test")
+            )
+        except (OSError, json.JSONDecodeError):
+            saved_campaign_verified = False
+    if saved_summary.is_file() and saved_campaign_verified:
         summary = pd.read_csv(saved_summary)
         st.subheader("Most recent saved controlled campaign")
         st.dataframe(summary, hide_index=True, width="stretch")
+        event_path = saved_dir / "event_level_results.csv"
+        event_results = pd.read_csv(event_path) if event_path.is_file() else pd.DataFrame()
+        if len(event_results):
+            st.caption("The affected feature window includes the injected row and up to six following hourly rows. ‘Outside’ changes exclude that window.")
+            st.dataframe(event_results[["experiment_id", "unaffected_window_changed_configuration_predictions",
+                                        "changed_configuration_predictions_anywhere"]], hide_index=True, width="stretch")
+        dose_options = ["Clean baseline", *summary.magnitude.tolist()]
+        dose_choice = st.selectbox("Saved dose to visualize", dose_options,
+                                   index=3 if len(dose_options) > 3 else 0,
+                                   format_func=lambda value: value if isinstance(value, str) else f"+{value:g} °C",
+                                   key="saved_experiment_dose")
+        is_clean = dose_choice == "Clean baseline"
+        dose = 0.0 if is_clean else float(dose_choice)
+        selected_run = summary.iloc[0] if is_clean else summary.loc[summary.magnitude.eq(dose)].iloc[0]
+        target = pd.Timestamp("2025-09-02 07:30:00+05:30")
+        obs = data["observations"]
+        window = obs.loc[(obs.index >= target - pd.Timedelta(hours=12)) &
+                         (obs.index <= target + pd.Timedelta(hours=12)), "temp"]
+        if len(window):
+            injected = window.copy()
+            if not is_clean and target in injected.index:
+                injected.loc[target] += float(dose)
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=window.index, y=window, mode="lines+markers", name="Historical baseline", line={"color":"#38BDF8"}))
+            if not is_clean:
+                fig.add_trace(go.Scatter(x=injected.index, y=injected, mode="lines+markers", name="Synthetic injected series", line={"color":"#F59E0B"}))
+                fig.add_vline(x=target, line_dash="dash", line_color="#FBBF24")
+            fig.update_layout(yaxis_title="Temperature (°C)", xaxis_title="Historical timestamp")
+            st.plotly_chart(_plot_layout(fig, 340), width="stretch")
+            st.caption(("Clean historical baseline." if is_clean else
+                        f"Synthetic dose +{dose:g} °C at {target.strftime('%Y-%m-%d %H:%M %Z')}. Historical observations remain unchanged."))
+        votes = pd.DataFrame([{"Condition": "Clean baseline", "Configuration votes": int(selected_run.clean_votes)}] if is_clean else
+                             [{"Condition": "Clean baseline", "Configuration votes": int(selected_run.clean_votes)},
+                              {"Condition": f"+{dose:g} °C synthetic spike", "Configuration votes": int(selected_run.faulted_votes)}])
+        st.dataframe(votes, hide_index=True, width="stretch")
+        st.caption("Configuration votes are counts, not probabilities. The campaign’s target-any-model and 8/12 consensus outcomes are separate questions.")
         for f in ("observation_level_results.csv", "event_level_results.csv", "clean_baseline_reproduction.csv"):
             path = saved_dir / f
             if path.is_file():
                 with st.expander(f.replace(".csv", "").replace("_", " ").title()):
                     st.dataframe(pd.read_csv(path), hide_index=True, width="stretch")
+    elif saved_summary.is_file():
+        st.warning("Saved synthetic results do not match the loaded Phase 01 snapshot manifest; they are not shown as verified.")
     with st.form("run_synthetic_campaign"):
         magnitude = st.selectbox("Temperature point-spike magnitude (°C)", [2.0, 5.0, 10.0, 15.0], index=2)
         timestamp = st.text_input("Held-out timestamp", "2025-09-02 07:30:00+05:30")
@@ -286,9 +338,22 @@ def render_experiments(root):
             st.error(f"Experiment could not run: {exc}")
     run_dir = Path(st.session_state.get("latest_experiment_dir", "")) if st.session_state.get("latest_experiment_dir") else None
     if run_dir and (run_dir / "experiment_summary.csv").is_file():
-        st.subheader("Current session experiment")
+        st.subheader("New experiment from this session")
         st.dataframe(pd.read_csv(run_dir / "experiment_summary.csv"), hide_index=True, width="stretch")
-        st.caption(f"Run artifacts: {run_dir.relative_to(root)} · SIMULATED")
+        st.caption(f"Run artifacts: {run_dir.relative_to(root)} · SIMULATED · saved baseline predictions are unchanged")
+        for label, filename in (("Per-configuration target results", "configuration_detection_results.csv"),
+                                ("Per-configuration prediction changes", "prediction_changes.csv"),
+                                ("Feature propagation", "feature_propagation.csv"),
+                                ("Outside-window checks", "unaffected_window_checks.csv"),
+                                ("Reproducibility metadata", "synthetic_campaign_manifest.json")):
+            path = run_dir / filename
+            if path.is_file():
+                with st.expander(label):
+                    if path.suffix == ".json":
+                        st.json(json.loads(path.read_text(encoding="utf-8")))
+                    else:
+                        table = pd.read_csv(path)
+                        st.dataframe(table, hide_index=True, width="stretch")
     st.markdown("#### Implemented injection coverage")
     st.dataframe(pd.DataFrame([{"Fault type":"Point temperature spike", "Status":"Implemented and executed", "Notes":"Controlled same timestamp; four supported magnitudes; 12 existing configurations"},
                                {"Fault type":"Other variable point faults", "Status":"Pending", "Notes":"Not exposed as runnable options"},
@@ -384,6 +449,6 @@ elif workspace == "Research Studio":
 elif workspace == "Investigation Studio":
     render_investigation(data, ROOT)
 elif workspace == "Experiment Lab":
-    render_experiments(ROOT)
+    render_experiments(ROOT, data, hashes)
 else:
     render_evaluation(data, ROOT)
