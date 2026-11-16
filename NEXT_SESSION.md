@@ -4,7 +4,7 @@
 
 - Latest `main`: `0a27959` (merge commit for PR #1; includes the earlier research branch through `69a5fe5`).
 - Active branch: `codex/research-validation-v2`, created from refreshed `origin/main` at `0a27959`.
-- Worktree was clean at the start of this continuation. Phase 1 audit commit `4276aec` is local and push is pending; the multi-context runner refactor is a separate uncommitted Phase 2 change.
+- Worktree was clean at the start of this continuation. Phase 1 commits `4276aec` and `68df516` are pushed to origin. Phase 2 runner changes are local and not yet committed or pushed.
 - Existing development branch `codex/autonomous-research-loop` is preserved; PR #1 is closed and merged.
 
 ## Verified work reused
@@ -25,14 +25,16 @@
 - Wired the selected variable through the shared evidence service and surfaced the saved eight-scenario matrix in Experiment Lab after hash checks.
 - Added CI workflow `.github/workflows/research-quality.yml`.
 - Regression suite: 66 passed; `compileall`, `git diff --check`, and Phase 03 manifest checks passed.
+- Phase 1 commits `4276aec` and `68df516` were pushed to `origin/codex/research-validation-v2`.
+- The new data-only context selector preflighted five contexts: 2025-04-09, 2025-05-27, 2025-09-04, 2025-11-30 and 2026-02-06. They cover calendar quarters 1–4, are at least 14 days apart, and passed all eight scenario validations. No model fit has run for this campaign.
+- Added shared-fit campaign orchestration, exact context manifests, expected feature-propagation change counts and detection-delay summaries. Latest full local suite: 68 passed; compileall passed. These Phase 2 code changes are still uncommitted.
 
 ## Exact next actions
 
-1. Push Phase 1 commit `4276aec` and the changelog/handoff update; confirm remote status.
-2. Select up to five held-out contexts using predeclared data-only strata (temperature level and recent variability), require continuous hourly context, and preflight all eight scenarios before fitting.
-3. Fit the existing 12-configuration protocol once and reuse it for the clean comparator and all contexts; save exact context/scenario manifests without touching the original single-context run.
-4. Validate E2 on injected observations and comparable unmodified windows, retaining synthetic-only interpretation.
-5. Continue baseline, available-evidence ablation and robustness analyses; E3 waits on traceable neighboring-station data.
+1. Review, commit and push the preflighted multi-context runner, then confirm remote status.
+2. Execute the five-context eight-scenario campaign once using one shared fit; save exact injection/context manifests without touching the original single-context run.
+3. Validate E2 on injected observations and comparable unmodified windows, retaining synthetic-only interpretation.
+4. Continue baseline, available-evidence ablation and robustness analyses; E3 waits on traceable neighboring-station data.
 
 ## Remaining research limits
 

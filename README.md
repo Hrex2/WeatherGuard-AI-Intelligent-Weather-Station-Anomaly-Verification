@@ -76,7 +76,7 @@ The initial E2 candidate sensitivity table evaluates 123 saved model candidates 
 
 The additional eight-scenario synthetic fault run and its limits are documented in [SYNTHETIC_FAULT_MATRIX_REPORT.md](SYNTHETIC_FAULT_MATRIX_REPORT.md). Scenario outputs are isolated under `research_results/fault_matrix_02bd147f5cce/` and are explicitly synthetic, single-context results.
 
-The Phase 1 validation audit on `codex/research-validation-v2` corrects temporal run continuity, same-segment stuck injection, unavailable-evidence completeness, and strict hourly upload validation. A Phase 03 integrity manifest now hashes 11 saved CSV artifacts while explicitly preserving their unknown historical generation provenance. The complete current suite passes **66 tests**; CI runs those tests and compilation checks. See [RESEARCH_GAP_ANALYSIS.md](RESEARCH_GAP_ANALYSIS.md) and [NEXT_SESSION.md](NEXT_SESSION.md) for phase status and remaining limits.
+The Phase 1 validation audit on `codex/research-validation-v2` corrects temporal run continuity, same-segment stuck injection, unavailable-evidence completeness, and strict hourly upload validation. A Phase 03 integrity manifest now hashes 11 saved CSV artifacts while explicitly preserving their unknown historical generation provenance. The current local suite passes **68 tests**; CI runs those tests and compilation checks. Five held-out contexts have passed preflight for a new synthetic campaign; that model campaign has not yet run. See [RESEARCH_GAP_ANALYSIS.md](RESEARCH_GAP_ANALYSIS.md) and [NEXT_SESSION.md](NEXT_SESSION.md) for phase status and remaining limits.
 
 ## Run locally
 

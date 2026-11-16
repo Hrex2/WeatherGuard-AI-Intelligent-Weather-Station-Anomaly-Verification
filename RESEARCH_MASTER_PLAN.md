@@ -17,7 +17,7 @@ The Phase 01 manifest and hashes are checked by the application loader. The proc
 | Independent E2 temporal verification | Implemented; 22,140-row six-variable sensitivity across the 123 E1-selected timestamps; cadence/run correctness audit fixed | Test against the multi-context injection campaign and matched unmodified windows; E1-selected results remain descriptive |
 | E3 station corroboration | Blocked by unverified raw station data/provenance | Preserve unavailable state pending traceable station exports |
 | E4 physical screening | Broad measurement/relationship screens implemented and compared on synthetic injections | Validate variable-specific rules with traceable station metadata; do not diagnose hardware from screening flags |
-| Synthetic campaign | Temperature dose series and an eight-scenario single-context matrix executed and surfaced in Experiment Lab | Current phase: preselect up to five held-out contexts by data-only temperature/variability strata; reuse one shared model fit |
+| Synthetic campaign | Temperature dose series and an eight-scenario single-context matrix executed and surfaced in Experiment Lab | Five data-only held-out contexts have passed preflight; runner and propagation-window metrics added, but campaign not yet executed |
 | Integrated E1–E4 interpretation | Partially implemented | Require independent evidence, retain abstention and audit statuses |
 | Baseline, ablation, robustness | Not implemented as final studies | Define estimands and use available evidence only; no claims without labels |
 | Investigation UI and separate CSV analysis | AppTest-verified; selected-variable E2 wired; hourly uploads now enforce every adjacent interval | Compare multi-context saved results after validation |
@@ -29,4 +29,4 @@ Do not modify verified snapshots, replace the primary data, change the train/tes
 
 ## Phase 1 audit checkpoint
 
-AUD-01 through AUD-08 have been corrected and regression-tested. AUD-09 is explicitly documented as a selection-dependence limitation; AUD-10 remains blocked by absent verified neighbor observations; AUD-11 research records are being synchronized. `RESEARCH_GAP_ANALYSIS.md` contains per-finding status. Current validation: 66 tests passed, Python compilation passed, and Phase 03's 11 CSV artifacts passed their new integrity manifest. CI is defined in `.github/workflows/research-quality.yml`.
+AUD-01 through AUD-08 have been corrected and regression-tested. AUD-09 is explicitly documented as a selection-dependence limitation; AUD-10 remains blocked by absent verified neighbor observations; AUD-11 research records are synchronized. `RESEARCH_GAP_ANALYSIS.md` contains per-finding status. Phase 1 passed 66 tests, Python compilation and Phase 03's 11-CSV integrity check. With the Phase 2 runner changes, the current full suite passes 68 tests and compilation. CI is defined in `.github/workflows/research-quality.yml`.

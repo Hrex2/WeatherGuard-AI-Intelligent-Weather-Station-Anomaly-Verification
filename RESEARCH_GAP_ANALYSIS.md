@@ -34,4 +34,4 @@ Continue with independent E2 validation, repeated synthetic contexts, E1 interpr
 | AUD-10 E3 lacks verified station series/provenance | Blocked by data | No verified neighboring station raw time series or coordinates were found; E3 stays unavailable |
 | AUD-11 stale research records | Corrected in this milestone | Tracker, handoff, gap analysis, testing report, changelog and README are synchronized |
 
-Phase 1 audit validation: 66 tests passed, compilation and Phase 03 integrity checks passed. CI was added because no suitable workflow existed.
+Phase 1 audit validation: 66 tests passed, compilation and Phase 03 integrity checks passed. CI was added because no suitable workflow existed. A subsequent Phase 2 runner change brings the full local suite to 68 passing tests; the multi-context experiment has not yet been executed.

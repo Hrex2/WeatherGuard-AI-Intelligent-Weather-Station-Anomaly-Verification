@@ -98,3 +98,12 @@ Software tests use synthetic fixtures only and do not establish scientific valid
 - CI was added in `.github/workflows/research-quality.yml`; hosted Actions status has not yet been observed.
 
 The eight audit findings AUD-01 through AUD-08 are corrected. AUD-09 remains a documented selection-dependence limit; AUD-10 remains blocked by the absence of verified neighboring-station raw data; AUD-11 status records have been synchronized. Software verification does not establish scientific validity.
+
+## Multi-context synthetic campaign preparation (2026-11-16)
+
+- Added a deterministic pre-injection selector requiring a regular hourly 24-hour history, a continuous six-observation injection interval, adequate core-variable coverage and successful preflight of all eight existing scenarios.
+- Selected five held-out contexts without inspecting model responses: 2025-04-09 (high temperature/low variability), 2025-05-27 (high/high), 2025-09-04 (middle/middle), 2025-11-30 (low/high), and 2026-02-06 (low/low). The contexts cover calendar quarters 1–4 and are at least 14 days apart. Preflight only; no model fitting or fault predictions have run.
+- Added orchestration to fit the 12-configuration protocol once and reuse the clean holdout comparator across all contexts. Each context retains its own exact injection registry and output manifest; the campaign writes aggregate context and family summaries and records failure status if fitting/evaluation errors occur.
+- Added changes outside the declared feature-propagation window and synthetic-label detection-delay fields, with a regression for aggregate preservation.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed. `python -B -m unittest discover -s tests -v`: **68 passed, 0 failed**.
+- Runner and tests are not yet committed/pushed; next step is commit and push the validated runner before executing the campaign.
