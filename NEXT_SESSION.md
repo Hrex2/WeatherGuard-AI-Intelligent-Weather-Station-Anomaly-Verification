@@ -4,7 +4,7 @@
 
 - Baseline `main` / `origin/main`: `830d315`.
 - Active branch: `codex/autonomous-research-loop`, pushed to origin.
-- Last validated research commit: `05fefdb`; implementation commit: `b1d83fe`.
+- Last validated research commit: `3b0e2de`; implementation commit: `b1d83fe`.
 - Working tree was clean after pushing these commits; inspect `git status` before proceeding.
 
 ## Completed before this session
