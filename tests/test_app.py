@@ -208,7 +208,7 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 self.assertTrue(any("Saved eight-scenario fault matrix" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Five-context synthetic fault study" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Independent temporal-screen comparison" in str(x.value) for x in app.get("markdown")))
-                self.assertTrue(any("Synthetic baseline and setting sensitivity" in str(x.value) for x in app.get("markdown")))
+                self.assertTrue(any("Synthetic baseline response and setting sensitivity" in str(x.value) for x in app.get("markdown")))
                 self.assertTrue(any("Coverage does not measure interpretive benefit" in str(x.value) for x in app.get("caption")))
 
 

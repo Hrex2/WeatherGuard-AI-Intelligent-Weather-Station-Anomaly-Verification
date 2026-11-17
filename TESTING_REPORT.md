@@ -131,3 +131,21 @@ The eight audit findings AUD-01 through AUD-08 are corrected. AUD-09 remains a d
 - At the 8/12 E1 threshold, response was 100% on point spike, point drop and dew-point inconsistency labels, 6.7% on persistent offset/noise, and 0% on missing blocks/drift/stuck. Existing direct-variable E4 broad screening flagged missing blocks only. E2 setting fractions and detailed caveats are in `SYNTHETIC_BASELINE_COMPARISON_REPORT.md`.
 - Coverage-only ablation per setting: E1 160/160; E1+E2 145/160; E1+E4 160/160; E1+E2+E4 145/160; E3 combinations 0/160. This is availability coverage, not an evidence-utility or event-outcome ablation.
 - Experiment Lab renders the new tables behind dataset-hash checks. Final full run after these changes: `python -B -m unittest discover -s tests -v` — **69 passed, 0 failed** in 44.3 seconds; `python -m compileall -q app.py services ui src/weather_research tests scripts` and `git diff --check` passed.
+
+## PR #2 audit remediation checkpoint — 2026-11-17
+
+The prior baseline section above records the first-generation timestamp-level summaries. Corrected, reviewable outputs are now written separately under `research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/`; the historical files and campaign manifest remain unchanged. The corrected analysis reuses saved predictions, injection registries, E4 results and reviewed E2 outputs; it performs no estimator fitting, new synthetic campaign, or prediction regeneration.
+
+The analysis separates configuration/timestamp observations, context × scenario responses, and across-context summaries. Across-context minimum and maximum values now range over five context responses, not individual timestamps. It verified 5 contexts, 8 scenarios and 160 context × scenario × timestamp units; the response detail has 3,360 rows and the across-context summary has 168 rows. For the existing 8/12 E1 threshold, the across-context mean/minimum/maximum responses are: dew-point inconsistency 1.000/1.000/1.000 (15 units); gradual drift 0/0/0 (30); intermittent noise 0.0667/0/0.1667 (30); missing block 0/0/0 (15); persistent offset 0.0667/0/0.1667 (30); point drop 1/1/1 (5); point spike 1/1/1 (5); stuck sensor 0/0/0 (30). These are synthetic-label response fractions, not event detection accuracy.
+
+The review manifest records 29 input artifacts and all 6 outputs with hashes, sizes and applicable row/column metadata; the manifest’s own final SHA-256 is stored in a separate integrity sidecar. Reviewed E2 artifacts were verified before use (6,840 detail rows, 2,880 pairs, 813 summaries and 10 controls). Experiment Lab hides the reviewed outputs and displays an integrity warning if required manifests or files are missing or fail checks. The historical campaign manifest and first-generation baseline outputs are preserved.
+
+Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
+
+## PR #2 audit remediation — validation result (2026-11-17)
+
+- `python -B -m unittest discover -s tests -v`: **84 passed, 0 failed** in 125.448 seconds. This includes the Streamlit AppTest across all six workspaces and 10 new baseline/path/integrity regressions.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed.
+- `git diff --check`: passed.
+- Saved-data baseline review completed without model fitting or campaign/prediction regeneration. The versioned review manifest verifies 29 input artifacts and 6 CSV outputs; the manifest SHA-256 is in `synthetic_baseline_comparison_manifest.integrity.json`. The reviewed E2 set and Phase 01 sources passed their integrity checks.
+- New Actions workflow run for the pushed final commit is pending verification; see `NEXT_SESSION.md` once observed.
