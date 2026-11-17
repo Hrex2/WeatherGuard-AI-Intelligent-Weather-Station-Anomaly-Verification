@@ -213,7 +213,7 @@ def run_multicontext_fault_matrix(root=ROOT, max_contexts=5):
                                 "temperature_sd_6h": float(row["temperature_sd_6h"]),
                                 "missing_fraction_24h": float(row["missing_fraction_24h"]),
                                 "precipitation_missing_24h": int(row["precipitation_missing_24h"]),
-                                "run_directory": str(run_dir.relative_to(root)), "run_id": metadata["run_id"]})
+                                "run_directory": run_dir.relative_to(root).as_posix(), "run_id": metadata["run_id"]})
             manifest["completed_context_runs"] = list(run_records)
             save_manifest()
         pd.concat(scenario_tables, ignore_index=True).to_csv(campaign_dir / "context_scenario_summary.csv", index=False)

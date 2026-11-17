@@ -20,6 +20,7 @@ from services.data_service import load_project_data
 from services.model_service import run_saved_protocol
 from services.evidence_service import observation_evidence
 from services.model_metadata import build_model_education
+from services.research_artifact_integrity import multicontext_artifact_state
 from ui.investigation_workspace import render_investigation_workspace
 from ui.new_csv_analysis import render_new_csv_analysis
 from ui.station_map import render_station_map
@@ -271,83 +272,66 @@ def render_experiments(root, data, phase01_hashes):
     multicontext_dir = root / "research_results" / "fault_matrix_multicontext_46ae5d119d"
     multicontext_manifest_path = multicontext_dir / "campaign_manifest.json"
     if multicontext_manifest_path.is_file():
-        try:
-            multicontext_manifest = json.loads(multicontext_manifest_path.read_text(encoding="utf-8"))
-            multicontext_hashes = multicontext_manifest.get("dataset_hashes", {})
-            multicontext_verified = (
-                multicontext_hashes.get("model_df") == phase01_hashes.get("observations")
-                and multicontext_hashes.get("X_train_multi") == phase01_hashes.get("train")
-                and multicontext_hashes.get("X_test_multi") == phase01_hashes.get("test")
-            )
-        except (OSError, json.JSONDecodeError):
-            multicontext_verified = False
-            multicontext_manifest = {}
+        artifact_state = multicontext_artifact_state(root, phase01_hashes)
         st.subheader("Five-context synthetic fault study")
-        if multicontext_verified:
-            context_path = multicontext_dir / "context_scenario_summary.csv"
-            family_context_path = multicontext_dir / "context_family_summary.csv"
-            if context_path.is_file():
-                st.dataframe(pd.read_csv(context_path), hide_index=True, width="stretch")
-            if family_context_path.is_file():
-                with st.expander("Model-family response by context"):
-                    st.dataframe(pd.read_csv(family_context_path), hide_index=True, width="stretch")
+        if artifact_state["verified"]:
+            bundle = artifact_state["bundle"]
+            multicontext_manifest = bundle["campaign"]
+            e2_manifest = bundle["e2_manifest"]
+            e2_outputs = bundle["e2_outputs"]
+            baseline_outputs = bundle["baseline_outputs"]
+            st.dataframe(bundle["context_summary"], hide_index=True, width="stretch")
+            with st.expander("Model-family response by context"):
+                st.dataframe(bundle["family_context_summary"], hide_index=True, width="stretch")
             st.caption("Five preselected synthetic contexts share the same fitted models. Metrics describe responses to known injections; they are not field accuracy or sensor-fault diagnoses.")
-            reviewed_e2_dir = multicontext_dir / "e2_validation_review_1"
-            e2_dir = reviewed_e2_dir if (reviewed_e2_dir / "e2_validation_manifest.json").is_file() else multicontext_dir
-            e2_summary_path = e2_dir / "e2_multicontext_fault_summary.csv"
-            e2_paired_path = e2_dir / "e2_multicontext_fault_paired.csv"
-            e2_detail_path = e2_dir / "e2_multicontext_fault_detail.csv"
-            e2_manifest_path = e2_dir / "e2_validation_manifest.json"
-            if e2_summary_path.is_file() and e2_paired_path.is_file() and e2_detail_path.is_file() and e2_manifest_path.is_file():
-                e2_manifest = json.loads(e2_manifest_path.read_text(encoding="utf-8"))
-                st.markdown("**Independent temporal-screen comparison · exploratory synthetic E2**")
-                paired = pd.read_csv(e2_paired_path)
-                e2_by_fault = paired.groupby("experiment_id").agg(
-                    comparisons=("pair_id", "size"),
-                    status_changes=("status_changed_by_injection", "sum"),
-                    supporting_faulted=("synthetic_faulted", lambda s: int((s == "SUPPORTING").sum())),
-                    supporting_same_time=("clean_same_timestamp", lambda s: int((s == "SUPPORTING").sum())),
-                ).reset_index()
-                e2_by_fault["status_change_rate"] = e2_by_fault.status_changes / e2_by_fault.comparisons
-                st.dataframe(e2_by_fault, hide_index=True, width="stretch")
-                detail = pd.read_csv(e2_detail_path)
-                e2_status_counts = detail.groupby(["condition", "status"]).size().rename("count").reset_index()
-                with st.expander("Temporal screen status counts, including matched controls"):
-                    st.dataframe(e2_status_counts, hide_index=True, width="stretch")
-                baseline_manifest_path = multicontext_dir / "synthetic_baseline_comparison_manifest.json"
-                baseline_summary_path = multicontext_dir / "synthetic_baseline_response_summary.csv"
-                e2_sensitivity_path = multicontext_dir / "synthetic_e2_setting_sensitivity.csv"
-                coverage_summary_path = multicontext_dir / "evidence_coverage_ablation_summary.csv"
-                if (baseline_manifest_path.is_file() and baseline_summary_path.is_file()
-                        and e2_sensitivity_path.is_file() and coverage_summary_path.is_file()):
-                    baseline_manifest = json.loads(baseline_manifest_path.read_text(encoding="utf-8"))
-                    baseline_hashes_match = baseline_manifest.get("dataset_hashes") == multicontext_hashes
-                    if baseline_hashes_match:
-                        st.markdown("**Synthetic baseline and setting sensitivity**")
-                        baseline_summary = pd.read_csv(baseline_summary_path)
-                        consensus = baseline_summary[baseline_summary.baseline.eq("E1_consensus")]
-                        st.dataframe(consensus, hide_index=True, width="stretch")
-                        with st.expander("Model-family and direct-variable E4 responses"):
-                            other_baselines = baseline_summary[~baseline_summary.baseline.eq("E1_consensus")]
-                            st.dataframe(other_baselines, hide_index=True, width="stretch")
-                        with st.expander("E2 temporal-screen setting sensitivity"):
-                            st.dataframe(pd.read_csv(e2_sensitivity_path), hide_index=True, width="stretch")
-                        with st.expander("Evidence coverage ablation (not an outcome ablation)"):
-                            st.dataframe(pd.read_csv(coverage_summary_path), hide_index=True, width="stretch")
-                            st.caption("E3-dependent combinations are blocked because verified neighboring-station evidence is unavailable. Coverage does not measure interpretive benefit.")
-                        st.caption("Fractions describe response to declared synthetic injection labels. They are not field accuracy, and unmodified observations are not verified negatives.")
-                    else:
-                        st.warning("The baseline comparison does not match the verified five-context campaign hashes.")
-                st.caption(
-                    f"{e2_manifest.get('evaluated_rows', 0):,} screen evaluations; "
-                    f"{e2_manifest.get('controls_selected', 0)} matched unmodified controls. "
-                    "SUPPORTING means temporal departures only; controls are not independently adjudicated clean. "
-                    "UNAVAILABLE values remain unavailable and do not count as evidence."
-                )
+            st.markdown("**Independent temporal-screen comparison · exploratory synthetic E2**")
+            paired = e2_outputs["e2_multicontext_fault_paired.csv"]
+            e2_by_fault = paired.groupby("experiment_id").agg(
+                comparisons=("pair_id", "size"),
+                status_changes=("status_changed_by_injection", "sum"),
+                supporting_faulted=("synthetic_faulted", lambda s: int((s == "SUPPORTING").sum())),
+                supporting_same_time=("clean_same_timestamp", lambda s: int((s == "SUPPORTING").sum())),
+            ).reset_index()
+            e2_by_fault["status_change_rate"] = e2_by_fault.status_changes / e2_by_fault.comparisons
+            st.dataframe(e2_by_fault, hide_index=True, width="stretch")
+            detail = e2_outputs["e2_multicontext_fault_detail.csv"]
+            e2_status_counts = detail.groupby(["condition", "status"]).size().rename("count").reset_index()
+            with st.expander("Temporal screen status counts, including matched controls"):
+                st.dataframe(e2_status_counts, hide_index=True, width="stretch")
+            with st.expander("Verified raw E2 paired and detail records"):
+                st.dataframe(paired, hide_index=True, width="stretch")
+                st.dataframe(detail, hide_index=True, width="stretch")
+
+            st.markdown("**Synthetic baseline response and setting sensitivity**")
+            baseline_summary = baseline_outputs["synthetic_baseline_response_summary.csv"]
+            consensus = baseline_summary[baseline_summary.baseline.eq("E1_consensus")]
+            st.dataframe(consensus, hide_index=True, width="stretch")
+            with st.expander("Context response ranges, model-family and E4 responses"):
+                st.dataframe(baseline_outputs["synthetic_baseline_context_summary.csv"], hide_index=True, width="stretch")
+                other_baselines = baseline_summary[~baseline_summary.baseline.eq("E1_consensus")]
+                st.dataframe(other_baselines, hide_index=True, width="stretch")
+            with st.expander("E2 temporal-screen setting sensitivity"):
+                st.dataframe(baseline_outputs["synthetic_e2_setting_sensitivity.csv"], hide_index=True, width="stretch")
+            with st.expander("Evidence coverage ablation (not an outcome ablation)"):
+                st.dataframe(baseline_outputs["evidence_coverage_ablation_summary.csv"], hide_index=True, width="stretch")
+                st.caption("E3-dependent combinations are blocked because verified neighboring-station evidence is unavailable. Coverage does not measure interpretive benefit.")
+            with st.expander("Verified raw synthetic response and coverage records"):
+                st.dataframe(baseline_outputs["synthetic_baseline_response_detail.csv"], hide_index=True, width="stretch")
+                st.dataframe(baseline_outputs["evidence_coverage_ablation.csv"], hide_index=True, width="stretch")
+            st.caption("Fractions describe response to declared synthetic injection labels. They are not field accuracy, and unmodified observations are not verified negatives.")
+            st.caption(
+                f"{e2_manifest.get('evaluated_rows', 0):,} screen evaluations; "
+                f"{e2_manifest.get('controls_selected', 0)} matched unmodified controls. "
+                "SUPPORTING means temporal departures only; controls are not independently adjudicated clean. "
+                "UNAVAILABLE values remain unavailable and do not count as evidence."
+            )
             with st.expander("Campaign provenance"):
                 st.json(multicontext_manifest)
         else:
-            st.warning("The five-context campaign is unavailable or its dataset hashes do not match the verified Phase 01 snapshots.")
+            st.warning(artifact_state["warning"])
+    else:
+        st.subheader("Five-context synthetic fault study")
+        st.warning("Research results are hidden because the five-context campaign manifest is missing.")
     saved_dir = root / "outputs" / "synthetic_fault_campaign"
     saved_summary = saved_dir / "experiment_summary.csv"
     campaign_manifest_path = saved_dir / "synthetic_campaign_manifest.json"

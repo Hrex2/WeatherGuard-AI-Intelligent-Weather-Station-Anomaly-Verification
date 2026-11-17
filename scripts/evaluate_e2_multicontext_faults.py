@@ -210,8 +210,10 @@ def evaluate_multicontext_e2(campaign_dir, root=ROOT, controls_per_context=2):
         "output_directory": output_dir.name,
         "outputs": ["e2_matched_controls.csv", detail_path.name,
                     paired_path.name, summary_path.name],
-        "output_integrity": {path.name: {"sha256": _sha256(path), "rows": int(sum(1 for _ in path.open(encoding="utf-8")) - 1)}
-                             for path in (controls_path, detail_path, paired_path, summary_path)},
+        "output_integrity": {path.name: {
+            "sha256": _sha256(path), "size_bytes": path.stat().st_size,
+            "rows": int(len(pd.read_csv(path))), "columns": pd.read_csv(path).columns.tolist()}
+            for path in (controls_path, detail_path, paired_path, summary_path)},
         "preserved_prior_e2_outputs": "Original unversioned E2 files remain unchanged; this reviewed run is stored in e2_validation_review_1.",
     }
     (output_dir / "e2_validation_manifest.json").write_text(json.dumps(manifest, indent=2, default=str) + "\n", encoding="utf-8")

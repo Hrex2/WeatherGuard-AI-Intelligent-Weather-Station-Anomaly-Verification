@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.12"
           cache: pip
@@ -23,3 +23,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Compile application, services, research code, tests and scripts
         run: python -m compileall -q app.py services ui src/weather_research tests scripts
+      - name: Check patch whitespace
+        run: git diff --check
