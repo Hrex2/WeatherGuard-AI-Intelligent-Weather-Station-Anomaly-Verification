@@ -1,4 +1,25 @@
-# Next Session Handoff — Phase 1A preflight (2026-11-17)
+# Current Handoff — Phase 1B station identity and data access (2026-11-17)
+
+## Current checkpoint
+
+- Verified Phase 1A base: cbe53f830a2941556f7a9c48101da51536259b62; new local branch codex/phase1b-station-identity-and-data-access is based directly on it.
+- Phase 0 completed locally; Phase 1A partially complete. The prior Phase 1A handoff remains below this section.
+- VILD0 versus WMO 42099 remains IDENTITY_UNRESOLVED. Do not merge or count 42099 as independent evidence.
+- Meteostat Python 2.2.3 was used in a temporary isolated environment to query 179 provider/parameter inventory metadata rows. No project dependency or observation dataset was added.
+- VILD0 and 42105 have five common METAR inventory fields with date bounds covering 2021-01-05–2026-03-09. Inventory completeness is low/modest; rows, source flags and exact shared timestamps remain unknown. 42105 is a conditional regional candidate, not a verified suitable neighbor.
+- IMD registration/document/request steps are documented; station-specific hourly coverage is not checked. No account, request or payment was initiated.
+- Current status: PARTIALLY_COMPLETE_EXTERNAL_ACCESS_REQUIRED. E3 is not scientifically validated; Phase 2 independent references remain outstanding.
+- Validation: 115 tests passed, 0 failed, 0 skipped; compileall passed; diff check passed. All six Phase 1B output hashes and the Phase 1A manifest verified. No historical observation dataset was downloaded.
+
+## Next action
+
+Review research_results/phase1b_station_identity/RAW_DATA_RETRIEVAL_PROPOSAL.md. The proposed request is Meteostat provider metar, VILD0 + 42105, hourly temp/rhum/wspd/wdir/pres, 2021-01-05 through 2026-03-09 inclusive. Do not retrieve observations until the user approves these exact stations, provider, variables and dates. Otherwise resolve VILD0/42099 identity and check IMD availability manually.
+
+See research_results/phase1b_station_identity/PHASE1B_READINESS_REPORT.md for sources, limitations and the complete artifacts.
+
+---
+
+# Previous Handoff — Phase 1A preflight (2026-11-17)
 
 ## Git checkpoint
 
