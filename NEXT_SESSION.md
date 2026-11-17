@@ -38,3 +38,7 @@ See research_results/phase1b_station_identity/PHASE1B_READINESS_REPORT.md for so
 ## Next dependency
 
 Before Phase 1B, independently verify provider IDs, coordinates and station history; manually determine IMD request requirements; then obtain authorization for a bounded raw-observation request. Preserve direct/model source indicators, raw hashes, timestamps, units, flags and software versions. Do not infer E3 evidence from the existing derived comparison CSVs.
+
+## Phase 1C controlled METAR pilot — 2026-11-17
+
+Phase 0 is complete locally; Phase 1A and Phase 1B remain partially complete. Phase 1C's exact two-station, five-variable hourly retrieval workflow is prepared with a dry-run default and an explicit execution gate. Actual observation retrieval was not executed and approval remains pending. The pinned Meteostat 2.2.3 METAR adapter's runtime registry starts on 2026-11-16 and its Aviation Weather Center endpoint is limited to `hours=24`; its provider filter excludes the requested 2025-09-01 through 2025-09-30 interval before any observation request. Therefore Phase 1C readiness is `PILOT_WORKFLOW_BLOCKED_PROVIDER_INTERFACE_UNVERIFIED` for this historical window. RHUM is computed by Meteostat from temperature and dew point. E3 is not scientifically validated, and Phase 2 independent event/fault references remain outstanding. See `research_results/phase1c_metar_pilot/` and `PHASE1C_PILOT_READINESS_REPORT.md`. No push or PR was made.

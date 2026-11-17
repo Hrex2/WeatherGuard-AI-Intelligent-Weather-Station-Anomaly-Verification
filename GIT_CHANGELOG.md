@@ -40,3 +40,7 @@ Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-
 ## 2026-11-17 — Phase 1B station identity and access readiness
 
 Based on Phase 1A cbe53f8 on local branch codex/phase1b-station-identity-and-data-access. Queried 179 Meteostat provider/parameter inventory metadata records with isolated package 2.2.3; documented unresolved VILD0/42099 identity, IMD portal procurement workflow, and an approval-gated bounded proposal. No observation data retrieved; E3 remains unvalidated. Full suite: 115 passed, 0 failed, 0 skipped; compilation and diff checks passed; Phase 1A manifest and all six Phase 1B artifact hashes verified. Local commit is recorded in the completion report. Not pushed.
+
+## 2026-11-17 — Phase 1C controlled METAR pilot preparation
+
+Prepared `codex/phase1c-controlled-metar-pilot` from Phase 1B commit `49c3edf`. Implemented a dry-run-first, confirmation-gated pilot workflow and quality/provenance helpers for the fixed VILD0 + 42105, Meteostat METAR, five-parameter, hourly 2025-09-01 through 2025-09-30 proposal. Runtime inspection of Meteostat 2.2.3 shows its METAR provider start is 2026-11-16 and its Aviation Weather Center adapter requests only `hours=24`; the provider filter excludes this historical request. No observation request was made. Readiness is `PILOT_WORKFLOW_BLOCKED_PROVIDER_INTERFACE_UNVERIFIED`; E3 is not validated; Phase 2 independent references remain outstanding. Local validation and commit details are recorded in `PHASE1C_PILOT_READINESS_REPORT.md`; not pushed.
