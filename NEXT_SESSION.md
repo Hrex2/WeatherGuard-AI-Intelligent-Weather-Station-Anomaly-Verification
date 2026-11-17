@@ -1,17 +1,19 @@
-# Next Session Handoff — Research Completion Roadmap (2026-11-17)
+# Next Session Handoff — Phase 1A preflight (2026-11-17)
 
-## Verified baseline
+## Git checkpoint
 
-- PR #2 is merged. Refreshed `main`: `852bc34e76ef4e5de15e48f0f1402f7bf0e9c1d1`.
-- Final PR head: `c51ab63e7aa47f386d0f4c08e28576be153f18d0`; PR-head GitHub Actions run #15 succeeded.
-- Full suite: 84 passed, 0 failed, 0 skipped. Compileall and `git diff --check` passed.
-- Phase 01: 44,879 observations, 36,434 train rows and 8,415 test rows; source hashes and schemas verified.
-- Phase 03: all 11 manifest-listed CSV outputs pass hashes, row counts and ordered-column checks; this is artifact identity, not historical generation provenance.
-- PR #2 campaign: five contexts/eight scenarios, reviewed E2 and baseline review outputs verify; historical outputs remain frozen.
-- Baseline verification report: `PHASE0_BASELINE_VERIFICATION.md`.
+- Base: Phase 0 commit `9a3e5c9143f9a639088ba1ffb1e07377e8aac76c` on the clean local branch `codex/research-completion-roadmap-phase0`.
+- Current branch: `codex/phase1a-station-availability-preflight`; local work only, not pushed.
+- New artifacts: `research_results/phase1a_station_preflight/`.
 
-## Current research limits and next dependencies
+## Findings
 
-No traceable raw observation exports or source/retrieval metadata are bundled for VILD0 or neighbors 42099, 42101, 42105 and 42096. Reported coordinates/distances and coverage are not verified. No independent maintenance, fault, normal-operation or regional-event adjudication set exists. Therefore do not run empirical E3, claim real-world accuracy, perform outcome-level ablation, or use E1–E4 outputs to create reference labels.
+- Five Meteostat station pages were reviewed: VILD0, 42099, 42101, 42105 and 42096. Public metadata reports coordinates/elevations and station-level inventory intervals for four hourly stations. The 42096 page reports no hourly interval and daily data ending 1970-12-31.
+- Haversine distances from provider coordinates: 42099 2.27 km, 42101 76.04 km, 42105 89.92 km, 42096 122.90 km. Elevation differences: +1, −5, +93, −55 m respectively. Distances are descriptive, not selection thresholds.
+- All seven parameters remain `NOT_CHECKED`; inventory ranges do not verify populated observations, directness, source flags or actual timestamp overlap. Four IDs have Meteostat page metadata, but only 42099 and 42101 were also identified by IMD climatological records in this review.
+- IMD DSP requirements were not verified; its WIS2 metadata endpoint timed out. Meteostat Python package is not installed; no dependency was installed. No raw data were fetched.
+- Phase 1A is `PARTIALLY_COMPLETE_EXTERNAL_DATA_ACCESS_REQUIRED`. E3 is not validated.
 
-Next: obtain source-backed station inventory, raw primary/neighbor exports and retrieval metadata; separately obtain maintenance/operator records and independent regional event references. Preserve raw inputs and hashes before cleaning. Then audit temporal coverage/missingness and alignment, and implement E3 with explicit unavailable states. Continue to preserve all saved predictions and synthetic outputs.
+## Next dependency
+
+Before Phase 1B, independently verify provider IDs, coordinates and station history; manually determine IMD request requirements; then obtain authorization for a bounded raw-observation request. Preserve direct/model source indicators, raw hashes, timestamps, units, flags and software versions. Do not infer E3 evidence from the existing derived comparison CSVs.

@@ -35,3 +35,4 @@ Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-
 
 | 2026-11-17 | `codex/research-validation-v2` | `db97633` | Save corrected versioned baseline response and coverage outputs; synchronize the PR #2 audit report, tests and handoff | 84 tests, compileall and diff check pass; pushed to origin |
 | 2026-11-17 | `main` | `852bc34` | Merge PR #2, `codex/research-validation-v2`, after path/integrity/aggregation remediation | PR-head Actions #15 passed; 84 tests, compilation and whitespace checks passed |
+| 2026-11-17 | `codex/phase1a-station-availability-preflight` | Local checkpoint | Run station metadata/availability preflight; preserve provider metadata versus observed-value distinction | 14 targeted tests passed; full suite 98 passed, compileall and diff check passed; not pushed |

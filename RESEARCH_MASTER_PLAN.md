@@ -44,3 +44,9 @@ Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-
 ## Research completion roadmap baseline — 2026-11-17
 
 The verified software baseline is `main` at `852bc34e76ef4e5de15e48f0f1402f7bf0e9c1d1`. Phase 0 is complete; see `PHASE0_BASELINE_VERIFICATION.md`. Do not treat that gate as scientific completion. Phases 1–5 depend on source-verified station observations and independent event/fault/normal references, which are not present in the repository. The active local documentation checkpoint is `codex/research-completion-roadmap-phase0`.
+
+## Phase 1A station preflight — 2026-11-17
+
+Phase 1A status: **PARTIALLY_COMPLETE_EXTERNAL_DATA_ACCESS_REQUIRED**. The repository contains VILD0 plus four neighbor candidates: 42099, 42101, 42105 and 42096. Public Meteostat pages report station metadata and station-level hourly inventory periods for the first four; 42096 shows daily historical inventory only. Provider inventory is not proof of populated per-parameter rows or direct observation provenance. All seven parameter-level availability statuses remain `NOT_CHECKED`. Candidate suitability, distances, sources, and manual-access requirements are documented in `research_results/phase1a_station_preflight/PHASE1A_STATION_PREFLIGHT_REPORT.md`.
+
+No raw observation files were downloaded. No historical prediction, Phase 01/03 snapshot, spatial comparison, or synthetic result was modified. The Meteostat package is not installed, its parameter inventory API was not called, and IMD Data Service Portal request/access terms remain unverified. E3 is not validated. Phase 1B must wait for source-verified station metadata and controlled, approved raw observation retrieval.

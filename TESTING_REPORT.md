@@ -161,3 +161,12 @@ The first two hosted Linux runs reached all 84 tests but failed the Experiment L
 - Read-only artifact verification passed for Phase 01 (44,879/36,434/8,415 rows), Phase 03 (11 CSV artifacts), and PR #2 multi-context/E2/baseline inputs and outputs (40 context-scenario rows; 6,840 E2 detail; 3,360 baseline detail; 29 baseline inputs and six outputs).
 - No saved prediction, original synthetic result or historical manifest was regenerated or overwritten.
 - Phase 1/2 blockers are recorded in `PHASE0_BASELINE_VERIFICATION.md`: source-verified raw VILD0/neighbor observations and independent adjudicated event/fault/normal references are absent. Do not begin empirical E3 or report real-world accuracy until those inputs are available.
+
+## Phase 1A station preflight — 2026-11-17
+
+- `python scripts/run_phase1a_station_preflight.py`: generated five provider identity rows/records for the five candidate stations, 70 station-provider-parameter statuses, and four neighbor assessments. It made no observation downloads or live inventory API calls.
+- `python -B -m unittest discover -s tests -v`: **98 passed, 0 failed, 0 skipped** (84 existing + 14 station-preflight tests). New tests cover identities, metadata, coordinates, Haversine, source classes, availability, suitability, mocked inventory responses, and manifest tampering.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed. `git diff --check`: passed.
+- Phase 1A manifest verifies four repository inputs and five generated outputs. All 70 parameter rows are `NOT_CHECKED`; station-level Meteostat inventory metadata is reported separately. Four neighbor candidates assessed: three conditional, one unsuitable for the present hourly period based on the provider page's listed inventory.
+- A scoped `.gitattributes` rule preserves this hash-manifested preflight directory byte-for-byte across Windows/Linux checkout.
+- Status: **PARTIALLY_COMPLETE_EXTERNAL_DATA_ACCESS_REQUIRED**. No raw observation downloads, E3 implementation/validation, refit, prediction generation, or historical-result edits.

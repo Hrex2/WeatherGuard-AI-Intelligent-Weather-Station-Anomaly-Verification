@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "git_commit": "9a3e5c9143f9a639088ba1ffb1e07377e8aac76c",
+  "execution_timestamp_utc": "2026-11-17T10:11:22.813358+00:00",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "meteostat_package_version": null
+  },
+  "inputs": [
+    {
+      "path": "outputs/station_provenance/station_manifest.json",
+      "sha256": "129cd5c4c041c549ffb2035f3ed26cccbd9bbb93b5463ae8ae9740c7c03614b8"
+    },
+    {
+      "path": "PHASE02_PROVENANCE_REPORT.md",
+      "sha256": "3b8821f7f47ddae63afd6fb4c4d1bd36d47a448adfae4cfa04062632c7a01e89"
+    },
+    {
+      "path": "phase03_model_revalidation/phase03_integrity_manifest.json",
+      "sha256": "e768fb6ccb795f2c717169de0145f84402d102359fb48784b9dfe86a896e83ea"
+    },
+    {
+      "path": "phase03_model_revalidation/spatial_comparison_summary.csv",
+      "sha256": "714966f0f6d6f6f9c15a78a1e57ee5baa3483b244c4ca2a6f7a6341d4dd0aad6"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "neighbour_suitability.csv",
+      "sha256": "8576a3234e512e3c5e782e5c46a8f5809e0bdcb70486f91e6dfca5928a1a9946",
+      "size_bytes": 1325
+    },
+    {
+      "path": "PHASE1A_STATION_PREFLIGHT_REPORT.md",
+      "sha256": "3543f885a2c079362da0288560fb337d41389d8acc734a7766145dfe4512d593",
+      "size_bytes": 7688
+    },
+    {
+      "path": "station_inventory.csv",
+      "sha256": "ca894843b64243bfa2ed6b70a509cb7288f6529943800ddf1f6b46e5920525b0",
+      "size_bytes": 3451
+    },
+    {
+      "path": "station_parameter_availability.csv",
+      "sha256": "4172c250a0bb41adc35964fdcf9879d9813f88542c13969d20538ed61daf9642",
+      "size_bytes": 17544
+    },
+    {
+      "path": "station_source_registry.json",
+      "sha256": "a8b89ccf0cf67f07439da35d2b578b2fba942b196cd65c9b591fd51293381b54",
+      "size_bytes": 4917
+    }
+  ],
+  "summary": {
+    "station_count": 5,
+    "candidate_neighbor_count": 4,
+    "provider_metadata_reviewed_identity_count": 5,
+    "imd_station_index_id_count": 2,
+    "independently_field_verified_identity_count": 0,
+    "parameter_count": 7,
+    "availability_statuses": {
+      "NOT_CHECKED": 70
+    },
+    "suitability_statuses": {
+      "CONDITIONAL_CANDIDATE": 3,
+      "UNSUITABLE": 1
+    },
+    "historical_files_modified": false
+  },
+  "network_access_status": "DOCUMENTATION_AND_STATION_METADATA_REVIEWED_API_NOT_QUERIED",
+  "limitations": [
+    "Inventory metadata does not prove populated observations.",
+    "No raw hourly observations were downloaded.",
+    "Manifest hash is not self-referential."
+  ]
+}
