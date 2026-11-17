@@ -106,3 +106,7 @@ The analysis separates configuration/timestamp observations, context × scenario
 The review manifest records 29 input artifacts and all 6 outputs with hashes, sizes and applicable row/column metadata; the manifest’s own final SHA-256 is stored in a separate integrity sidecar. Reviewed E2 artifacts were verified before use (6,840 detail rows, 2,880 pairs, 813 summaries and 10 controls). Experiment Lab hides the reviewed outputs and displays an integrity warning if required manifests or files are missing or fail checks. The historical campaign manifest and first-generation baseline outputs are preserved.
 
 Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
+
+## Current research completion checkpoint — 2026-11-17
+
+PR #2 is merged into `main` at `852bc34e76ef4e5de15e48f0f1402f7bf0e9c1d1`. On refreshed main, all 84 regression tests pass; compilation and `git diff --check` pass; GitHub Actions run #15 on the merged PR head passed. Phase 01/03 and PR #2 multi-context, reviewed E2, and baseline artifacts passed recorded integrity checks. See [Phase 0 baseline verification](PHASE0_BASELINE_VERIFICATION.md). Research phases requiring traceable station observations and independent adjudicated references remain blocked; the project makes no real-world accuracy claim.

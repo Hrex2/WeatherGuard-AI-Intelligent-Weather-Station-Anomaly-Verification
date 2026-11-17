@@ -34,3 +34,4 @@ The review manifest records 29 input artifacts and all 6 outputs with hashes, si
 Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
 
 | 2026-11-17 | `codex/research-validation-v2` | `db97633` | Save corrected versioned baseline response and coverage outputs; synchronize the PR #2 audit report, tests and handoff | 84 tests, compileall and diff check pass; pushed to origin |
+| 2026-11-17 | `main` | `852bc34` | Merge PR #2, `codex/research-validation-v2`, after path/integrity/aggregation remediation | PR-head Actions #15 passed; 84 tests, compilation and whitespace checks passed |

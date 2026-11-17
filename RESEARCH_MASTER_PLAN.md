@@ -40,3 +40,7 @@ The analysis separates configuration/timestamp observations, context × scenario
 The review manifest records 29 input artifacts and all 6 outputs with hashes, sizes and applicable row/column metadata; the manifest’s own final SHA-256 is stored in a separate integrity sidecar. Reviewed E2 artifacts were verified before use (6,840 detail rows, 2,880 pairs, 813 summaries and 10 controls). Experiment Lab hides the reviewed outputs and displays an integrity warning if required manifests or files are missing or fail checks. The historical campaign manifest and first-generation baseline outputs are preserved.
 
 Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
+
+## Research completion roadmap baseline — 2026-11-17
+
+The verified software baseline is `main` at `852bc34e76ef4e5de15e48f0f1402f7bf0e9c1d1`. Phase 0 is complete; see `PHASE0_BASELINE_VERIFICATION.md`. Do not treat that gate as scientific completion. Phases 1–5 depend on source-verified station observations and independent event/fault/normal references, which are not present in the repository. The active local documentation checkpoint is `codex/research-completion-roadmap-phase0`.

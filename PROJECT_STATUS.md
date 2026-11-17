@@ -63,3 +63,9 @@ Phase 02 provenance inventory template/report created from supplied history only
 ### Final application test result
 
 The expanded suite is 35 passed, 0 failed. `AppTest` navigates all five workspaces without errors. A real localhost health request and browser screenshot were not obtained because the sandbox denied localhost socket access; this is an environment validation limit, not a reported successful HTTP launch. See `TESTING_REPORT.md`.
+
+## Current repository checkpoint — 2026-11-17
+
+PR #2 has merged. The remote main commit `852bc34e76ef4e5de15e48f0f1402f7bf0e9c1d1` contains the completed path-portability, integrity, context-level aggregation, regression-test and documentation remediation. The current application/repository regression suite is **84 passed**; compileall, patch whitespace and the PR-head hosted Actions run passed. Phase 01/03 identities and the PR #2 campaign/E2/baseline result sets were verified without regenerating them. The older notebook-package status above describes that notebook deliverable's own validation and must not be used as the current application test count.
+
+The next research dependency is source evidence: raw VILD0 and neighboring-station observations with retrieval metadata, plus independently adjudicated event/fault/normal references. Until those are supplied and verified, E3, real-world metrics and outcome-level ablation remain unavailable.
