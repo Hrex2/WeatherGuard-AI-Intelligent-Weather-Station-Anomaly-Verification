@@ -149,3 +149,7 @@ Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-
 - `git diff --check`: passed.
 - Saved-data baseline review completed without model fitting or campaign/prediction regeneration. The versioned review manifest verifies 29 input artifacts and 6 CSV outputs; the manifest SHA-256 is in `synthetic_baseline_comparison_manifest.integrity.json`. The reviewed E2 set and Phase 01 sources passed their integrity checks.
 - New Actions workflow run for the pushed final commit is pending verification; see `NEXT_SESSION.md` once observed.
+
+### Linux CI byte-integrity follow-up
+
+The first two hosted Linux runs reached all 84 tests but failed the Experiment Lab AppTest because the verified multi-context outputs were hidden. Investigation found Git on Windows had normalized CRLF bytes in the manifested experiment files, while the manifests intentionally hash the original bytes. A scoped `.gitattributes` rule now preserves the campaign and its referenced run artifacts as binary for Git checkout, without changing their working-tree bytes or regenerating any experiment. Before commit, the Git index was independently checked against all 29 manifested inputs, six outputs, and the manifest sidecar: all hashes matched. The newest hosted run after this preservation fix is pending; do not consider hosted CI green until it completes.
