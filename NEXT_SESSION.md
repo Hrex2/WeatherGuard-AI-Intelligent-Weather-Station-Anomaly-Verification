@@ -59,9 +59,9 @@ Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-
 ## Current PR #2 handoff — 2026-11-17
 
 - Branch: `codex/research-validation-v2`; base: `main` at `0a279597c3d6cc0eed6088150bfe59ec13e7c99d`.
-- Implementation commit: `1712e1289e961211538277cc2f8285ef9f1dbce8`; final documentation/artifact commit and remote head are recorded below after push.
+- Implementation commit: `1712e1289e961211538277cc2f8285ef9f1dbce8`; documentation/artifact commit `db97633` is pushed to the PR branch.
 - Full local validation: **84 tests passed**, compileall passed, and `git diff --check` passed. Baseline results are in `research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/`; 29 inputs and six outputs are hash/shape verified.
 - No refit, new campaign, or prediction regeneration was performed. PR #2 remains draft and must receive human review; do not merge automatically.
-- Await the new hosted Actions result for the final pushed head. Scientific blockers remain E3 station data/provenance, adjudicated real fault/clean labels, outcome-level ablation, broader robustness, the unexplained 42 Isolation Forest mismatches, and full reference verification.
+- Hosted Actions was started for the pushed head; verify the latest run before treating CI as complete. Scientific blockers remain E3 station data/provenance, adjudicated real fault/clean labels, outcome-level ablation, broader robustness, the unexplained 42 Isolation Forest mismatches, and full reference verification.
 
-- Documentation and saved review-artifact commit: db97633; push is the next action. This checkpoint precedes the final remote SHA and Actions run.
+- Documentation and saved review-artifact commit `db97633` is pushed to the existing draft PR branch. The final PR head and hosted Actions status are available in PR #2.
