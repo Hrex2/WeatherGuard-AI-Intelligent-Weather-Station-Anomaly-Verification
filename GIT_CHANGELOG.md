@@ -32,3 +32,5 @@ The analysis separates configuration/timestamp observations, context × scenario
 The review manifest records 29 input artifacts and all 6 outputs with hashes, sizes and applicable row/column metadata; the manifest’s own final SHA-256 is stored in a separate integrity sidecar. Reviewed E2 artifacts were verified before use (6,840 detail rows, 2,880 pairs, 813 summaries and 10 controls). Experiment Lab hides the reviewed outputs and displays an integrity warning if required manifests or files are missing or fail checks. The historical campaign manifest and first-generation baseline outputs are preserved.
 
 Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
+
+| 2026-11-17 | `codex/research-validation-v2` | `db97633` | Save corrected versioned baseline response and coverage outputs; synchronize the PR #2 audit report, tests and handoff | 84 tests, compileall and diff check pass; push pending |
