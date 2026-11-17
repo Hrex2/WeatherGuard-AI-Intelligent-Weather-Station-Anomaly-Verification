@@ -1,0 +1,203 @@
+{
+  "status": "EXECUTED_EXPLORATORY_SYNTHETIC_E2",
+  "campaign_id": "fault_matrix_multicontext_46ae5d119d",
+  "objective": "Test whether independent temporal screens respond to known synthetic injections and compare with same-time clean series and matched unmodified windows.",
+  "code_commit": "1464d60b3a8dbeff864fb369d26d3eefbdcdee0a",
+  "dataset_hashes": {
+    "model_df": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "X_train_multi": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "X_test_multi": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "contexts": [
+    {
+      "context_id": "TEMP_HIGH_VAR_LOW",
+      "timestamp": "2025-04-09 17:30:00+05:30",
+      "calendar_quarter": 2,
+      "temperature_median_24h": 29.75,
+      "temperature_sd_6h": 0.5469613027140638,
+      "missing_fraction_24h": 0.0,
+      "precipitation_missing_24h": 0,
+      "selection_rule": "pre-injection 24h temperature level and 6h variability strata; no detector outputs used",
+      "run_directory": "research_results\\fault_matrix_6ff4e167232b",
+      "run_id": "fault_matrix_6ff4e167232b"
+    },
+    {
+      "context_id": "TEMP_HIGH_VAR_HIGH",
+      "timestamp": "2025-05-27 12:30:00+05:30",
+      "calendar_quarter": 2,
+      "temperature_median_24h": 30.1,
+      "temperature_sd_6h": 3.0406505151949896,
+      "missing_fraction_24h": 0.0,
+      "precipitation_missing_24h": 0,
+      "selection_rule": "pre-injection 24h temperature level and 6h variability strata; no detector outputs used",
+      "run_directory": "research_results\\fault_matrix_8e8e83e5d224",
+      "run_id": "fault_matrix_8e8e83e5d224"
+    },
+    {
+      "context_id": "TEMP_MIDLEVEL_MIDVAR",
+      "timestamp": "2025-09-04 22:30:00+05:30",
+      "calendar_quarter": 3,
+      "temperature_median_24h": 25.4,
+      "temperature_sd_6h": 1.451053257311928,
+      "missing_fraction_24h": 0.0,
+      "precipitation_missing_24h": 0,
+      "selection_rule": "pre-injection 24h temperature level and 6h variability strata; no detector outputs used",
+      "run_directory": "research_results\\fault_matrix_8bf9a6fb6ff0",
+      "run_id": "fault_matrix_8bf9a6fb6ff0"
+    },
+    {
+      "context_id": "TEMP_LOW_VAR_HIGH",
+      "timestamp": "2025-11-30 20:30:00+05:30",
+      "calendar_quarter": 4,
+      "temperature_median_24h": 12.8,
+      "temperature_sd_6h": 3.1034479033631106,
+      "missing_fraction_24h": 0.0,
+      "precipitation_missing_24h": 0,
+      "selection_rule": "pre-injection 24h temperature level and 6h variability strata; no detector outputs used",
+      "run_directory": "research_results\\fault_matrix_74d531ca6a4a",
+      "run_id": "fault_matrix_74d531ca6a4a"
+    },
+    {
+      "context_id": "TEMP_LOW_VAR_LOW",
+      "timestamp": "2026-02-06 09:30:00+05:30",
+      "calendar_quarter": 1,
+      "temperature_median_24h": 11.8,
+      "temperature_sd_6h": 0.5878397362849465,
+      "missing_fraction_24h": 0.0,
+      "precipitation_missing_24h": 0,
+      "selection_rule": "pre-injection 24h temperature level and 6h variability strata; no detector outputs used",
+      "run_directory": "research_results\\fault_matrix_6af2b67bb80c",
+      "run_id": "fault_matrix_6af2b67bb80c"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "TEMP_POINT_SPIKE",
+      "variable": "temp",
+      "kind": "spike",
+      "magnitude": 10.0,
+      "duration": 1,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_POINT_DROP",
+      "variable": "temp",
+      "kind": "point_negative_offset",
+      "magnitude": 10.0,
+      "duration": 1,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_PERSISTENT_OFFSET",
+      "variable": "temp",
+      "kind": "positive_offset",
+      "magnitude": 5.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_STUCK_SENSOR",
+      "variable": "temp",
+      "kind": "stuck",
+      "magnitude": 0.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_GRADUAL_DRIFT",
+      "variable": "temp",
+      "kind": "drift",
+      "magnitude": 5.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_MISSING_BLOCK",
+      "variable": "temp",
+      "kind": "dropout",
+      "magnitude": 0.0,
+      "duration": 3,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_INTERMITTENT_NOISE",
+      "variable": "temp",
+      "kind": "noise_burst",
+      "magnitude": 2.0,
+      "duration": 6,
+      "seed": 31415
+    },
+    {
+      "id": "DEWPOINT_TEMP_INCONSISTENCY",
+      "variable": "dwpt",
+      "kind": "positive_offset",
+      "magnitude": 20.0,
+      "duration": 3,
+      "seed": 42
+    }
+  ],
+  "variables": [
+    "temp",
+    "dwpt",
+    "rhum",
+    "prcp",
+    "wspd",
+    "pres"
+  ],
+  "evaluated_fault_variable": "Only the scenario's directly injected variable is used for its synthetic target-variable test; matched controls are screened on all six available variables.",
+  "matched_control_method": "Same calendar quarter and time-of-day; nearest 24-hour temperature median, six-hour temperature variability and missingness; continuous hourly context; controls are unmodified in this campaign, not verified fault-free observations.",
+  "controls_per_context_requested": 2,
+  "controls_selected": 10,
+  "windows_hours": [
+    3,
+    6,
+    12
+  ],
+  "robust_deviation_thresholds": [
+    2.5,
+    3.5,
+    4.5
+  ],
+  "modes": [
+    "real_time",
+    "retrospective"
+  ],
+  "lookahead_hours": 6,
+  "minimum_context_rows": 3,
+  "evaluated_rows": 6840,
+  "paired_injection_rows": 2880,
+  "paired_status_changes": 1008,
+  "limitations": [
+    "E2 SUPPORTING means only a temporal departure or repeated-value screen; it does not identify a regional event or faulty hardware.",
+    "The clean same-time comparator and matched controls are not adjudicated fault-free ground truth.",
+    "Synthetic fault labels are known by construction; results are not real-world E2 accuracy.",
+    "Only temperature and dew point were directly perturbed by the existing scenario set; other variables appear in matched-control summaries only.",
+    "E2 thresholds are exploratory and multiple readings within an event are temporally dependent."
+  ],
+  "output_directory": "e2_validation_review_1",
+  "outputs": [
+    "e2_matched_controls.csv",
+    "e2_multicontext_fault_detail.csv",
+    "e2_multicontext_fault_paired.csv",
+    "e2_multicontext_fault_summary.csv"
+  ],
+  "output_integrity": {
+    "e2_matched_controls.csv": {
+      "sha256": "4ad6caeef1c6e61c775ca98403dccd983f48f7402974c0908d4fe7e6d0757526",
+      "rows": 10
+    },
+    "e2_multicontext_fault_detail.csv": {
+      "sha256": "ce261dbf3551f41147cf0ed16414e8a4a189695651361131e847b13f6bd44e22",
+      "rows": 6840
+    },
+    "e2_multicontext_fault_paired.csv": {
+      "sha256": "4f7e5660865b9ad4a0b09ff00c1e47618dbf90f193c7efcd6d163085fd2754b1",
+      "rows": 2880
+    },
+    "e2_multicontext_fault_summary.csv": {
+      "sha256": "e1ea82e46d2a993d0d0890e1bf192d6b6c7af0f7838436b8f4d5efd6f9964fb9",
+      "rows": 813
+    }
+  },
+  "preserved_prior_e2_outputs": "Original unversioned E2 files remain unchanged; this reviewed run is stored in e2_validation_review_1."
+}

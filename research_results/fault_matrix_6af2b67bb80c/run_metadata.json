@@ -1,0 +1,127 @@
+{
+  "run_id": "fault_matrix_6af2b67bb80c",
+  "status": "EXECUTED_LOCAL_SYNTHETIC",
+  "objective": "Explore detector response across additional controlled held-out fault patterns.",
+  "hypothesis": "Different synthetic fault patterns and variables may alter saved-protocol model flags differently.",
+  "dataset_hashes": {
+    "model_df": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "X_train_multi": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "X_test_multi": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "phase01_audit_passed": true,
+  "code_commit": "c55b90a86821b4d66b796af306a9e6a622471cde",
+  "model_version": "local refit of existing 12-config protocol; synthetic results only",
+  "feature_order": [
+    "temp",
+    "dwpt",
+    "rhum",
+    "prcp",
+    "wspd",
+    "pres",
+    "temp_change_1h",
+    "temp_rolling_mean_6h",
+    "temp_deviation_6h",
+    "month_sin",
+    "month_cos"
+  ],
+  "random_seeds": [
+    42,
+    31415
+  ],
+  "n_estimators": 200,
+  "scaler": "StandardScaler fit on train only for LOF/SVM; Isolation Forest unscaled",
+  "python_version": "3.12.9",
+  "numpy_version": "2.4.4",
+  "pandas_version": "3.0.2",
+  "scikit_learn_version": "1.8.0",
+  "training_rows": 36434,
+  "test_rows": 8415,
+  "training_end": "2025-03-14 23:30:00+05:30",
+  "test_start": "2025-03-21 23:30:00+05:30",
+  "scenarios": [
+    {
+      "id": "TEMP_POINT_SPIKE",
+      "variable": "temp",
+      "kind": "spike",
+      "magnitude": 10.0,
+      "duration": 1,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_POINT_DROP",
+      "variable": "temp",
+      "kind": "point_negative_offset",
+      "magnitude": 10.0,
+      "duration": 1,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_PERSISTENT_OFFSET",
+      "variable": "temp",
+      "kind": "positive_offset",
+      "magnitude": 5.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_STUCK_SENSOR",
+      "variable": "temp",
+      "kind": "stuck",
+      "magnitude": 0.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_GRADUAL_DRIFT",
+      "variable": "temp",
+      "kind": "drift",
+      "magnitude": 5.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_MISSING_BLOCK",
+      "variable": "temp",
+      "kind": "dropout",
+      "magnitude": 0.0,
+      "duration": 3,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_INTERMITTENT_NOISE",
+      "variable": "temp",
+      "kind": "noise_burst",
+      "magnitude": 2.0,
+      "duration": 6,
+      "seed": 31415
+    },
+    {
+      "id": "DEWPOINT_TEMP_INCONSISTENCY",
+      "variable": "dwpt",
+      "kind": "positive_offset",
+      "magnitude": 20.0,
+      "duration": 3,
+      "seed": 42
+    }
+  ],
+  "clean_comparator": "same local fitted models and clean held-out predictions for every scenario",
+  "saved_grid_mismatches": "Historical parity differs at 42 labels, all Isolation Forest; comparison here is within this run's clean baseline.",
+  "limitations": [
+    "Synthetic injections are not real-world fault validation.",
+    "Scenario timestamp is one selected held-out interval; results do not estimate population performance.",
+    "Ground-truth labels mark modified observations only; causal feature propagation can alter neighboring predictions.",
+    "No fitted estimator objects are persisted.",
+    "E3 spatial evidence is not part of these experiments."
+  ],
+  "context_id": "TEMP_LOW_VAR_LOW",
+  "context_timestamp": "2026-02-06 09:30:00+05:30",
+  "shared_fit_scope": "One train-only model/scaler fit reused across every selected multi-context campaign.",
+  "outputs": [
+    "configuration_metrics.csv",
+    "scenario_summary.csv",
+    "family_scenario_summary.csv",
+    "changed_and_injected_predictions.csv",
+    "injection_registry.csv",
+    "physical_screening_results.csv"
+  ]
+}

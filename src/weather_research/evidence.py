@@ -5,10 +5,14 @@ import pandas as pd
 
 
 def classify_evidence(evidence: pd.DataFrame, min_supporting_stations=2):
-    """Classify rows using explicit boolean evidence; unavailable is never disagreement.
+    """Classify only when each required evidence group is genuinely available.
 
     Expected columns: model_stable, temporal_coherent, spatial_status,
     supporting_stations, conflicting_stations, hard_physical_violation.
+    ``temporal_coherent`` must represent independently assessed persistence or
+    event coherence; an E2 ``SUPPORTING`` departure flag alone means only that
+    the measurement is temporally unusual. Spatial states may be SUPPORTED,
+    CONFLICTING or NO_DETECTED_EVIDENCE; UNAVAILABLE is not complete evidence.
     This is rule-based scaffolding, not calibrated probability estimation.
     """
     if not isinstance(min_supporting_stations,int) or min_supporting_stations<1:
@@ -18,12 +22,19 @@ def classify_evidence(evidence: pd.DataFrame, min_supporting_stations=2):
                        "supporting_stations","conflicting_stations","hard_physical_violation")
     for col in required_evidence:
         if col not in out: out[col]=pd.NA
-    out["spatial_evidence_available"] = out["spatial_status"].isin(["SUPPORTED","CONFLICTING"])
-    out["evidence_complete"] = out[list(required_evidence)].notna().all(axis=1)
+    out["spatial_evidence_available"] = out["spatial_status"].isin(
+        ["SUPPORTED", "CONFLICTING", "NO_DETECTED_EVIDENCE"])
+    spatial_counts_available = pd.to_numeric(out["supporting_stations"], errors="coerce").notna()
+    spatial_counts_available &= pd.to_numeric(out["conflicting_stations"], errors="coerce").notna()
+    out["evidence_complete"] = (
+        out["model_stable"].notna() & out["temporal_coherent"].notna()
+        & out["spatial_evidence_available"] & spatial_counts_available
+        & out["hard_physical_violation"].notna()
+    )
     out["evidence_available_count"] = (
         out["model_stable"].notna().astype(int)
         + out["temporal_coherent"].notna().astype(int)
-        + out["spatial_evidence_available"].astype(int)
+        + (out["spatial_evidence_available"] & spatial_counts_available).astype(int)
         + out["hard_physical_violation"].notna().astype(int)
     )
     model_candidate=out.get("model_stable",pd.Series(False,index=out.index)).fillna(False).astype(bool)
@@ -54,7 +65,13 @@ def classify_evidence(evidence: pd.DataFrame, min_supporting_stations=2):
     out.loc[suspicious,"supporting_evidence"]="model stability; physical screening violation"
     out.loc[suspicious,"conflicting_evidence"]="observed neighboring-station disagreement"
     for idx, row in out.iterrows():
-        missing = [name for name in required_evidence if pd.isna(row[name])]
+        missing = []
+        if pd.isna(row["model_stable"]): missing.append("E1 model stability")
+        if pd.isna(row["temporal_coherent"]): missing.append("E2 temporal coherence")
+        if (not bool(out.at[idx, "spatial_evidence_available"])
+                or pd.isna(row["supporting_stations"]) or pd.isna(row["conflicting_stations"])):
+            missing.append("E3 verified spatial evidence")
+        if pd.isna(row["hard_physical_violation"]): missing.append("E4 physical screening")
         if missing:
             out.at[idx,"missing_evidence"] = "; ".join(missing)
         conflicts = []

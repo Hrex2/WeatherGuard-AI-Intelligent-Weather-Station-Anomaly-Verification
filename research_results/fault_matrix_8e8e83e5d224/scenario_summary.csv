@@ -1,0 +1,9 @@
+experiment_id,fault_type,variable,magnitude,duration_observations,configurations,injected_and_flagged,unmodified_observation_flags,injected_not_flagged,unmodified_observation_unflagged,changed_predictions,newly_flagged_outside_labels,changed_outside_expected_feature_window,withdrawn_clean_flags,injected_label_recall,unmodified_observation_flag_rate
+DEWPOINT_TEMP_INCONSISTENCY,positive_offset,dwpt,20.0,3,12,24,3974,12,96970,24,0,0,0,0.6666666666666666,0.03936836265652243
+TEMP_GRADUAL_DRIFT,drift,temp,5.0,6,12,0,3989,72,96919,15,15,0,0,0.0,0.03953105799341975
+TEMP_INTERMITTENT_NOISE,noise_burst,temp,2.0,6,12,6,3974,66,96934,6,0,0,0,0.08333333333333333,0.03938240773774131
+TEMP_MISSING_BLOCK,dropout,temp,0.0,3,12,4,3998,32,96946,28,24,0,0,0.1111111111111111,0.03960611824377873
+TEMP_PERSISTENT_OFFSET,positive_offset,temp,5.0,6,12,17,4003,55,96905,46,29,0,0,0.2361111111111111,0.03966979823205296
+TEMP_POINT_DROP,point_negative_offset,temp,10.0,1,12,8,3983,4,96985,17,9,0,0,0.6666666666666666,0.03944814198557959
+TEMP_POINT_SPIKE,spike,temp,10.0,1,12,12,3983,0,96985,21,9,0,0,1.0,0.03944814198557959
+TEMP_STUCK_SENSOR,stuck,temp,0.0,6,12,0,3974,72,96934,0,0,0,0,0.0,0.03938240773774131

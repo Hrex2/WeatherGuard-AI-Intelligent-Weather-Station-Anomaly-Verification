@@ -1,0 +1,187 @@
+{
+  "campaign_id": "fault_matrix_multicontext_46ae5d119d",
+  "status": "EXECUTED_LOCAL_SYNTHETIC_MULTICONTEXT",
+  "objective": "Assess context dependence of the existing eight synthetic fault scenarios.",
+  "hypothesis": "Detector responses to the same declared fault may differ with background temperature level and recent variability.",
+  "selection_method": "Select up to five well-separated test windows by pre-injection 24-hour temperature quartile and six-hour variability quartile; one middle context is added when available. Detector outputs are not consulted.",
+  "selection_thresholds": {
+    "temperature_median_24h_q25": 15.35,
+    "temperature_median_24h_q75": 28.6,
+    "temperature_sd_6h_q25": 0.7697402159170322,
+    "temperature_sd_6h_q75": 2.2161653568470223
+  },
+  "minimum_context_separation_days": 14,
+  "context_count": 5,
+  "contexts": [
+    {
+      "context_id": "TEMP_HIGH_VAR_LOW",
+      "timestamp": "2025-04-09 17:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_6ff4e167232b",
+      "run_id": "fault_matrix_6ff4e167232b"
+    },
+    {
+      "context_id": "TEMP_HIGH_VAR_HIGH",
+      "timestamp": "2025-05-27 12:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_8e8e83e5d224",
+      "run_id": "fault_matrix_8e8e83e5d224"
+    },
+    {
+      "context_id": "TEMP_MIDLEVEL_MIDVAR",
+      "timestamp": "2025-09-04 22:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_8bf9a6fb6ff0",
+      "run_id": "fault_matrix_8bf9a6fb6ff0"
+    },
+    {
+      "context_id": "TEMP_LOW_VAR_HIGH",
+      "timestamp": "2025-11-30 20:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_74d531ca6a4a",
+      "run_id": "fault_matrix_74d531ca6a4a"
+    },
+    {
+      "context_id": "TEMP_LOW_VAR_LOW",
+      "timestamp": "2026-02-06 09:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_6af2b67bb80c",
+      "run_id": "fault_matrix_6af2b67bb80c"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "TEMP_POINT_SPIKE",
+      "variable": "temp",
+      "kind": "spike",
+      "magnitude": 10.0,
+      "duration": 1,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_POINT_DROP",
+      "variable": "temp",
+      "kind": "point_negative_offset",
+      "magnitude": 10.0,
+      "duration": 1,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_PERSISTENT_OFFSET",
+      "variable": "temp",
+      "kind": "positive_offset",
+      "magnitude": 5.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_STUCK_SENSOR",
+      "variable": "temp",
+      "kind": "stuck",
+      "magnitude": 0.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_GRADUAL_DRIFT",
+      "variable": "temp",
+      "kind": "drift",
+      "magnitude": 5.0,
+      "duration": 6,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_MISSING_BLOCK",
+      "variable": "temp",
+      "kind": "dropout",
+      "magnitude": 0.0,
+      "duration": 3,
+      "seed": 42
+    },
+    {
+      "id": "TEMP_INTERMITTENT_NOISE",
+      "variable": "temp",
+      "kind": "noise_burst",
+      "magnitude": 2.0,
+      "duration": 6,
+      "seed": 31415
+    },
+    {
+      "id": "DEWPOINT_TEMP_INCONSISTENCY",
+      "variable": "dwpt",
+      "kind": "positive_offset",
+      "magnitude": 20.0,
+      "duration": 3,
+      "seed": 42
+    }
+  ],
+  "dataset_hashes": {
+    "model_df": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "X_train_multi": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "X_test_multi": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "phase01_audit_passed": true,
+  "code_commit": "c55b90a86821b4d66b796af306a9e6a622471cde",
+  "python_version": "3.12.9",
+  "numpy_version": "2.4.4",
+  "pandas_version": "3.0.2",
+  "scikit_learn_version": "1.8.0",
+  "model_random_state": 42,
+  "isolation_forest_estimators": 200,
+  "scaling": "StandardScaler fit on train only for LOF/SVM; Isolation Forest unscaled.",
+  "model_protocol": "One train-only fit of the existing 12 configurations and one clean holdout prediction grid shared across all contexts and scenarios; no historical saved predictions overwritten.",
+  "feature_order": [
+    "temp",
+    "dwpt",
+    "rhum",
+    "prcp",
+    "wspd",
+    "pres",
+    "temp_change_1h",
+    "temp_rolling_mean_6h",
+    "temp_deviation_6h",
+    "month_sin",
+    "month_cos"
+  ],
+  "limitations": [
+    "Synthetic injections are not real-world fault validation.",
+    "Unmodified held-out observations are controlled comparators, not verified fault-free labels.",
+    "Context selection spans measured temperature and variability only; station identity/provenance remains unverified.",
+    "The same local fit is reused across contexts; results measure context sensitivity under this declared protocol, not model-fit uncertainty.",
+    "Historical saved-label refit parity still differs at 42 Isolation Forest cells; this experiment uses its own same-fit clean comparator."
+  ],
+  "outputs": [
+    "context_selection.csv",
+    "context_scenario_summary.csv",
+    "context_family_summary.csv"
+  ],
+  "completed_context_runs": [
+    {
+      "context_id": "TEMP_HIGH_VAR_LOW",
+      "timestamp": "2025-04-09 17:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_6ff4e167232b",
+      "run_id": "fault_matrix_6ff4e167232b"
+    },
+    {
+      "context_id": "TEMP_HIGH_VAR_HIGH",
+      "timestamp": "2025-05-27 12:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_8e8e83e5d224",
+      "run_id": "fault_matrix_8e8e83e5d224"
+    },
+    {
+      "context_id": "TEMP_MIDLEVEL_MIDVAR",
+      "timestamp": "2025-09-04 22:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_8bf9a6fb6ff0",
+      "run_id": "fault_matrix_8bf9a6fb6ff0"
+    },
+    {
+      "context_id": "TEMP_LOW_VAR_HIGH",
+      "timestamp": "2025-11-30 20:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_74d531ca6a4a",
+      "run_id": "fault_matrix_74d531ca6a4a"
+    },
+    {
+      "context_id": "TEMP_LOW_VAR_LOW",
+      "timestamp": "2026-02-06 09:30:00+05:30",
+      "run_directory": "research_results\\fault_matrix_6af2b67bb80c",
+      "run_id": "fault_matrix_6af2b67bb80c"
+    }
+  ],
+  "training_rows": 36434,
+  "test_rows": 8415
+}

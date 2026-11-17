@@ -242,6 +242,17 @@ class TestFaultAndEvidence(unittest.TestCase):
         self.assertEqual(changed.iloc[7].temp,frame.iloc[6].temp)
         self.assertEqual(changed.iloc[7].temp,changed.iloc[8].temp)
 
+    def test_stuck_fault_does_not_inherit_reference_across_gap(self):
+        idx=list(pd.date_range("2025-01-01",periods=8,freq="h",tz="Asia/Kolkata"))
+        idx[7]=idx[6]+pd.Timedelta(hours=25)
+        frame=pd.DataFrame({"temp":[10,11,12,13,14,15,99,30],
+                            "segment_id":[0,0,0,0,0,0,1,1]},index=idx)
+        changed,_,registry=inject_fault(frame,"temp",frame.index[7],kind="stuck",
+            calibration_end=frame.index[6]-pd.Timedelta(hours=1))
+        self.assertEqual(changed.iloc[7].temp,30)
+        self.assertEqual(registry.iloc[0].stuck_reference_value,30)
+        self.assertIn("no prior same-segment",registry.iloc[0].stuck_reference_source)
+
     def test_injected_value_does_not_enter_its_own_shifted_reference(self):
         frame=sample_frame(12); frame["segment_id"]=0
         _,_,_,clean_features,faulted_features=inject_fault_with_feature_recompute(
@@ -300,6 +311,17 @@ class TestFaultAndEvidence(unittest.TestCase):
                          "UNCERTAIN_INSUFFICIENT_EVIDENCE")
         self.assertEqual(classify_evidence(pd.DataFrame(index=[0])).iloc[0].outcome,
                          "UNCERTAIN_INSUFFICIENT_EVIDENCE")
+
+    def test_unavailable_spatial_status_is_not_complete_evidence(self):
+        evidence=pd.DataFrame({"spatial_status":["UNAVAILABLE","NO_DETECTED_EVIDENCE"],
+            "supporting_stations":[0,0],"conflicting_stations":[0,0],
+            "hard_physical_violation":[False,False],"model_stable":[False,False],
+            "temporal_coherent":[False,False]})
+        result=classify_evidence(evidence)
+        self.assertFalse(result.evidence_complete.iloc[0])
+        self.assertEqual(result.evidence_available_count.iloc[0],3)
+        self.assertTrue(result.evidence_complete.iloc[1])
+        self.assertEqual(result.outcome.iloc[0],"UNCERTAIN_INSUFFICIENT_EVIDENCE")
 
     def test_episode_level_paired_inference_reports_same_mean_estimand(self):
         pairs=pd.DataFrame({"difference_mean":[1.0,2.0,0.0,-1.0]})

@@ -71,6 +71,7 @@ def write_scenario_summary(run_dir):
         unmodified_observation_unflagged=("unmodified_observation_unflagged", "sum"),
         changed_predictions=("changed_predictions", "sum"),
         newly_flagged_outside_labels=("new_flags_outside_injected_labels", "sum"),
+        changed_outside_expected_feature_window=("changed_config_predictions_outside_expected_feature_window", "sum"),
         withdrawn_clean_flags=("withdrawn_clean_flags", "sum"))
     summary["injected_label_recall"] = summary.injected_and_flagged / (summary.injected_and_flagged + summary.injected_not_flagged).replace(0, np.nan)
     summary["unmodified_observation_flag_rate"] = summary.unmodified_observation_flags / (summary.unmodified_observation_flags + summary.unmodified_observation_unflagged).replace(0, np.nan)
@@ -79,7 +80,8 @@ def write_scenario_summary(run_dir):
         configuration_count=("name", "nunique"), injected_and_flagged=("injected_and_flagged_count", "sum"),
         injected_not_flagged=("injected_not_flagged_count", "sum"),
         changed_predictions=("changed_predictions", "sum"),
-        newly_flagged_outside_labels=("new_flags_outside_injected_labels", "sum"))
+        newly_flagged_outside_labels=("new_flags_outside_injected_labels", "sum"),
+        changed_outside_expected_feature_window=("changed_config_predictions_outside_expected_feature_window", "sum"))
     family_summary["injected_label_recall"] = family_summary.injected_and_flagged / (
         family_summary.injected_and_flagged + family_summary.injected_not_flagged).replace(0, np.nan)
     family_summary.to_csv(run_dir / "family_scenario_summary.csv", index=False)
@@ -195,15 +197,8 @@ def compact_completed_run(run_dir):
     return compact_path, int(len(compact))
 
 
-def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
-    root = Path(root)
-    snapshots, manifest, hashes = load_verified_snapshots(root)
-    raw, train, test = snapshots["model_df"], snapshots["X_train_multi"], snapshots["X_test_multi"]
-    target = pd.Timestamp(timestamp)
-    if target not in test.index or target not in raw.index:
-        raise ValueError("Campaign timestamp must be present in processed and held-out snapshots")
-    calibration_end = train.index.max()
-    validate_scenarios(raw, train, test, target)
+def fit_shared_protocol(train, test):
+    """Fit the declared protocol once for reuse across context-stratified injections."""
     configs = default_model_configs(random_seed=42)
     train_matrix = _seasonal_matrix(train)
     clean_matrix = _seasonal_matrix(test)
@@ -212,6 +207,27 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
     scaled_clean = scaler.transform(clean_matrix.to_numpy(dtype=float))
     fitted = _fit_campaign_models(train_matrix, scaled_train, configs, n_estimators=200)
     clean = _predict_campaign_models(fitted, clean_matrix, scaled_clean)
+    return {"configs": configs, "train_matrix": train_matrix, "clean_matrix": clean_matrix,
+            "scaler": scaler, "fitted": fitted, "clean_predictions": clean}
+
+
+def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30",
+                     shared_fit=None, context_id=None):
+    root = Path(root)
+    snapshots, manifest, hashes = load_verified_snapshots(root)
+    raw, train, test = snapshots["model_df"], snapshots["X_train_multi"], snapshots["X_test_multi"]
+    target = pd.Timestamp(timestamp)
+    if target not in test.index or target not in raw.index:
+        raise ValueError("Campaign timestamp must be present in processed and held-out snapshots")
+    calibration_end = train.index.max()
+    validate_scenarios(raw, train, test, target)
+    shared_fit = shared_fit or fit_shared_protocol(train, test)
+    configs = shared_fit["configs"]
+    train_matrix = shared_fit["train_matrix"]
+    clean_matrix = shared_fit["clean_matrix"]
+    scaler = shared_fit["scaler"]
+    fitted = shared_fit["fitted"]
+    clean = shared_fit["clean_predictions"]
 
     run_id = "fault_matrix_" + uuid.uuid4().hex[:12]
     run_dir = root / "research_results" / run_id
@@ -260,7 +276,16 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
                       "unmodified_observation_flag_rate": metric["clean_false_positive_rate"]}
             changed = cfg.is_candidate.astype(bool).ne(cfg.clean_is_candidate.astype(bool))
             outside = ~labels_test.reindex(cfg.index).fillna(False).astype(bool)
+            expected_window_end = end + (pd.Timedelta(hours=6) if scenario["variable"] == "temp" else pd.Timedelta(0))
+            outside_expected_window = (cfg.index < start) | (cfg.index > expected_window_end)
+            detected_injected_times = cfg.index[cfg.is_candidate.astype(bool)
+                & cfg.index.isin(labels_test.index[labels_test])]
+            detection_delay = (int((detected_injected_times.min() - start) / pd.Timedelta(hours=1))
+                               if len(detected_injected_times) else np.nan)
             counts = {"changed_predictions": int(changed.sum()),
+                      "changed_config_predictions_outside_expected_feature_window": int((changed & outside_expected_window).sum()),
+                      "expected_feature_propagation_end": str(expected_window_end),
+                      "detection_delay_observations": detection_delay,
                       "new_flags_outside_injected_labels": int((cfg.is_candidate.astype(bool) & ~cfg.clean_is_candidate.astype(bool) & outside).sum()),
                       "withdrawn_clean_flags": int((~cfg.is_candidate.astype(bool) & cfg.clean_is_candidate.astype(bool)).sum())}
             row = {**scenario, **config, **metric, **counts,
@@ -308,6 +333,8 @@ def run_fault_matrix(root=ROOT, timestamp="2025-09-02 07:30:00+05:30"):
             "Scenario timestamp is one selected held-out interval; results do not estimate population performance.",
             "Ground-truth labels mark modified observations only; causal feature propagation can alter neighboring predictions.",
             "No fitted estimator objects are persisted.", "E3 spatial evidence is not part of these experiments."],
+        "context_id": context_id, "context_timestamp": str(target),
+        "shared_fit_scope": "One train-only model/scaler fit reused across every selected multi-context campaign." if context_id else "Shared model/scaler fit reused across all scenarios in this context.",
         "outputs": ["configuration_metrics.csv", "scenario_summary.csv", "family_scenario_summary.csv",
                     "changed_and_injected_predictions.csv", "injection_registry.csv", "physical_screening_results.csv"]}
     (run_dir / "run_metadata.json").write_text(json.dumps(metadata, indent=2, default=str) + "\n", encoding="utf-8")

@@ -311,7 +311,8 @@ def render_investigation_workspace(data, root):
         st.dataframe(pd.DataFrame(context_rows), hide_index=True, width="stretch")
         st.markdown("#### Evidence assessment")
         spatial = _load_spatial_tables(root)
-        bundle = observation_evidence(selected, observations, predictions, data["stability"], data["episodes"], spatial)
+        bundle = observation_evidence(selected, observations, predictions, data["stability"], data["episodes"], spatial,
+                                      primary_variable=variable)
         temporal_mode = st.radio("Temporal evidence view", ["real_time", "retrospective"], horizontal=True,
                                  format_func=lambda x: "Real-time (past only)" if x == "real_time" else "Retrospective (may inspect following data)",
                                  key="investigation_temporal_mode")
@@ -322,7 +323,7 @@ def render_investigation_workspace(data, root):
         st.metric("Evidence groups assessable", f"{sum(assessable)}/4", help="Separate from how many model configurations agreed.")
         explanation = {
             "Do the models agree? (E1)": (bundle["evidence_states"]["E1"], f"{votes}/{available} available configurations flagged this reading. Agreement is not a probability."),
-            "Does it make sense over time? (E2)": (e2_status, temporal_result["reason"] + (" This is an independent time-series screen; consensus-derived episodes are not used." if temporal_result.get("reason") else "")),
+            "Is it unusual over time? (E2)": (e2_status, temporal_result["reason"] + " A temporal departure supports only that the measurement differs from prior local behavior; it does not establish regional weather or diagnose a sensor fault. The screen uses the selected variable and does not use consensus-derived episodes."),
             "Do nearby stations show something similar? (E3)": ("UNAVAILABLE", "Neighbor observations and provenance have not been verified; no regional support is inferred."),
             "Is the measurement physically reasonable? (E4)": (bundle["evidence_states"]["E4"], f"{int(bundle['quality_flags'].screening_flag.sum()) if len(bundle['quality_flags']) else 'No'} broad screening flags. A flag is not a hardware diagnosis."),
         }

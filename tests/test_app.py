@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+import tempfile
 from unittest.mock import patch
 from pathlib import Path
 
@@ -12,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from services.data_service import load_project_data, prediction_wide
+from services.data_service import (load_project_data, prediction_wide,
+                                  verify_phase03_integrity, write_phase03_integrity_manifest)
 from services.evidence_service import observation_evidence
 from services.model_metadata import build_model_education
 
@@ -28,7 +30,8 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(len(self.data["test"]), 8415)
         self.assertEqual(self.data["train"].columns.tolist(), self.data["test"].columns.tolist())
         self.assertTrue(self.manifest["audit_passed"])
-        self.assertEqual(set(self.hashes), {"observations", "train", "test"})
+        self.assertTrue({"observations", "train", "test"}.issubset(self.hashes))
+        self.assertTrue(any(name.startswith("phase03:") for name in self.hashes))
 
     def test_manifest_hash_mismatch_fails_closed_with_affected_filename(self):
         with patch("services.data_service.sha256_file", return_value="0" * 64):
@@ -39,6 +42,24 @@ class TestWeatherGuardApplication(unittest.TestCase):
         wide = prediction_wide(self.data["predictions"])
         self.assertEqual(wide.shape, (8415, 12))
         self.assertFalse(wide.isna().any().any())
+
+    def test_phase03_integrity_manifest_records_hashes_without_provenance_claim(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            folder = Path(temp_dir)
+            pd.DataFrame({"timestamp": ["2025-01-01", "2025-01-02"],
+                          "configuration": ["A", "B"], "label": [0, 1]}).to_csv(folder / "predictions.csv", index=False)
+            refs = {"observations": "a", "train": "b", "test": "c"}
+            write_phase03_integrity_manifest(folder, refs, manifest_created_revision="base-commit")
+            manifest = verify_phase03_integrity(folder, refs)
+            self.assertEqual(manifest["audit_status"], "HASHED_INTEGRITY_ONLY_HISTORICAL_PROVENANCE_UNKNOWN")
+            self.assertIsNone(manifest["artifact_generation_revision"])
+            self.assertEqual(manifest["artifacts"][0]["unique_timestamp_count"], 2)
+            pd.DataFrame({"timestamp": ["2025-01-01"], "configuration": ["A"], "label": [1]}).to_csv(folder / "predictions.csv", index=False)
+            with self.assertRaisesRegex(ValueError, "SHA-256 verification failed"):
+                verify_phase03_integrity(folder, refs)
+            (folder / "predictions.csv").unlink()
+            with self.assertRaisesRegex(ValueError, "missing: predictions.csv"):
+                verify_phase03_integrity(folder, refs)
 
     def test_unavailable_spatial_inputs_keep_uncertain_outcome(self):
         ts = self.data["observations"].index[-1]
@@ -61,6 +82,13 @@ class TestWeatherGuardApplication(unittest.TestCase):
                                                self.data["stability"], pd.DataFrame(columns=["start", "end"]), {})
         self.assertEqual(result["evidence_states"]["E2"], without_episodes["evidence_states"]["E2"])
 
+    def test_shared_evidence_service_uses_selected_variable_and_explains_scope(self):
+        ts = self.data["predictions"].timestamp.iloc[100]
+        result = observation_evidence(ts, self.data["observations"], self.data["predictions"],
+            self.data["stability"], self.data["episodes"], {}, primary_variable="dwpt")
+        self.assertEqual(result["temporal_result"]["variable"], "dwpt")
+        self.assertIn("does not identify a regional weather event", result["evidence_meanings"]["E2"])
+
     def test_missing_values_alone_do_not_support_sensor_fault_evidence(self):
         ts = self.data["observations"].index[0]
         observations = self.data["observations"].copy()
@@ -70,6 +98,59 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(result["evidence_states"]["E4"], "UNAVAILABLE")
         self.assertGreater(result["missing_quality_values"], 0)
         self.assertEqual(len(result["physical_screening_violations"]), 0)
+
+    def test_missing_selected_observation_is_unavailable_through_integrated_evidence(self):
+        ts = self.data["predictions"].timestamp.iloc[100]
+        observations = self.data["observations"].copy()
+        observations.loc[ts, "temp"] = float("nan")
+        result = observation_evidence(ts, observations, self.data["predictions"],
+            self.data["stability"], self.data["episodes"], {}, primary_variable="temp")
+        self.assertEqual(result["temporal_result"]["status"], "UNAVAILABLE")
+        self.assertFalse(result["temporal_result"]["stuck_pattern"])
+        self.assertEqual(result["evidence_states"]["E2"], "UNAVAILABLE")
+        self.assertEqual(result["evidence_states"]["E3"], "UNAVAILABLE")
+        self.assertEqual(result["evidence_states"]["E4"], "UNAVAILABLE")
+        self.assertEqual(len(result["physical_screening_violations"]), 0)
+        self.assertEqual(result["evidence_available_count"], 1)
+        self.assertFalse(result["evidence_complete"])
+        self.assertEqual(result["outcome"], "UNCERTAIN_INSUFFICIENT_EVIDENCE")
+
+        no_history = observations.copy()
+        position = no_history.index.get_loc(ts)
+        no_history.iloc[position - 6:position, no_history.columns.get_loc("temp")] = float("nan")
+        no_history.loc[ts, "temp"] = self.data["observations"].loc[ts, "temp"]
+        unavailable = observation_evidence(ts, no_history, self.data["predictions"],
+            self.data["stability"], self.data["episodes"], {}, primary_variable="temp")
+        self.assertEqual(unavailable["temporal_result"]["status"], "UNAVAILABLE")
+        self.assertFalse(unavailable["temporal_result"]["stuck_pattern"])
+
+    def test_missing_value_inside_repeated_sequence_does_not_bridge_stuck_pattern(self):
+        ts = pd.date_range("2025-01-01", periods=9, freq="h", tz="UTC")[-1]
+        observations = pd.DataFrame({"temp": [10, 11, 12, 15, 15, float("nan"), 15, 15, 15]},
+                                    index=pd.date_range("2025-01-01", periods=9, freq="h", tz="UTC"))
+        predictions = pd.DataFrame({"timestamp": [ts], "is_candidate": [True]})
+        stability = pd.DataFrame({"timestamp": [ts]})
+        episodes = pd.DataFrame(columns=["start", "end"])
+        result = observation_evidence(ts, observations, predictions, stability, episodes, {}, primary_variable="temp")
+        self.assertEqual(result["temporal_result"]["stuck_run_length"], 3)
+        self.assertFalse(result["temporal_result"]["stuck_pattern"])
+        self.assertNotEqual(result["evidence_states"]["E2"], "SUPPORTING")
+
+    def test_sampling_gap_at_selected_boundary_is_unavailable_and_not_stuck(self):
+        base = pd.Timestamp("2025-01-01", tz="UTC")
+        index = pd.DatetimeIndex([base, base + pd.Timedelta(hours=1),
+                                  base + pd.Timedelta(hours=2), base + pd.Timedelta(hours=27)])
+        ts = index[-1]
+        observations = pd.DataFrame({"temp": [10, 11, 12, 12]}, index=index)
+        predictions = pd.DataFrame(columns=["timestamp", "is_candidate"])
+        stability = pd.DataFrame(columns=["timestamp"])
+        episodes = pd.DataFrame(columns=["start", "end"])
+        result = observation_evidence(ts, observations, predictions, stability, episodes, {}, primary_variable="temp")
+        self.assertEqual(result["temporal_result"]["status"], "UNAVAILABLE")
+        self.assertEqual(result["temporal_result"]["prior_count"], 0)
+        self.assertFalse(result["temporal_result"]["stuck_pattern"])
+        self.assertEqual(result["evidence_states"]["E3"], "UNAVAILABLE")
+        self.assertEqual(result["outcome"], "UNCERTAIN_INSUFFICIENT_EVIDENCE")
 
     def test_saved_synthetic_campaign_separates_anywhere_and_unaffected_window_changes(self):
         results = pd.read_csv(ROOT / "outputs" / "synthetic_fault_campaign" / "event_level_results.csv")
@@ -106,7 +187,7 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertEqual(app.radio[0].options, ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"])
         # Visit the tabbed workspace before workspaces with their own tab sets;
         # AppTest retains inactive tab elements in a single shared test object.
-        for workspace in ("Weather Data", "Model Evaluation", "Investigate a Reading", "Experiment Lab", "Research"):
+        for workspace in ("Weather Data", "Experiment Lab", "Model Evaluation", "Investigate a Reading", "Research"):
             app.radio[0].set_value(workspace).run()
             self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Weather Data":
@@ -123,6 +204,12 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 for family in ("IsolationForest", "LocalOutlierFactor", "OneClassSVM"):
                     app.selectbox(key="model_profile_family").set_value(family).run()
                     self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+            if workspace == "Experiment Lab":
+                self.assertTrue(any("Saved eight-scenario fault matrix" in str(x.value) for x in app.get("subheader")))
+                self.assertTrue(any("Five-context synthetic fault study" in str(x.value) for x in app.get("subheader")))
+                self.assertTrue(any("Independent temporal-screen comparison" in str(x.value) for x in app.get("markdown")))
+                self.assertTrue(any("Synthetic baseline response and setting sensitivity" in str(x.value) for x in app.get("markdown")))
+                self.assertTrue(any("Coverage does not measure interpretive benefit" in str(x.value) for x in app.get("caption")))
 
 
 if __name__ == "__main__":

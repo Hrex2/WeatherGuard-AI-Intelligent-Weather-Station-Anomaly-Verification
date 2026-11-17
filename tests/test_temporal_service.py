@@ -52,6 +52,43 @@ class TestTemporalVerification(unittest.TestCase):
         self.assertTrue(result["stuck_pattern"])
         self.assertIn(result["status"], {"SUPPORTING", "NO_DETECTED_EVIDENCE"})
 
+    def test_missing_observation_interrupts_stuck_run(self):
+        frame = self.frame([10, 11, 12, 15, 15, np.nan, 15, 15, 15])
+        result = temporal_verification(frame, frame.index[-1], "temp", window_hours=8,
+                                       stuck_min_run=4)
+        self.assertEqual(result["stuck_run_length"], 3)
+        self.assertFalse(result["stuck_pattern"])
+
+    def test_irregular_timestamp_interrupts_stuck_run(self):
+        base = pd.Timestamp("2025-01-01", tz="Asia/Kolkata")
+        times = [base + pd.Timedelta(hours=x) for x in (0, 1, 2, 3, 4, 5.25, 6.25, 7.25)]
+        frame = self.frame([10, 11, 12, 15, 15, 15, 15, 15], times)
+        result = temporal_verification(frame, frame.index[-1], "temp", window_hours=8,
+                                       stuck_min_run=4)
+        self.assertEqual(result["stuck_run_length"], 3)
+        self.assertFalse(result["stuck_pattern"])
+
+    def test_explicit_segment_change_interrupts_temporal_context(self):
+        frame = self.frame([10, 11, 12, 13, 30, 30, 30, 30])
+        frame["segment_id"] = [0, 0, 0, 0, 1, 1, 1, 1]
+        result = temporal_verification(frame, frame.index[-1], "temp", window_hours=8)
+        self.assertEqual(result["prior_count"], 3)
+        self.assertFalse(result["sudden_change"])
+
+    def test_local_cadence_adapts_after_sampling_rate_change(self):
+        base = pd.Timestamp("2025-01-01", tz="UTC")
+        times = [base + pd.Timedelta(hours=x) for x in range(6)]
+        times += [base + pd.Timedelta(minutes=330 + 30 * x) for x in range(1, 13)]
+        frame = self.frame(np.linspace(10, 17, len(times)).tolist(), times)
+        result = temporal_verification(frame, frame.index[-1], "temp", window_hours=6)
+        self.assertEqual(result["cadence"], "0 days 00:30:00")
+        self.assertGreaterEqual(result["prior_count"], 3)
+
+    def test_timezone_aware_utc_index_remains_supported(self):
+        frame = self.frame([10, 11, 12, 13, 14, 15, 16, 17]).tz_convert("UTC")
+        result = temporal_verification(frame, frame.index[-1], "temp")
+        self.assertEqual(result["timestamp"].tz, frame.index.tz)
+
     def test_missing_current_value_and_insufficient_history_are_unavailable(self):
         frame = self.frame([10.0, 10.0, np.nan, 10.0, 11.0])
         self.assertEqual(temporal_verification(frame, frame.index[2], "temp")["status"], "UNAVAILABLE")

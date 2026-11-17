@@ -1,0 +1,1014 @@
+{
+  "schema_version": 2,
+  "status": "EXECUTED_SYNTHETIC_BASELINE_AND_SENSITIVITY_COMPARISON",
+  "campaign_id": "fault_matrix_multicontext_46ae5d119d",
+  "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+  "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8",
+  "objective": "Descriptive response to declared synthetic injections and coverage-only audit; no fitting or campaign regeneration.",
+  "experimental_unit": "context \u00d7 scenario \u00d7 synthetically labelled timestamp; context is the aggregation unit for across-context ranges",
+  "dataset_hashes": {
+    "model_df": "7921f8da901f48aca5dfbbafdc8dda7986d7f4716c8c78037a5a864b10f987d9",
+    "X_train_multi": "5d03f82bde4fb126391e1e1c4da8aa1b5f6437b55d8d36b0559fbdb7920ee677",
+    "X_test_multi": "90563fcf4f06a74fc015c399a2280765e0445c4dd673b30ef856e24a33d9768f"
+  },
+  "context_count": 5,
+  "scenario_count": 8,
+  "injected_timestamp_units": 160,
+  "configuration_count": 12,
+  "configurations_per_family": 4,
+  "families": [
+    "IsolationForest",
+    "LocalOutlierFactor",
+    "OneClassSVM"
+  ],
+  "e2_source_directory": "e2_validation_review_1",
+  "inputs": [
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+      "sha256": "cc11565f66bda72d2d50820cc252c79eb3eb93efa454d2d0d999cb439d5f11b7",
+      "size_bytes": 6428,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+      "sha256": "c9d3b902d1486d89375a1ccff5c5878c3874c328a08fe255008cda675bce9a69",
+      "size_bytes": 971,
+      "rows": 5,
+      "columns": [
+        "context_id",
+        "timestamp",
+        "calendar_quarter",
+        "temperature_median_24h",
+        "temperature_sd_6h",
+        "missing_fraction_24h",
+        "precipitation_missing_24h",
+        "selection_rule"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+      "sha256": "51edbc553669d0685842b457b43da4e8eb6f377868cf31b2ee721d5d58096908",
+      "size_bytes": 6438,
+      "rows": 40,
+      "columns": [
+        "context_id",
+        "context_timestamp",
+        "experiment_id",
+        "fault_type",
+        "variable",
+        "magnitude",
+        "duration_observations",
+        "configurations",
+        "injected_and_flagged",
+        "unmodified_observation_flags",
+        "injected_not_flagged",
+        "unmodified_observation_unflagged",
+        "changed_predictions",
+        "newly_flagged_outside_labels",
+        "changed_outside_expected_feature_window",
+        "withdrawn_clean_flags",
+        "injected_label_recall",
+        "unmodified_observation_flag_rate"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+      "sha256": "fcd7955e134c9f824b5bc79e7ccee0e6ec642ec6b21be56102904293dbb33848",
+      "size_bytes": 12422,
+      "rows": 120,
+      "columns": [
+        "context_id",
+        "context_timestamp",
+        "experiment_id",
+        "family",
+        "configuration_count",
+        "injected_and_flagged",
+        "injected_not_flagged",
+        "changed_predictions",
+        "newly_flagged_outside_labels",
+        "changed_outside_expected_feature_window",
+        "injected_label_recall"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+      "sha256": "0b567d288a985348f292c8d653ab2a75c4005dd9bd3ec4ba289b5f4b7dd1b47b",
+      "size_bytes": 55656,
+      "rows": 440,
+      "columns": [
+        "timestamp",
+        "configuration",
+        "family",
+        "parameter",
+        "parameter_value",
+        "prediction",
+        "is_candidate",
+        "clean_is_candidate",
+        "synthetic_fault_label",
+        "prediction_changed",
+        "experiment_id",
+        "fault_type",
+        "variable"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+      "sha256": "1f7e7f58197497b3294fc61a0da70b9e6e42f702d5cfd473f63e0823677ad725",
+      "size_bytes": 38572,
+      "rows": 193,
+      "columns": [
+        "timestamp",
+        "row_position",
+        "variable",
+        "raw_value",
+        "missing",
+        "nonnumeric",
+        "infinite",
+        "below_screening_range",
+        "above_screening_range",
+        "cross_variable_inconsistency",
+        "screening_flag_faulted",
+        "rule_type",
+        "screening_flag_clean",
+        "experiment_id",
+        "fault_type",
+        "target_variable",
+        "synthetic_label",
+        "screening_flag_changed_by_injection"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+      "sha256": "9ccbdb3dd15fc1aedac702b077c45970f90bb433ee40f1fa13166e5d7ca8cbd7",
+      "size_bytes": 14026,
+      "rows": 32,
+      "columns": [
+        "timestamp",
+        "variable",
+        "fault_kind",
+        "synthetic_fault_label",
+        "value_modified",
+        "injection_interval_start",
+        "injection_interval_end",
+        "injected_timestamps_json",
+        "random_seed",
+        "magnitude",
+        "stuck_reference_value",
+        "stuck_reference_timestamp",
+        "stuck_reference_source",
+        "calibration_end",
+        "reference",
+        "experiment_id",
+        "target_variable",
+        "severity",
+        "original_value",
+        "injected_value",
+        "faulted_value_is_missing"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+      "sha256": "b55447e7bb43b59554b9d2a7777e868a944cdb58e0f895e96b119154776b0e71",
+      "size_bytes": 3964,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+      "sha256": "e1c05034140c6312e7a7d4e168563d0a6b9d76428372585446657ad1e367e375",
+      "size_bytes": 59812,
+      "rows": 470,
+      "columns": [
+        "timestamp",
+        "configuration",
+        "family",
+        "parameter",
+        "parameter_value",
+        "prediction",
+        "is_candidate",
+        "clean_is_candidate",
+        "synthetic_fault_label",
+        "prediction_changed",
+        "experiment_id",
+        "fault_type",
+        "variable"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+      "sha256": "bac8f60e2d774ada82e3b3f6402333e363f185008020fb0edb126e2ce4e43829",
+      "size_bytes": 38974,
+      "rows": 195,
+      "columns": [
+        "timestamp",
+        "row_position",
+        "variable",
+        "raw_value",
+        "missing",
+        "nonnumeric",
+        "infinite",
+        "below_screening_range",
+        "above_screening_range",
+        "cross_variable_inconsistency",
+        "screening_flag_faulted",
+        "rule_type",
+        "screening_flag_clean",
+        "experiment_id",
+        "fault_type",
+        "target_variable",
+        "synthetic_label",
+        "screening_flag_changed_by_injection"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+      "sha256": "0bf3adcd74b88afee7f0df9e70173b3af0daee6ead769e361a6d26adb5cbec6c",
+      "size_bytes": 14022,
+      "rows": 32,
+      "columns": [
+        "timestamp",
+        "variable",
+        "fault_kind",
+        "synthetic_fault_label",
+        "value_modified",
+        "injection_interval_start",
+        "injection_interval_end",
+        "injected_timestamps_json",
+        "random_seed",
+        "magnitude",
+        "stuck_reference_value",
+        "stuck_reference_timestamp",
+        "stuck_reference_source",
+        "calibration_end",
+        "reference",
+        "experiment_id",
+        "target_variable",
+        "severity",
+        "original_value",
+        "injected_value",
+        "faulted_value_is_missing"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+      "sha256": "0d1b81c4af9fe5f43e8a3efa3fa894d5345c9d18d2293a8a53cb8e68ea88c31b",
+      "size_bytes": 3965,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+      "sha256": "dfd8cc63ff2b1c2f2f4bf74c2cf85247263ded37dabc8232e2281c0387585b5b",
+      "size_bytes": 56061,
+      "rows": 439,
+      "columns": [
+        "timestamp",
+        "configuration",
+        "family",
+        "parameter",
+        "parameter_value",
+        "prediction",
+        "is_candidate",
+        "clean_is_candidate",
+        "synthetic_fault_label",
+        "prediction_changed",
+        "experiment_id",
+        "fault_type",
+        "variable"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+      "sha256": "c53202f8be4c9799f3f7e9c0c5b27e5fad0ea356add6dc555106c2d8665c8afe",
+      "size_bytes": 40087,
+      "rows": 200,
+      "columns": [
+        "timestamp",
+        "row_position",
+        "variable",
+        "raw_value",
+        "missing",
+        "nonnumeric",
+        "infinite",
+        "below_screening_range",
+        "above_screening_range",
+        "cross_variable_inconsistency",
+        "screening_flag_faulted",
+        "rule_type",
+        "screening_flag_clean",
+        "experiment_id",
+        "fault_type",
+        "target_variable",
+        "synthetic_label",
+        "screening_flag_changed_by_injection"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+      "sha256": "64ae0566386f63187e4e10f4a8e61503a972420962dae5ab465aa4e2a31564ff",
+      "size_bytes": 14041,
+      "rows": 32,
+      "columns": [
+        "timestamp",
+        "variable",
+        "fault_kind",
+        "synthetic_fault_label",
+        "value_modified",
+        "injection_interval_start",
+        "injection_interval_end",
+        "injected_timestamps_json",
+        "random_seed",
+        "magnitude",
+        "stuck_reference_value",
+        "stuck_reference_timestamp",
+        "stuck_reference_source",
+        "calibration_end",
+        "reference",
+        "experiment_id",
+        "target_variable",
+        "severity",
+        "original_value",
+        "injected_value",
+        "faulted_value_is_missing"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+      "sha256": "528f30187dc35d72ac277456a8645eaa2f496f7fe94057d8d92808adf5e539e5",
+      "size_bytes": 3967,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+      "sha256": "fec85a8a3afce013f13662c95526ada5de9a620e7504436f8429568e567c0223",
+      "size_bytes": 57675,
+      "rows": 454,
+      "columns": [
+        "timestamp",
+        "configuration",
+        "family",
+        "parameter",
+        "parameter_value",
+        "prediction",
+        "is_candidate",
+        "clean_is_candidate",
+        "synthetic_fault_label",
+        "prediction_changed",
+        "experiment_id",
+        "fault_type",
+        "variable"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+      "sha256": "20871f1d3513032e5336f00671f7039bb6158de753deb2cbfe7b6c68af800e38",
+      "size_bytes": 39170,
+      "rows": 196,
+      "columns": [
+        "timestamp",
+        "row_position",
+        "variable",
+        "raw_value",
+        "missing",
+        "nonnumeric",
+        "infinite",
+        "below_screening_range",
+        "above_screening_range",
+        "cross_variable_inconsistency",
+        "screening_flag_faulted",
+        "rule_type",
+        "screening_flag_clean",
+        "experiment_id",
+        "fault_type",
+        "target_variable",
+        "synthetic_label",
+        "screening_flag_changed_by_injection"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+      "sha256": "e2586fbd76dd92d5c94acbdad844fbea2eb08f094b4e53b6f9c99979368a0377",
+      "size_bytes": 14036,
+      "rows": 32,
+      "columns": [
+        "timestamp",
+        "variable",
+        "fault_kind",
+        "synthetic_fault_label",
+        "value_modified",
+        "injection_interval_start",
+        "injection_interval_end",
+        "injected_timestamps_json",
+        "random_seed",
+        "magnitude",
+        "stuck_reference_value",
+        "stuck_reference_timestamp",
+        "stuck_reference_source",
+        "calibration_end",
+        "reference",
+        "experiment_id",
+        "target_variable",
+        "severity",
+        "original_value",
+        "injected_value",
+        "faulted_value_is_missing"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+      "sha256": "33b056ba609e9f7b4445c94b0a3b0bea616cb326b1904e85a90abdc561af0064",
+      "size_bytes": 3964,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+      "sha256": "29c4a7dea9b4f28ac15d34f71a002832841da2ce17f74d50e3eb58cfffd98ad1",
+      "size_bytes": 56091,
+      "rows": 442,
+      "columns": [
+        "timestamp",
+        "configuration",
+        "family",
+        "parameter",
+        "parameter_value",
+        "prediction",
+        "is_candidate",
+        "clean_is_candidate",
+        "synthetic_fault_label",
+        "prediction_changed",
+        "experiment_id",
+        "fault_type",
+        "variable"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+      "sha256": "85b997eb7ef5681c2239f3088ad6bb18703c32305dfc134eeca2afcfa1ccf4cf",
+      "size_bytes": 39359,
+      "rows": 197,
+      "columns": [
+        "timestamp",
+        "row_position",
+        "variable",
+        "raw_value",
+        "missing",
+        "nonnumeric",
+        "infinite",
+        "below_screening_range",
+        "above_screening_range",
+        "cross_variable_inconsistency",
+        "screening_flag_faulted",
+        "rule_type",
+        "screening_flag_clean",
+        "experiment_id",
+        "fault_type",
+        "target_variable",
+        "synthetic_label",
+        "screening_flag_changed_by_injection"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+      "sha256": "1ef3d8f51b225f6acec3da8a112dbd00134ee3676b45c610ab5ae63369fdd6ff",
+      "size_bytes": 14025,
+      "rows": 32,
+      "columns": [
+        "timestamp",
+        "variable",
+        "fault_kind",
+        "synthetic_fault_label",
+        "value_modified",
+        "injection_interval_start",
+        "injection_interval_end",
+        "injected_timestamps_json",
+        "random_seed",
+        "magnitude",
+        "stuck_reference_value",
+        "stuck_reference_timestamp",
+        "stuck_reference_source",
+        "calibration_end",
+        "reference",
+        "experiment_id",
+        "target_variable",
+        "severity",
+        "original_value",
+        "injected_value",
+        "faulted_value_is_missing"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+      "sha256": "a0ceb3a50b1d0f48edd0a6a41dd915b35abd2b8f7d9fa82c825d27081399bd37",
+      "size_bytes": 3963,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+      "sha256": "4ad6caeef1c6e61c775ca98403dccd983f48f7402974c0908d4fe7e6d0757526",
+      "size_bytes": 2836,
+      "rows": 10,
+      "columns": [
+        "timestamp",
+        "calendar_quarter",
+        "calendar_month",
+        "hour_of_day",
+        "minute_of_hour",
+        "temperature_median_24h",
+        "temperature_sd_6h",
+        "missing_fraction_24h",
+        "precipitation_missing_24h",
+        "match_score",
+        "matched_context_id",
+        "matched_context_timestamp",
+        "matching_rule"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+      "sha256": "ce261dbf3551f41147cf0ed16414e8a4a189695651361131e847b13f6bd44e22",
+      "size_bytes": 2197596,
+      "rows": 6840,
+      "columns": [
+        "context_id",
+        "experiment_id",
+        "timestamp",
+        "variable",
+        "condition",
+        "synthetic_label",
+        "pair_id",
+        "mode",
+        "window_hours",
+        "robust_z_threshold",
+        "status",
+        "prior_count",
+        "future_count",
+        "robust_deviation",
+        "sudden_change",
+        "stuck_pattern",
+        "persistent_unusual_state",
+        "reason"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+      "sha256": "4f7e5660865b9ad4a0b09ff00c1e47618dbf90f193c7efcd6d163085fd2754b1",
+      "size_bytes": 580415,
+      "rows": 2880,
+      "columns": [
+        "pair_id",
+        "context_id",
+        "experiment_id",
+        "timestamp",
+        "variable",
+        "mode",
+        "window_hours",
+        "robust_z_threshold",
+        "clean_same_timestamp",
+        "synthetic_faulted",
+        "status_changed_by_injection"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+      "sha256": "e1ea82e46d2a993d0d0890e1bf192d6b6c7af0f7838436b8f4d5efd6f9964fb9",
+      "size_bytes": 64500,
+      "rows": 813,
+      "columns": [
+        "condition",
+        "experiment_id",
+        "variable",
+        "mode",
+        "window_hours",
+        "robust_z_threshold",
+        "status",
+        "reading_count"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json",
+      "sha256": "c2d93155c1ca740e12b85e7804927812094232940347672d1be10d139f481156",
+      "size_bytes": 7309,
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "fault_matrix_multicontext_46ae5d119d"
+      ]
+    }
+  ],
+  "output_directory": "baseline_review_1",
+  "output_files": [
+    "synthetic_baseline_response_detail.csv",
+    "synthetic_baseline_context_summary.csv",
+    "synthetic_baseline_response_summary.csv",
+    "synthetic_e2_setting_sensitivity.csv",
+    "evidence_coverage_ablation.csv",
+    "evidence_coverage_ablation_summary.csv"
+  ],
+  "outputs": [
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/synthetic_baseline_response_detail.csv",
+      "sha256": "b16fe9ca8054f334317f55e1816a11482438e26302851bc4696e05de2de9ce38",
+      "size_bytes": 352358,
+      "rows": 3360,
+      "columns": [
+        "context_id",
+        "experiment_id",
+        "timestamp_utc",
+        "injected_timestamp_units",
+        "configuration_count",
+        "configuration_flag_count",
+        "baseline",
+        "setting",
+        "flagged",
+        "denominator",
+        "response_fraction"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+        "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+        "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+        "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+        "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+        "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+        "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+        "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+        "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+        "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+        "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+        "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+        "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+        "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json"
+      ],
+      "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8"
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/synthetic_baseline_context_summary.csv",
+      "sha256": "db5c07feb80ef60a5054fe6eb9e70b0a7bfb56e2b7ddea0ae38b01e54833f32c",
+      "size_bytes": 67134,
+      "rows": 840,
+      "columns": [
+        "baseline",
+        "setting",
+        "experiment_id",
+        "context_id",
+        "timestamp_unit_count",
+        "expected_timestamp_units",
+        "mean_timestamp_response_fraction",
+        "context_response_fraction"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+        "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+        "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+        "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+        "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+        "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+        "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+        "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+        "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+        "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+        "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+        "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+        "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+        "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json"
+      ],
+      "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8"
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/synthetic_baseline_response_summary.csv",
+      "sha256": "40fb51e5d8e8054af0dad6b3b27ed9c38994789a5ff56d8c707b8cc8e61da654",
+      "size_bytes": 11715,
+      "rows": 168,
+      "columns": [
+        "baseline",
+        "setting",
+        "experiment_id",
+        "context_count",
+        "timestamp_unit_count",
+        "mean_context_response_fraction",
+        "minimum_context_response_fraction",
+        "maximum_context_response_fraction"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+        "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+        "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+        "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+        "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+        "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+        "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+        "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+        "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+        "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+        "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+        "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+        "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+        "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json"
+      ],
+      "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8"
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/synthetic_e2_setting_sensitivity.csv",
+      "sha256": "0b61f23e149207c0109d1fb6351c3a65970e3b640cf6f6c44c821dfcf6f07a0a",
+      "size_bytes": 8600,
+      "rows": 144,
+      "columns": [
+        "experiment_id",
+        "mode",
+        "window_hours",
+        "robust_z_threshold",
+        "screen_rows",
+        "supporting",
+        "conflicting",
+        "unavailable",
+        "supporting_fraction_available"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+        "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+        "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+        "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+        "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+        "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+        "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+        "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+        "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+        "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+        "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+        "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+        "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+        "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json"
+      ],
+      "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8"
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/evidence_coverage_ablation.csv",
+      "sha256": "44e5d9cb533609ee3d3d928266619f0e85373005017be586e28f17dde5913c75",
+      "size_bytes": 1867382,
+      "rows": 11840,
+      "columns": [
+        "context_id",
+        "experiment_id",
+        "timestamp_utc",
+        "mode",
+        "window_hours",
+        "robust_z_threshold",
+        "combination",
+        "evidence_complete",
+        "evidence_groups",
+        "coverage_limit"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+        "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+        "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+        "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+        "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+        "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+        "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+        "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+        "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+        "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+        "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+        "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+        "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+        "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json"
+      ],
+      "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8"
+    },
+    {
+      "path": "research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/evidence_coverage_ablation_summary.csv",
+      "sha256": "37946a449d00376081d474e796d12334fd5aab97533eb6363335d3651aca3d2f",
+      "size_bytes": 3637,
+      "rows": 74,
+      "columns": [
+        "combination",
+        "mode",
+        "window_hours",
+        "robust_z_threshold",
+        "units",
+        "complete_units",
+        "coverage_fraction"
+      ],
+      "experiment_id": "fault_matrix_multicontext_46ae5d119d",
+      "source_artifact_references": [
+        "research_results/fault_matrix_multicontext_46ae5d119d/campaign_manifest.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_selection.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_scenario_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/context_family_summary.csv",
+        "research_results/fault_matrix_6ff4e167232b/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6ff4e167232b/physical_screening_results.csv",
+        "research_results/fault_matrix_6ff4e167232b/injection_registry.csv",
+        "research_results/fault_matrix_6ff4e167232b/run_metadata.json",
+        "research_results/fault_matrix_8e8e83e5d224/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8e8e83e5d224/physical_screening_results.csv",
+        "research_results/fault_matrix_8e8e83e5d224/injection_registry.csv",
+        "research_results/fault_matrix_8e8e83e5d224/run_metadata.json",
+        "research_results/fault_matrix_8bf9a6fb6ff0/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/physical_screening_results.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/injection_registry.csv",
+        "research_results/fault_matrix_8bf9a6fb6ff0/run_metadata.json",
+        "research_results/fault_matrix_74d531ca6a4a/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_74d531ca6a4a/physical_screening_results.csv",
+        "research_results/fault_matrix_74d531ca6a4a/injection_registry.csv",
+        "research_results/fault_matrix_74d531ca6a4a/run_metadata.json",
+        "research_results/fault_matrix_6af2b67bb80c/changed_and_injected_predictions.csv",
+        "research_results/fault_matrix_6af2b67bb80c/physical_screening_results.csv",
+        "research_results/fault_matrix_6af2b67bb80c/injection_registry.csv",
+        "research_results/fault_matrix_6af2b67bb80c/run_metadata.json",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_matched_controls.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_detail.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_paired.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_multicontext_fault_summary.csv",
+        "research_results/fault_matrix_multicontext_46ae5d119d/e2_validation_review_1/e2_validation_manifest.json"
+      ],
+      "code_revision": "1712e1289e961211538277cc2f8285ef9f1dbce8"
+    }
+  ],
+  "manifest_hash_note": "The manifest does not hash itself. Its final SHA-256 is stored in the separate .integrity.json sidecar.",
+  "interpretation_limit": "Synthetic injection response only. Coverage measures availability, not outcome utility. No field performance is estimated.",
+  "ablation_status": "COVERAGE_ONLY; outcome-level ablation and E3-dependent combinations remain unavailable"
+}

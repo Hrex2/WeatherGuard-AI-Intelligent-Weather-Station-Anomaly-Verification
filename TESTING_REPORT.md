@@ -85,3 +85,71 @@ Software tests use synthetic fixtures only and do not establish scientific valid
 - Scenario preflight validated held-out intervals and broad bounds before model fitting. The full suite passed **57/57**, including scenario preflight, immutable input and neutral metric-label tests; Python compilation passed.
 - The run recorded exact original/injected values, labels, seeds, feature order, training/test spans, data hashes, package versions and model settings. Full duplicate holdout prediction grids were compacted to injected and changed rows only.
 - Results are single-context synthetic screening observations. No verified clean labels or real-world fault labels exist; do not interpret unmodified-row flags as false positives or synthetic label recall as real-world accuracy.
+
+## Research validation master loop — Phase 1 audit (2026-11-16)
+
+- Refreshed GitHub state: `main` is `0a27959`, merge PR #1; the prior `codex/autonomous-research-loop` remains preserved. Started `codex/research-validation-v2` from the latest main with a clean worktree.
+- `python -B -m unittest discover -s tests -v`: **66 passed, 0 failed**. Includes regression cases for missing/irregular/segment-separated stuck runs, cadence changes, timezone-aware indexes, same-segment stuck injection, unavailable spatial evidence, strict CSV interval validation, selected-variable E2 and the Experiment Lab matrix.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed.
+- `git diff --check`: passed.
+- Phase 03 integrity manifest verified **11 CSV artifacts** against SHA-256, ordered columns, row counts, available timestamp/configuration counts, and Phase 01 reference hashes. Manifest explicitly says `HASHED_INTEGRITY_ONLY_HISTORICAL_PROVENANCE_UNKNOWN`.
+- Streamlit AppTest visited all six workspaces without page exceptions and confirmed the saved eight-scenario matrix appears in Experiment Lab.
+- Dataset snapshots, saved predictions, and the old synthetic matrix were not regenerated or overwritten. No model campaign was fit during this phase.
+- CI was added in `.github/workflows/research-quality.yml`; hosted Actions status has not yet been observed.
+
+The eight audit findings AUD-01 through AUD-08 are corrected. AUD-09 remains a documented selection-dependence limit; AUD-10 remains blocked by the absence of verified neighboring-station raw data; AUD-11 status records have been synchronized. Software verification does not establish scientific validity.
+
+## Multi-context synthetic campaign preparation (2026-11-16)
+
+- Added a deterministic pre-injection selector requiring a regular hourly 24-hour history, a continuous six-observation injection interval, adequate core-variable coverage and successful preflight of all eight existing scenarios.
+- Selected five held-out contexts without inspecting model responses: 2025-04-09 (high temperature/low variability), 2025-05-27 (high/high), 2025-09-04 (middle/middle), 2025-11-30 (low/high), and 2026-02-06 (low/low). The contexts cover calendar quarters 1–4 and are at least 14 days apart. Preflight only; no model fitting or fault predictions have run.
+- Added orchestration to fit the 12-configuration protocol once and reuse the clean holdout comparator across all contexts. Each context retains its own exact injection registry and output manifest; the campaign writes aggregate context and family summaries and records failure status if fitting/evaluation errors occur.
+- Added changes outside the declared feature-propagation window and synthetic-label detection-delay fields, with a regression for aggregate preservation.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed. `python -B -m unittest discover -s tests -v`: **68 passed, 0 failed**.
+- Runner and tests are not yet committed/pushed; next step is commit and push the validated runner before executing the campaign.
+
+## Five-context synthetic matrix execution — 2026-11-16
+
+- Campaign `fault_matrix_multicontext_46ae5d119d` completed with five preselected contexts across quarters 1–4 and all eight existing fault scenarios. One train-only fit and clean holdout comparator were reused across all 40 context/scenario combinations.
+- Scenario fractions across configuration × injected-timestamp decisions varied by context: point spike 0.667–1.000, point drop 0.667–0.917, persistent offset 0.042–0.361, stuck 0–0.319, drift 0–0.056, missing block 0–0.333, noise 0–0.292, and dew-point offset 0.667–0.806. These are synthetic responses, not real-world accuracy.
+- No model label changes occurred outside the declared feature-propagation window across the campaign. E4 broad screening changed on 36 injected timestamp-variable rows. The same-run unmodified observation flag rate is not a validated false-positive rate.
+- Context/run artifacts and interpretation are in `MULTICONTEXT_FAULT_MATRIX_REPORT.md` and `research_results/fault_matrix_multicontext_46ae5d119d/`; original single-context outputs remain intact.
+- Added E2 injection/control paired evaluator and selected 10 matched unmodified controls by calendar quarter, time-of-day, recent temperature level/variability and missingness, with 14-day separation from injection contexts.
+- E2 evaluation completed: **6,840** screen evaluations, **10** matched controls, **2,880** same-time paired comparisons and **813** summary rows. Paired statuses changed in 1,008/2,880 comparisons; 270 missing-block cases became `UNAVAILABLE`. `SUPPORTING` occurred in 961/2,610 available faulted comparisons, 691/2,880 same-time unmodified rows and 272/1,080 matched-control rows. These are repeated exploratory screen outcomes, not adjudicated accuracy metrics.
+- Added hash-gated five-context and E2 summary views in Experiment Lab, including per-fault status changes and status counts across injection, same-time and matched-control conditions. AppTest visits the Experiment Lab and checks both new views. `python -B -m unittest discover -s tests -v`: **69 passed, 0 failed** in 51.8 seconds; compileall and `git diff --check` passed.
+
+## PR #2 pre-merge review — 2026-11-17
+
+- Rechecked the five-context manifests, 40 context/scenario combinations, 12 shared configurations, 96 configuration rows and 24 family rows per context. Selection is pre-injection and separated across four calendar quarters; Phase 03's 11 source CSVs pass the recorded hash/shape checks. These integrity checks do not establish historical provenance.
+- Corrected E2 pairing so each pair must contain exactly one unlabeled same-time comparator and one synthetically labeled fault row; duplicate or incomplete pairs fail closed. Corrected outputs are versioned under `e2_validation_review_1/`, preserving the original outputs. The new manifest verifies 4 files: 6,840 detail rows, 2,880 pairs, 813 summaries and 10 matched controls. Paired status counts remain 1,008 changes and 270 faulted missing-block rows marked `UNAVAILABLE`.
+- Added end-to-end regressions for missing selected observations and history, a missing value inside a repeated series, and a sampling gap at the selected boundary. They verify no stuck-pattern bridge, reduced evidence completeness, E3/E4 unavailable behavior and an uncertain outcome.
+- Current validation: `python -B -m unittest discover -s tests -v` — **74 passed**; compileall passed; `git diff --check` passed. Synthetic baseline response and coverage-only ablation outputs are descriptive and partial; outcome-level ablation and robustness analysis remain incomplete. No field accuracy or fault diagnosis claim is supported.
+
+## Synthetic baseline and coverage ablation integration (2026-11-16)
+
+- `python scripts/analyze_synthetic_baseline_comparison.py`: completed at code revision `c3c5b014e2fd26ee4ceb182363486438d9e1b588`; 160 context × scenario × synthetic-label timestamp units; 1,440 model/E4 response detail rows; 72 response summary rows; 144 E2 setting/scenario rows; coverage-only ablation detail and summary written with dataset hashes and source-artifact hashes.
+- At the 8/12 E1 threshold, response was 100% on point spike, point drop and dew-point inconsistency labels, 6.7% on persistent offset/noise, and 0% on missing blocks/drift/stuck. Existing direct-variable E4 broad screening flagged missing blocks only. E2 setting fractions and detailed caveats are in `SYNTHETIC_BASELINE_COMPARISON_REPORT.md`.
+- Coverage-only ablation per setting: E1 160/160; E1+E2 145/160; E1+E4 160/160; E1+E2+E4 145/160; E3 combinations 0/160. This is availability coverage, not an evidence-utility or event-outcome ablation.
+- Experiment Lab renders the new tables behind dataset-hash checks. Final full run after these changes: `python -B -m unittest discover -s tests -v` — **69 passed, 0 failed** in 44.3 seconds; `python -m compileall -q app.py services ui src/weather_research tests scripts` and `git diff --check` passed.
+
+## PR #2 audit remediation checkpoint — 2026-11-17
+
+The prior baseline section above records the first-generation timestamp-level summaries. Corrected, reviewable outputs are now written separately under `research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/`; the historical files and campaign manifest remain unchanged. The corrected analysis reuses saved predictions, injection registries, E4 results and reviewed E2 outputs; it performs no estimator fitting, new synthetic campaign, or prediction regeneration.
+
+The analysis separates configuration/timestamp observations, context × scenario responses, and across-context summaries. Across-context minimum and maximum values now range over five context responses, not individual timestamps. It verified 5 contexts, 8 scenarios and 160 context × scenario × timestamp units; the response detail has 3,360 rows and the across-context summary has 168 rows. For the existing 8/12 E1 threshold, the across-context mean/minimum/maximum responses are: dew-point inconsistency 1.000/1.000/1.000 (15 units); gradual drift 0/0/0 (30); intermittent noise 0.0667/0/0.1667 (30); missing block 0/0/0 (15); persistent offset 0.0667/0/0.1667 (30); point drop 1/1/1 (5); point spike 1/1/1 (5); stuck sensor 0/0/0 (30). These are synthetic-label response fractions, not event detection accuracy.
+
+The review manifest records 29 input artifacts and all 6 outputs with hashes, sizes and applicable row/column metadata; the manifest’s own final SHA-256 is stored in a separate integrity sidecar. Reviewed E2 artifacts were verified before use (6,840 detail rows, 2,880 pairs, 813 summaries and 10 controls). Experiment Lab hides the reviewed outputs and displays an integrity warning if required manifests or files are missing or fail checks. The historical campaign manifest and first-generation baseline outputs are preserved.
+
+Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
+
+## PR #2 audit remediation — validation result (2026-11-17)
+
+- `python -B -m unittest discover -s tests -v`: **84 passed, 0 failed** in 125.448 seconds. This includes the Streamlit AppTest across all six workspaces and 10 new baseline/path/integrity regressions.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed.
+- `git diff --check`: passed.
+- Saved-data baseline review completed without model fitting or campaign/prediction regeneration. The versioned review manifest verifies 29 input artifacts and 6 CSV outputs; the manifest SHA-256 is in `synthetic_baseline_comparison_manifest.integrity.json`. The reviewed E2 set and Phase 01 sources passed their integrity checks.
+- GitHub Actions run #13 on commit `0ec6c6a29c84e3544bdce3acbf7eeaa30a8f8f31`: **success**; all test, compile, and whitespace steps passed.
+
+### Linux CI byte-integrity follow-up
+
+The first two hosted Linux runs reached all 84 tests but failed the Experiment Lab AppTest because the verified multi-context outputs were hidden. Investigation found Git on Windows had normalized CRLF bytes in the manifested experiment files, while the manifests intentionally hash the original bytes. A scoped `.gitattributes` rule now preserves the campaign and its referenced run artifacts as binary for Git checkout, without changing their working-tree bytes or regenerating any experiment. Before commit, the Git index was independently checked against all 29 manifested inputs, six outputs, and the manifest sidecar: all hashes matched. Hosted Actions run #13 on commit `0ec6c6a29c84e3544bdce3acbf7eeaa30a8f8f31` completed successfully, including the Linux AppTest, compilation, and whitespace checks.

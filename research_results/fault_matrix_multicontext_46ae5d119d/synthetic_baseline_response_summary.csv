@@ -1,0 +1,73 @@
+baseline,setting,experiment_id,context_timestamp_units,mean_response_fraction,minimum_context_fraction,maximum_context_fraction
+E1_consensus,10/12,DEWPOINT_TEMP_INCONSISTENCY,15,0.2,0.0,1.0
+E1_consensus,10/12,TEMP_GRADUAL_DRIFT,30,0.0,0.0,0.0
+E1_consensus,10/12,TEMP_INTERMITTENT_NOISE,30,0.0,0.0,0.0
+E1_consensus,10/12,TEMP_MISSING_BLOCK,15,0.0,0.0,0.0
+E1_consensus,10/12,TEMP_PERSISTENT_OFFSET,30,0.06666666666666667,0.0,1.0
+E1_consensus,10/12,TEMP_POINT_DROP,5,0.6,0.0,1.0
+E1_consensus,10/12,TEMP_POINT_SPIKE,5,0.6,0.0,1.0
+E1_consensus,10/12,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0
+E1_consensus,12/12,DEWPOINT_TEMP_INCONSISTENCY,15,0.0,0.0,0.0
+E1_consensus,12/12,TEMP_GRADUAL_DRIFT,30,0.0,0.0,0.0
+E1_consensus,12/12,TEMP_INTERMITTENT_NOISE,30,0.0,0.0,0.0
+E1_consensus,12/12,TEMP_MISSING_BLOCK,15,0.0,0.0,0.0
+E1_consensus,12/12,TEMP_PERSISTENT_OFFSET,30,0.03333333333333333,0.0,1.0
+E1_consensus,12/12,TEMP_POINT_DROP,5,0.0,0.0,0.0
+E1_consensus,12/12,TEMP_POINT_SPIKE,5,0.4,0.0,1.0
+E1_consensus,12/12,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0
+E1_consensus,4/12,DEWPOINT_TEMP_INCONSISTENCY,15,1.0,1.0,1.0
+E1_consensus,4/12,TEMP_GRADUAL_DRIFT,30,0.03333333333333333,0.0,1.0
+E1_consensus,4/12,TEMP_INTERMITTENT_NOISE,30,0.23333333333333334,0.0,1.0
+E1_consensus,4/12,TEMP_MISSING_BLOCK,15,0.4,0.0,1.0
+E1_consensus,4/12,TEMP_PERSISTENT_OFFSET,30,0.5,0.0,1.0
+E1_consensus,4/12,TEMP_POINT_DROP,5,1.0,1.0,1.0
+E1_consensus,4/12,TEMP_POINT_SPIKE,5,1.0,1.0,1.0
+E1_consensus,4/12,TEMP_STUCK_SENSOR,30,0.2,0.0,1.0
+E1_consensus,6/12,DEWPOINT_TEMP_INCONSISTENCY,15,1.0,1.0,1.0
+E1_consensus,6/12,TEMP_GRADUAL_DRIFT,30,0.0,0.0,0.0
+E1_consensus,6/12,TEMP_INTERMITTENT_NOISE,30,0.1,0.0,1.0
+E1_consensus,6/12,TEMP_MISSING_BLOCK,15,0.0,0.0,0.0
+E1_consensus,6/12,TEMP_PERSISTENT_OFFSET,30,0.13333333333333333,0.0,1.0
+E1_consensus,6/12,TEMP_POINT_DROP,5,1.0,1.0,1.0
+E1_consensus,6/12,TEMP_POINT_SPIKE,5,1.0,1.0,1.0
+E1_consensus,6/12,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0
+E1_consensus,8/12,DEWPOINT_TEMP_INCONSISTENCY,15,1.0,1.0,1.0
+E1_consensus,8/12,TEMP_GRADUAL_DRIFT,30,0.0,0.0,0.0
+E1_consensus,8/12,TEMP_INTERMITTENT_NOISE,30,0.06666666666666667,0.0,1.0
+E1_consensus,8/12,TEMP_MISSING_BLOCK,15,0.0,0.0,0.0
+E1_consensus,8/12,TEMP_PERSISTENT_OFFSET,30,0.06666666666666667,0.0,1.0
+E1_consensus,8/12,TEMP_POINT_DROP,5,1.0,1.0,1.0
+E1_consensus,8/12,TEMP_POINT_SPIKE,5,1.0,1.0,1.0
+E1_consensus,8/12,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,DEWPOINT_TEMP_INCONSISTENCY,15,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,TEMP_GRADUAL_DRIFT,30,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,TEMP_INTERMITTENT_NOISE,30,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,TEMP_MISSING_BLOCK,15,1.0,1.0,1.0
+E4_direct_variable_screen,existing broad rule,TEMP_PERSISTENT_OFFSET,30,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,TEMP_POINT_DROP,5,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,TEMP_POINT_SPIKE,5,0.0,0.0,0.0
+E4_direct_variable_screen,existing broad rule,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0
+family:IsolationForest,all,DEWPOINT_TEMP_INCONSISTENCY,15,0.15,0.0,0.75
+family:IsolationForest,all,TEMP_GRADUAL_DRIFT,30,0.008333333333333333,0.0,0.25
+family:IsolationForest,all,TEMP_INTERMITTENT_NOISE,30,0.025,0.0,0.5
+family:IsolationForest,all,TEMP_MISSING_BLOCK,15,0.0,0.0,0.0
+family:IsolationForest,all,TEMP_PERSISTENT_OFFSET,30,0.06666666666666667,0.0,1.0
+family:IsolationForest,all,TEMP_POINT_DROP,5,0.4,0.0,0.75
+family:IsolationForest,all,TEMP_POINT_SPIKE,5,0.55,0.0,1.0
+family:IsolationForest,all,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0
+family:LocalOutlierFactor,all,DEWPOINT_TEMP_INCONSISTENCY,15,1.0,1.0,1.0
+family:LocalOutlierFactor,all,TEMP_GRADUAL_DRIFT,30,0.05,0.0,1.0
+family:LocalOutlierFactor,all,TEMP_INTERMITTENT_NOISE,30,0.35,0.0,1.0
+family:LocalOutlierFactor,all,TEMP_MISSING_BLOCK,15,0.5,0.0,1.0
+family:LocalOutlierFactor,all,TEMP_PERSISTENT_OFFSET,30,0.45,0.0,1.0
+family:LocalOutlierFactor,all,TEMP_POINT_DROP,5,1.0,1.0,1.0
+family:LocalOutlierFactor,all,TEMP_POINT_SPIKE,5,1.0,1.0,1.0
+family:LocalOutlierFactor,all,TEMP_STUCK_SENSOR,30,0.24166666666666667,0.0,1.0
+family:OneClassSVM,all,DEWPOINT_TEMP_INCONSISTENCY,15,1.0,1.0,1.0
+family:OneClassSVM,all,TEMP_GRADUAL_DRIFT,30,0.0,0.0,0.0
+family:OneClassSVM,all,TEMP_INTERMITTENT_NOISE,30,0.11666666666666667,0.0,1.0
+family:OneClassSVM,all,TEMP_MISSING_BLOCK,15,0.0,0.0,0.0
+family:OneClassSVM,all,TEMP_PERSISTENT_OFFSET,30,0.175,0.0,1.0
+family:OneClassSVM,all,TEMP_POINT_DROP,5,1.0,1.0,1.0
+family:OneClassSVM,all,TEMP_POINT_SPIKE,5,1.0,1.0,1.0
+family:OneClassSVM,all,TEMP_STUCK_SENSOR,30,0.0,0.0,0.0

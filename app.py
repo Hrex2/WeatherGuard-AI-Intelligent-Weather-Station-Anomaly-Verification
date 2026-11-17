@@ -20,6 +20,7 @@ from services.data_service import load_project_data
 from services.model_service import run_saved_protocol
 from services.evidence_service import observation_evidence
 from services.model_metadata import build_model_education
+from services.research_artifact_integrity import multicontext_artifact_state
 from ui.investigation_workspace import render_investigation_workspace
 from ui.new_csv_analysis import render_new_csv_analysis
 from ui.station_map import render_station_map
@@ -233,7 +234,104 @@ def render_investigation(data, root):
 
 def render_experiments(root, data, phase01_hashes):
     render_header("WeatherGuard AI  /  experiment lab", "Experiment Lab", "Run controlled, explicitly simulated injections on held-out observations.")
-    st.warning("SIMULATED DATA — NOT A REAL-WORLD SENSOR FAULT. This initial lab supports temperature point-spike dose tests only; other fault groups remain unimplemented.")
+    st.warning("SIMULATED DATA — NOT REAL-WORLD FAULT VALIDATION. Synthetic results test detector behavior on declared injections; they do not estimate field accuracy or diagnose hardware.")
+    matrix_dir = root / "research_results" / "fault_matrix_02bd147f5cce"
+    matrix_manifest_path = matrix_dir / "run_metadata.json"
+    if matrix_manifest_path.is_file():
+        try:
+            matrix_manifest = json.loads(matrix_manifest_path.read_text(encoding="utf-8"))
+            matrix_hashes = matrix_manifest.get("dataset_hashes", {})
+            matrix_verified = (
+                matrix_manifest.get("phase01_audit_passed") is True
+                and matrix_hashes.get("model_df") == phase01_hashes.get("observations")
+                and matrix_hashes.get("X_train_multi") == phase01_hashes.get("train")
+                and matrix_hashes.get("X_test_multi") == phase01_hashes.get("test")
+            )
+        except (OSError, json.JSONDecodeError):
+            matrix_verified = False
+            matrix_manifest = {}
+        st.subheader("Saved eight-scenario fault matrix · one held-out context")
+        if matrix_verified:
+            summary_path = matrix_dir / "scenario_summary.csv"
+            family_path = matrix_dir / "family_scenario_summary.csv"
+            if summary_path.is_file():
+                st.dataframe(pd.read_csv(summary_path), hide_index=True, width="stretch")
+            if family_path.is_file():
+                with st.expander("Model-family response"):
+                    st.dataframe(pd.read_csv(family_path), hide_index=True, width="stretch")
+            with st.expander("Injection values and experiment provenance"):
+                registry_path = matrix_dir / "injection_registry.csv"
+                if registry_path.is_file():
+                    st.dataframe(pd.read_csv(registry_path), hide_index=True, width="stretch")
+                st.json(matrix_manifest)
+            st.caption("The original campaign remains in a separate section below. The matrix is a single-context synthetic study; VILD0 is an unverified inherited dataset label.")
+        else:
+            st.warning("The saved fault matrix is unavailable or its dataset hashes do not match the verified Phase 01 snapshots.")
+    else:
+        st.info("The eight-scenario matrix has not been added to this checkout.")
+    multicontext_dir = root / "research_results" / "fault_matrix_multicontext_46ae5d119d"
+    multicontext_manifest_path = multicontext_dir / "campaign_manifest.json"
+    if multicontext_manifest_path.is_file():
+        artifact_state = multicontext_artifact_state(root, phase01_hashes)
+        st.subheader("Five-context synthetic fault study")
+        if artifact_state["verified"]:
+            bundle = artifact_state["bundle"]
+            multicontext_manifest = bundle["campaign"]
+            e2_manifest = bundle["e2_manifest"]
+            e2_outputs = bundle["e2_outputs"]
+            baseline_outputs = bundle["baseline_outputs"]
+            st.dataframe(bundle["context_summary"], hide_index=True, width="stretch")
+            with st.expander("Model-family response by context"):
+                st.dataframe(bundle["family_context_summary"], hide_index=True, width="stretch")
+            st.caption("Five preselected synthetic contexts share the same fitted models. Metrics describe responses to known injections; they are not field accuracy or sensor-fault diagnoses.")
+            st.markdown("**Independent temporal-screen comparison · exploratory synthetic E2**")
+            paired = e2_outputs["e2_multicontext_fault_paired.csv"]
+            e2_by_fault = paired.groupby("experiment_id").agg(
+                comparisons=("pair_id", "size"),
+                status_changes=("status_changed_by_injection", "sum"),
+                supporting_faulted=("synthetic_faulted", lambda s: int((s == "SUPPORTING").sum())),
+                supporting_same_time=("clean_same_timestamp", lambda s: int((s == "SUPPORTING").sum())),
+            ).reset_index()
+            e2_by_fault["status_change_rate"] = e2_by_fault.status_changes / e2_by_fault.comparisons
+            st.dataframe(e2_by_fault, hide_index=True, width="stretch")
+            detail = e2_outputs["e2_multicontext_fault_detail.csv"]
+            e2_status_counts = detail.groupby(["condition", "status"]).size().rename("count").reset_index()
+            with st.expander("Temporal screen status counts, including matched controls"):
+                st.dataframe(e2_status_counts, hide_index=True, width="stretch")
+            with st.expander("Verified raw E2 paired and detail records"):
+                st.dataframe(paired, hide_index=True, width="stretch")
+                st.dataframe(detail, hide_index=True, width="stretch")
+
+            st.markdown("**Synthetic baseline response and setting sensitivity**")
+            baseline_summary = baseline_outputs["synthetic_baseline_response_summary.csv"]
+            consensus = baseline_summary[baseline_summary.baseline.eq("E1_consensus")]
+            st.dataframe(consensus, hide_index=True, width="stretch")
+            with st.expander("Context response ranges, model-family and E4 responses"):
+                st.dataframe(baseline_outputs["synthetic_baseline_context_summary.csv"], hide_index=True, width="stretch")
+                other_baselines = baseline_summary[~baseline_summary.baseline.eq("E1_consensus")]
+                st.dataframe(other_baselines, hide_index=True, width="stretch")
+            with st.expander("E2 temporal-screen setting sensitivity"):
+                st.dataframe(baseline_outputs["synthetic_e2_setting_sensitivity.csv"], hide_index=True, width="stretch")
+            with st.expander("Evidence coverage ablation (not an outcome ablation)"):
+                st.dataframe(baseline_outputs["evidence_coverage_ablation_summary.csv"], hide_index=True, width="stretch")
+                st.caption("E3-dependent combinations are blocked because verified neighboring-station evidence is unavailable. Coverage does not measure interpretive benefit.")
+            with st.expander("Verified raw synthetic response and coverage records"):
+                st.dataframe(baseline_outputs["synthetic_baseline_response_detail.csv"], hide_index=True, width="stretch")
+                st.dataframe(baseline_outputs["evidence_coverage_ablation.csv"], hide_index=True, width="stretch")
+            st.caption("Fractions describe response to declared synthetic injection labels. They are not field accuracy, and unmodified observations are not verified negatives.")
+            st.caption(
+                f"{e2_manifest.get('evaluated_rows', 0):,} screen evaluations; "
+                f"{e2_manifest.get('controls_selected', 0)} matched unmodified controls. "
+                "SUPPORTING means temporal departures only; controls are not independently adjudicated clean. "
+                "UNAVAILABLE values remain unavailable and do not count as evidence."
+            )
+            with st.expander("Campaign provenance"):
+                st.json(multicontext_manifest)
+        else:
+            st.warning(artifact_state["warning"])
+    else:
+        st.subheader("Five-context synthetic fault study")
+        st.warning("Research results are hidden because the five-context campaign manifest is missing.")
     saved_dir = root / "outputs" / "synthetic_fault_campaign"
     saved_summary = saved_dir / "experiment_summary.csv"
     campaign_manifest_path = saved_dir / "synthetic_campaign_manifest.json"
@@ -331,9 +429,8 @@ def render_experiments(root, data, phase01_hashes):
                         table = pd.read_csv(path)
                         st.dataframe(table, hide_index=True, width="stretch")
     st.markdown("#### Implemented injection coverage")
-    st.dataframe(pd.DataFrame([{"Fault type":"Point temperature spike", "Status":"Implemented and executed", "Notes":"Controlled same timestamp; four supported magnitudes; 12 existing configurations"},
-                               {"Fault type":"Other variable point faults", "Status":"Pending", "Notes":"Not exposed as runnable options"},
-                               {"Fault type":"Step, drift, stuck, noise, dropout", "Status":"Pending", "Notes":"Backend primitives/tests exist in part; campaign evaluation not wired"}]), hide_index=True, width="stretch")
+    st.dataframe(pd.DataFrame([{"Fault type":"Point temperature spike", "Status":"Saved campaign and interactive dose runner", "Notes":"Separate from the eight-scenario matrix above"},
+                               {"Fault type":"Spike, drop, offset, stuck, drift, missing block, noise, dew-point inconsistency", "Status":"Saved synthetic matrix; one held-out context", "Notes":"No multi-context validation or field-performance claim"}]), hide_index=True, width="stretch")
 
 
 def _campaign_is_verified(root, hashes):

@@ -61,7 +61,7 @@ The research separates model anomaly flags from event-level interpretation. It o
 - **Weather Data** — date-filtered measurements with units and historical candidate markers.
 - **Investigate a Reading** — guided review of measurements, votes, E1–E4 evidence availability, and technical details.
 - **Model Evaluation** — exactly two primary sections: **Experiments & Results** and **How the Models Work**. The model selector explains Isolation Forest, LOF and One-Class SVM using saved data and actual protocol settings.
-- **Experiment Lab** — saved and explicitly triggered temperature point-spike experiments.
+- **Experiment Lab** — saved temperature dose campaign plus the hash-checked eight-scenario synthetic fault matrix, with injection values and model-family summaries.
 - **Research** — methods, literature summaries, research gap, findings and limitations.
 
 Model metadata is served through `services/model_metadata.py`, sourced from `weather_research.models.build_estimator`, `default_model_configs`, the loaded dataset, and saved configuration results. Plain-language profile copy is maintained in `research_content/model_profiles.json`.
@@ -74,7 +74,9 @@ Saved-label E1 threshold counts are 432 (4/12), 214 (6/12), 123 (8/12), 51 (10/1
 
 The initial E2 candidate sensitivity table evaluates 123 saved model candidates across five prior windows and three robust-deviation cutoffs in real-time and retrospective modes. See `research_results/e2_candidate_sensitivity_summary.csv`; this selected sample does not provide independent temporal accuracy validation.
 
-The additional eight-scenario synthetic fault run and its limits are documented in [SYNTHETIC_FAULT_MATRIX_REPORT.md](SYNTHETIC_FAULT_MATRIX_REPORT.md). Scenario outputs are isolated under `research_results/fault_matrix_02bd147f5cce/` and are explicitly synthetic, single-context results.
+The original eight-scenario single-context results are in `research_results/fault_matrix_02bd147f5cce/`. The five-context extension and its limitations are documented in [MULTICONTEXT_FAULT_MATRIX_REPORT.md](MULTICONTEXT_FAULT_MATRIX_REPORT.md), with outputs under `research_results/fault_matrix_multicontext_46ae5d119d/`. Both studies use synthetic labels and do not establish field accuracy.
+
+The Phase 1 validation audit on `codex/research-validation-v2` corrects temporal run continuity, same-segment stuck injection, unavailable-evidence completeness, and strict hourly upload validation. A Phase 03 integrity manifest hashes 11 saved CSV artifacts while explicitly preserving their unknown historical generation provenance. Five held-out contexts × eight existing fault scenarios were evaluated with one shared model fit, then compared with same-time unmodified observations using an exploratory E2 temporal screen and 10 matched controls. A synthetic baseline and setting comparison plus an availability-only evidence ablation reuse those same labels. Experiment Lab displays these results after dataset-hash checks. Results remain synthetic-only: temporal support also appears in matched controls, missing readings are `UNAVAILABLE`, and E3, adjudicated fault labels, and outcome-level evidence ablation are unavailable. See [MULTICONTEXT_FAULT_MATRIX_REPORT.md](MULTICONTEXT_FAULT_MATRIX_REPORT.md), [SYNTHETIC_BASELINE_COMPARISON_REPORT.md](SYNTHETIC_BASELINE_COMPARISON_REPORT.md), [RESEARCH_GAP_ANALYSIS.md](RESEARCH_GAP_ANALYSIS.md), and [NEXT_SESSION.md](NEXT_SESSION.md) for results and remaining limits.
 
 ## Run locally
 
@@ -94,3 +96,13 @@ python -B -m unittest discover -s tests -v
 ## Artifacts and scientific limits
 
 See `ARCHITECTURE.md`, `RESEARCH_METHODOLOGY.md`, `NEXT_STAGE_IMPLEMENTATION_PLAN.md`, and `CODEX_PROJECT_AUDIT.md`. There are no fitted model objects, raw neighbor observation exports, verified neighbor coordinates, or real-observation fault labels in this archive. The stored Phase 03 outputs and fresh local refit differ at 42 of 100,980 prediction cells. The application does not claim real-world anomaly accuracy or treat synthetic labels as real-world fault truth.
+
+## PR #2 audit remediation checkpoint — 2026-11-17
+
+The prior baseline section above records the first-generation timestamp-level summaries. Corrected, reviewable outputs are now written separately under `research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/`; the historical files and campaign manifest remain unchanged. The corrected analysis reuses saved predictions, injection registries, E4 results and reviewed E2 outputs; it performs no estimator fitting, new synthetic campaign, or prediction regeneration.
+
+The analysis separates configuration/timestamp observations, context × scenario responses, and across-context summaries. Across-context minimum and maximum values now range over five context responses, not individual timestamps. It verified 5 contexts, 8 scenarios and 160 context × scenario × timestamp units; the response detail has 3,360 rows and the across-context summary has 168 rows. For the existing 8/12 E1 threshold, the across-context mean/minimum/maximum responses are: dew-point inconsistency 1.000/1.000/1.000 (15 units); gradual drift 0/0/0 (30); intermittent noise 0.0667/0/0.1667 (30); missing block 0/0/0 (15); persistent offset 0.0667/0/0.1667 (30); point drop 1/1/1 (5); point spike 1/1/1 (5); stuck sensor 0/0/0 (30). These are synthetic-label response fractions, not event detection accuracy.
+
+The review manifest records 29 input artifacts and all 6 outputs with hashes, sizes and applicable row/column metadata; the manifest’s own final SHA-256 is stored in a separate integrity sidecar. Reviewed E2 artifacts were verified before use (6,840 detail rows, 2,880 pairs, 813 summaries and 10 controls). Experiment Lab hides the reviewed outputs and displays an integrity warning if required manifests or files are missing or fail checks. The historical campaign manifest and first-generation baseline outputs are preserved.
+
+Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-suite result and hosted Actions result are recorded in `TESTING_REPORT.md` and `NEXT_SESSION.md` after completion of the push verification.
