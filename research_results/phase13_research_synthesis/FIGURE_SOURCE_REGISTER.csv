@@ -1,0 +1,9 @@
+figure_id,filename,caption,source_artifact,scope_and_limitation
+1,fig01_evidence_coverage.png,Evidence coverage across the held-out window,research_results/phase12_evidence_contribution/20261119T144632Z/fig01_evidence_coverage.png,Descriptive availability/support counts; E3 zero decision-eligible observations
+2,fig02_component_overlap.png,Paired component support overlap,research_results/phase12_evidence_contribution/20261119T144632Z/fig02_component_overlap.png,Shared processed inputs and joint negatives limit independence interpretation
+3,fig03_e1_baseline_dependency.png,E1 and baseline vote dependency,research_results/phase12_evidence_contribution/20261119T144632Z/fig03_e1_baseline_dependency.png,Same saved labels and fixed 8-of-12 screen
+4,fig04_e2_e4_agreement.png,E2 and E4 paired-indicator agreement,research_results/phase12_evidence_contribution/20261119T144632Z/fig04_e2_e4_agreement.png,Descriptive paired indicators without independent event truth
+5,fig05_evidence_profiles.png,Evidence profiles by sensitivity configuration,research_results/phase12_evidence_contribution/20261119T144632Z/fig05_evidence_profiles.png,Profile changes do not imply validated decision utility
+6,fig06_assessment_stability.png,Assessment category stability under evidence ablation,research_results/phase12_evidence_contribution/20261119T144632Z/fig06_assessment_stability.png,Category remains baseline-derived across configurations by policy
+7,fig07_e3_timestamp_offsets.png,E3 candidate-indexed neighbor timestamp offsets,research_results/phase12_evidence_contribution/20261119T144632Z/fig07_e3_timestamp_offsets.png,Index alignment does not establish independent observations
+8,fig08_component_missingness.png,Evidence availability and missingness,research_results/phase12_evidence_contribution/20261119T144632Z/fig08_component_missingness.png,Missing or insufficient evidence is not a negative or normal result

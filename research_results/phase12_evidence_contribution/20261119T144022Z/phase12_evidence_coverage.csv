@@ -1,0 +1,5 @@
+component,observations,available_n,descriptive_only_n,missing_n,not_applicable_n,coverage_pct,supporting_n,supporting_pct_all,no_detected_evidence_n,missing_is_negative
+E1,8415,8415,0,0,0,100.0,123,1.4616755793226381,8292,False
+E2,8415,8415,0,0,0,100.0,1661,19.73856209150327,6754,False
+E3,8415,0,123,8292,0,0.0,0,0.0,0,False
+E4,8415,8415,0,0,0,100.0,0,0.0,8415,False
