@@ -183,12 +183,34 @@ class TestWeatherGuardApplication(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
         self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
-        self.assertEqual([title.value for title in app.title], ["Home"])
-        self.assertEqual(app.radio[0].options, ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"])
+        self.assertEqual(app.radio[0].options, ["Home", "Model", "Research", "Experiments", "About"])
+        self.assertTrue(any("Station overview" in str(x.value) for x in app.markdown))
+        self.assertTrue(any("Integrated evidence" in str(x.value) for x in app.markdown))
+        self.assertIsNotNone(app.slider(key="home_timeline_slider"))
+        self.assertIsNotNone(app.button(key="home_play_button"))
+        self.assertIsNotNone(app.button(key="home_next_button"))
+        # Exercise synchronized timeline controls against saved observations.
+        app.slider(key="home_timeline_slider").set_value(0).run()
+        app.button(key="home_next_button").click().run()
+        self.assertEqual(app.slider(key="home_timeline_slider").value, 1)
+        app.button(key="home_play_button").click().run()
+        self.assertTrue(app.session_state["home_playing"])
+        app.button(key="home_pause_button").click().run()
+        self.assertFalse(app.session_state["home_playing"])
+        app.selectbox(key="home_detail_station_select").set_value("42099").run()
+        self.assertEqual(app.session_state["home_station_id"], "42099")
+        self.assertTrue(any("Unknown · model status unavailable" in str(x.value) for x in app.markdown))
+        app.button(key="close_station_details").click().run()
+        self.assertIsNotNone(app.button(key="open_station_details_hidden"))
+        app.button(key="open_station_details_hidden").click().run()
+        self.assertIsNotNone(app.selectbox(key="home_detail_station_select"))
         # Visit the tabbed workspace before workspaces with their own tab sets;
         # AppTest retains inactive tab elements in a single shared test object.
-        for workspace in ("Weather Data", "Experiment Lab", "Model Evaluation", "Investigate a Reading", "Research"):
-            app.radio[0].set_value(workspace).run()
+        for workspace in ("Weather Data", "Experiments", "Model", "Investigate a Reading", "Research", "About"):
+            if workspace in ("Weather Data", "Investigate a Reading"):
+                app.selectbox(key="quick_workspace").set_value(workspace).run()
+            else:
+                app.radio[0].set_value(workspace).run()
             self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Weather Data":
                 self.assertGreater(len(app.get("plotly_chart")), 0)
@@ -197,14 +219,14 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 self.assertGreaterEqual(len(app.get("plotly_chart")), 4)
                 self.assertTrue(any("Find an unusual observation" in str(x.value) for x in app.get("subheader")))
                 self.assertIsNotNone(app.selectbox(key="investigation_variable"))
-            if workspace == "Model Evaluation":
+            if workspace == "Model":
                 self.assertEqual([tab.label for tab in app.tabs], ["A. Experiments & Results", "B. How the Models Work"])
                 self.assertGreater(len(app.get("plotly_chart")), 0)
                 self.assertNotIn("new_predictions", app.session_state)
                 for family in ("IsolationForest", "LocalOutlierFactor", "OneClassSVM"):
                     app.selectbox(key="model_profile_family").set_value(family).run()
                     self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
-            if workspace == "Experiment Lab":
+            if workspace == "Experiments":
                 self.assertTrue(any("Saved eight-scenario fault matrix" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Five-context synthetic fault study" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Independent temporal-screen comparison" in str(x.value) for x in app.get("markdown")))

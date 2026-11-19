@@ -23,6 +23,7 @@ from services.model_metadata import build_model_education
 from services.research_artifact_integrity import multicontext_artifact_state
 from ui.investigation_workspace import render_investigation_workspace
 from ui.new_csv_analysis import render_new_csv_analysis
+from ui.home_dashboard import render_home_dashboard
 from ui.station_map import render_station_map
 from ui.theme import apply_theme, metric_card, evidence_panel
 
@@ -60,6 +61,26 @@ def render_header(kicker, title, subtitle):
     st.title(title)
     st.markdown(f"<div class='wg-subtitle'>{subtitle}</div>", unsafe_allow_html=True)
     st.write("")
+
+
+@st.dialog("Experiment with your data", width="large")
+def render_upload_dialog(root):
+    render_new_csv_analysis(root)
+
+
+def render_about():
+    render_header("WeatherGuard AI / project", "About", "A research prototype for reviewing unusual historical weather-station readings.")
+    st.markdown("""
+    WeatherGuard AI combines saved model outputs with temporal, spatial, and physical evidence to help people investigate unusual weather observations.
+
+    **Research boundary:** model agreement identifies candidates; it does not confirm sensor failure. The project’s E3 spatial evidence remains descriptive because independent station lineage and event adjudication are insufficient.
+    """)
+    st.info("This application is a historical research prototype, not a live monitoring or maintenance system.")
+    st.caption("Project team and contact information are not specified in the repository.")
+
+
+def _reset_quick_workspace():
+    st.session_state["quick_workspace"] = "Home dashboard"
 
 
 def render_home(data, manifest, hashes):
@@ -687,27 +708,41 @@ if "selected_observation" not in st.session_state:
     high = data["stability"].loc[data["stability"].configuration_votes.ge(8), "timestamp"]
     st.session_state["selected_observation"] = high.iloc[-1] if len(high) else data["observations"].index[-1]
 
-with st.sidebar:
-    st.markdown("<div class='wg-eyebrow'>WeatherGuard AI</div>", unsafe_allow_html=True)
-    st.markdown("### Historical Weather Anomaly Monitoring")
-    st.caption("Choose a place to start")
-    workspace = st.radio("Main navigation", ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"], label_visibility="collapsed", key="workspace_navigation")
-    st.divider()
-    st.markdown("**Historical data** · VILD0 processed snapshot")
-    st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
-    st.caption("Not a live feed · source provenance incomplete")
-    st.divider()
-    st.caption("Working title: Uncertainty-Aware Event-Level Verification of Weather Station Anomalies")
+with st.container(border=True):
+    brand, nav = st.columns([1.25, 4.4], vertical_alignment="center")
+    with brand:
+        st.markdown("<div class='wg-brand'><span class='wg-brand-mark'>⌁</span><span>WEATHERGUARD <span style='color:#38bdf8'>AI</span></span></div>", unsafe_allow_html=True)
+    with nav:
+        primary_page = st.radio(
+            "Main navigation", ["Home", "Model", "Research", "Experiments", "About"],
+            horizontal=True, label_visibility="collapsed", key="primary_navigation",
+            on_change=_reset_quick_workspace,
+        )
 
-if workspace == "Home":
-    render_home(data, manifest, hashes)
-elif workspace == "Weather Data":
+with st.sidebar:
+    st.markdown("<div class='wg-eyebrow'>HISTORICAL WORKSPACE</div>", unsafe_allow_html=True)
+    st.markdown("### Browse saved weather data")
+    quick_workspace = st.selectbox("Existing data tools", ["Home dashboard", "Weather Data", "Investigate a Reading"], label_visibility="collapsed", key="quick_workspace")
+    st.divider()
+    st.markdown("**Saved snapshot** · VILD0 processed series")
+    st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
+    st.caption("Historical only · source and sensor provenance incomplete")
+
+if quick_workspace == "Weather Data":
     render_weather_data(data)
-elif workspace == "Investigate a Reading":
+elif quick_workspace == "Investigate a Reading":
     render_investigation(data, ROOT)
-elif workspace == "Research":
+elif primary_page == "Home":
+    render_home_dashboard(data, str(ROOT))
+elif primary_page == "Research":
     render_research(data)
-elif workspace == "Experiment Lab":
+elif primary_page == "Experiments":
     render_experiments(ROOT, data, hashes)
+elif primary_page == "About":
+    render_about()
 else:
     render_evaluation(data, ROOT, hashes)
+
+with st.container(key="wg_persistent_upload_action"):
+    if st.button("＋  Experiment with your data", key="persistent_dataset_cta", type="primary"):
+        render_upload_dialog(ROOT)
