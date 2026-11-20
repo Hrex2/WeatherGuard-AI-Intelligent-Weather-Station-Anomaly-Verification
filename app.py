@@ -26,6 +26,9 @@ from ui.new_csv_analysis import render_new_csv_analysis
 from ui.home_dashboard import render_home_dashboard
 from ui.station_map import render_station_map
 from ui.theme import apply_theme, metric_card, evidence_panel
+from ui.model_workspace import render_model_workspace
+from ui.research_workspace import render_research_workspace
+from ui.experiment_workspace import render_experiment_workspace
 
 st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="expanded")
 apply_theme()
@@ -253,8 +256,8 @@ def render_investigation(data, root):
     render_investigation_workspace(data, root)
 
 
-def render_experiments(root, data, phase01_hashes):
-    render_header("WeatherGuard AI  /  experiment lab", "Experiment Lab", "Run controlled, explicitly simulated injections on held-out observations.")
+def render_synthetic_experiments(root, data, phase01_hashes):
+    render_header("WeatherGuard AI  /  experiments", "Synthetic Campaigns", "Review saved controlled injection results and their limits.")
     st.warning("SIMULATED DATA — NOT REAL-WORLD FAULT VALIDATION. Synthetic results test detector behavior on declared injections; they do not estimate field accuracy or diagnose hardware.")
     matrix_dir = root / "research_results" / "fault_matrix_02bd147f5cce"
     matrix_manifest_path = matrix_dir / "run_metadata.json"
@@ -720,13 +723,22 @@ with st.container(border=True):
         )
 
 with st.sidebar:
-    st.markdown("<div class='wg-eyebrow'>HISTORICAL WORKSPACE</div>", unsafe_allow_html=True)
-    st.markdown("### Browse saved weather data")
-    quick_workspace = st.selectbox("Existing data tools", ["Home dashboard", "Weather Data", "Investigate a Reading"], label_visibility="collapsed", key="quick_workspace")
-    st.divider()
-    st.markdown("**Saved snapshot** · VILD0 processed series")
+    st.markdown("<div class='wg-eyebrow'>PROJECT WORKSPACE</div>", unsafe_allow_html=True)
+    st.markdown("### Dataset context")
+    st.markdown("**VILD0 · primary processed series**")
+    st.caption("Ludhiana / Doraha record · historical snapshot")
     st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
-    st.caption("Historical only · source and sensor provenance incomplete")
+    st.success("Saved artifact integrity verified")
+    st.divider()
+    if primary_page == "Home":
+        st.markdown("### Home workspace")
+        quick_workspace = st.radio(
+            "Home view", ["Home dashboard", "Weather Data", "Investigate a Reading"],
+            key="quick_workspace", label_visibility="collapsed",
+        )
+    else:
+        quick_workspace = "Home dashboard"
+    st.caption("Historical data only · provider and sensor provenance remain incomplete.")
 
 if quick_workspace == "Weather Data":
     render_weather_data(data)
@@ -735,13 +747,13 @@ elif quick_workspace == "Investigate a Reading":
 elif primary_page == "Home":
     render_home_dashboard(data, str(ROOT))
 elif primary_page == "Research":
-    render_research(data)
+    render_research_workspace(ROOT, data)
 elif primary_page == "Experiments":
-    render_experiments(ROOT, data, hashes)
+    render_experiment_workspace(ROOT, data, hashes, render_synthetic_experiments)
 elif primary_page == "About":
     render_about()
 else:
-    render_evaluation(data, ROOT, hashes)
+    render_model_workspace(data, ROOT, hashes, render_evaluation)
 
 with st.container(key="wg_persistent_upload_action"):
     if st.button("＋  Experiment with your data", key="persistent_dataset_cta", type="primary"):

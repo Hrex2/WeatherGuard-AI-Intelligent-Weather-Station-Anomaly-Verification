@@ -17,6 +17,7 @@ from services.data_service import (load_project_data, prediction_wide,
                                   verify_phase03_integrity, write_phase03_integrity_manifest)
 from services.evidence_service import observation_evidence
 from services.model_metadata import build_model_education
+from ui.home_dashboard import _load_station_records, _selected_station_status, _playback_seconds
 
 
 class TestWeatherGuardApplication(unittest.TestCase):
@@ -32,6 +33,17 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertTrue(self.manifest["audit_passed"])
         self.assertTrue({"observations", "train", "test"}.issubset(self.hashes))
         self.assertTrue(any(name.startswith("phase03:") for name in self.hashes))
+
+    def test_dashboard_uses_saved_station_record_coordinates_and_cautious_marker_states(self):
+        records, sources = _load_station_records(str(ROOT))
+        self.assertTrue({"station_id", "latitude", "longitude"}.issubset(records.columns))
+        self.assertTrue(records.latitude.between(-90, 90).all())
+        self.assertTrue(records.longitude.between(-180, 180).all())
+        self.assertIn("42099", sources)
+        self.assertEqual(_selected_station_status("VILD0", 9, 12)[0], "E1 candidate · 9/12 (not a fault label)")
+        self.assertIn("Unknown", _selected_station_status("42099", 9, 12)[0])
+        from pandas import Timestamp
+        self.assertEqual(_playback_seconds(Timestamp("2025-01-01"), Timestamp("2025-02-01")), 10.0)
 
     def test_manifest_hash_mismatch_fails_closed_with_affected_filename(self):
         with patch("services.data_service.sha256_file", return_value="0" * 64):
@@ -183,7 +195,7 @@ class TestWeatherGuardApplication(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
         self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
-        self.assertEqual(app.radio[0].options, ["Home", "Model", "Research", "Experiments", "About"])
+        self.assertEqual(app.radio(key="primary_navigation").options, ["Home", "Model", "Research", "Experiments", "About"])
         self.assertTrue(any("Station overview" in str(x.value) for x in app.markdown))
         self.assertTrue(any("Integrated evidence" in str(x.value) for x in app.markdown))
         self.assertIsNotNone(app.slider(key="home_timeline_slider"))
@@ -208,9 +220,10 @@ class TestWeatherGuardApplication(unittest.TestCase):
         # AppTest retains inactive tab elements in a single shared test object.
         for workspace in ("Weather Data", "Experiments", "Model", "Investigate a Reading", "Research", "About"):
             if workspace in ("Weather Data", "Investigate a Reading"):
-                app.selectbox(key="quick_workspace").set_value(workspace).run()
+                app.radio(key="primary_navigation").set_value("Home").run()
+                app.radio(key="quick_workspace").set_value(workspace).run()
             else:
-                app.radio[0].set_value(workspace).run()
+                app.radio(key="primary_navigation").set_value(workspace).run()
             self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Weather Data":
                 self.assertGreater(len(app.get("plotly_chart")), 0)
@@ -220,18 +233,54 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 self.assertTrue(any("Find an unusual observation" in str(x.value) for x in app.get("subheader")))
                 self.assertIsNotNone(app.selectbox(key="investigation_variable"))
             if workspace == "Model":
+                self.assertEqual(app.radio(key="model_section_navigation").options,
+                                 ["Introduction", "Data Acquisition", "Preprocessing", "Model Selection", "Model Training", "Model Evaluation", "Results", "Conclusion"])
+                app.radio(key="model_section_navigation").set_value("Model Selection").run()
+                self.assertIsNotNone(app.selectbox(key="model_workspace_family"))
+                for family in ("IsolationForest", "LocalOutlierFactor", "OneClassSVM"):
+                    app.selectbox(key="model_workspace_family").set_value(family).run()
+                    self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+                for section in ("Data Acquisition", "Preprocessing", "Model Training", "Model Evaluation", "Conclusion"):
+                    app.radio(key="model_section_navigation").set_value(section).run()
+                    self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+                app.radio(key="model_section_navigation").set_value("Results").run()
                 self.assertEqual([tab.label for tab in app.tabs], ["A. Experiments & Results", "B. How the Models Work"])
                 self.assertGreater(len(app.get("plotly_chart")), 0)
                 self.assertNotIn("new_predictions", app.session_state)
-                for family in ("IsolationForest", "LocalOutlierFactor", "OneClassSVM"):
-                    app.selectbox(key="model_profile_family").set_value(family).run()
-                    self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Experiments":
+                self.assertEqual(app.radio(key="experiment_section_navigation").options,
+                                 ["E1 · Model Stability", "E2 · Temporal Consistency", "E3 · Spatial Evidence", "E4 · Physical Plausibility", "Phase 12 · Contribution and Ablation", "Phase 13 · Research Synthesis", "Phase 14 · IEEE Paper", "Synthetic Campaigns"])
+                app.radio(key="experiment_section_navigation").set_value("E3 · Spatial Evidence").run()
+                self.assertTrue(any("Decision-ineligible" in str(x.value) for x in app.get("error")))
+                app.radio(key="experiment_section_navigation").set_value("Phase 12 · Contribution and Ablation").run()
+                self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+                for section in ("E2 · Temporal Consistency", "E4 · Physical Plausibility", "Phase 13 · Research Synthesis", "Phase 14 · IEEE Paper"):
+                    app.radio(key="experiment_section_navigation").set_value(section).run()
+                    self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+                app.radio(key="experiment_section_navigation").set_value("Synthetic Campaigns").run()
                 self.assertTrue(any("Saved eight-scenario fault matrix" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Five-context synthetic fault study" in str(x.value) for x in app.get("subheader")))
                 self.assertTrue(any("Independent temporal-screen comparison" in str(x.value) for x in app.get("markdown")))
                 self.assertTrue(any("Synthetic baseline response and setting sensitivity" in str(x.value) for x in app.get("markdown")))
                 self.assertTrue(any("Coverage does not measure interpretive benefit" in str(x.value) for x in app.get("caption")))
+            if workspace == "Research":
+                self.assertEqual(app.radio(key="research_section_navigation").options[0], "Abstract")
+                app.radio(key="research_section_navigation").set_value("Experimental Results").run()
+                self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+                for section in app.radio(key="research_section_navigation").options:
+                    app.radio(key="research_section_navigation").set_value(section).run()
+                    self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
+
+    def test_upload_inference_and_retraining_are_separate(self):
+        from streamlit.testing.v1 import AppTest
+        app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
+        app.button(key="persistent_dataset_cta").click().run()
+        mode = app.radio(key="uploaded_analysis_mode")
+        self.assertEqual(mode.options, ["Existing model inference", "Retraining / refitting"])
+        self.assertTrue(any("Inference is unavailable" in str(item.value) for item in app.get("warning")))
+        self.assertFalse(any(button.key == "run_uploaded_analysis" for button in app.button))
+        mode.set_value("Retraining / refitting").run()
+        self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
 
 
 if __name__ == "__main__":

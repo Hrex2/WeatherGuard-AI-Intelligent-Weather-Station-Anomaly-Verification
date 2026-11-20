@@ -30,6 +30,8 @@ def apply_theme():
     .wg-brand { display:flex; align-items:center; gap:10px; color:#f1f5f9; font-weight:800; font-size:1.05rem; letter-spacing:-.02em; padding:.35rem 0; }
     .wg-brand-mark { display:inline-flex; width:31px; height:31px; align-items:center; justify-content:center; border-radius:10px; color:#082f49; background:#38bdf8; font-size:1.1rem; box-shadow:0 0 18px rgba(56,189,248,.2); }
     .wg-home-title { margin:.12rem 0 .1rem 0; font-size:2rem; letter-spacing:-.04em; }
+    .wg-reading-title { font-family: Georgia, 'Times New Roman', serif; font-size:1.14rem; line-height:1.8; color:#dce7f3; }
+    .wg-section-nav { position:sticky; top:1rem; }
     .wg-reading-row { display:flex; flex-direction:column; gap:1px; border-bottom:1px solid #29384d; padding:8px 0; }
     .wg-reading-row span { color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; }
     .wg-reading-row strong { font-size:.95rem; font-variant-numeric:tabular-nums; }
@@ -40,6 +42,15 @@ def apply_theme():
     div[data-testid="stRadio"] > div[role="radiogroup"] { gap:.35rem; flex-wrap:wrap; }
     div[data-testid="stRadio"] > div[role="radiogroup"] label { border:1px solid #2a3b51; border-radius:9px; padding:.32rem .72rem; background:#172235; color:#cbd5e1; transition:all .16s ease; }
     div[data-testid="stRadio"] > div[role="radiogroup"] label:has(input:checked) { border-color:#38bdf8; background:#123047; color:#f0f9ff; }
+    div.st-key-model_section_navigation div[role="radiogroup"],
+    div.st-key-research_section_navigation div[role="radiogroup"],
+    div.st-key-experiment_section_navigation div[role="radiogroup"] { flex-direction:column; flex-wrap:nowrap; align-items:stretch; }
+    div.st-key-model_section_navigation div[role="radiogroup"] label,
+    div.st-key-research_section_navigation div[role="radiogroup"] label,
+    div.st-key-experiment_section_navigation div[role="radiogroup"] label { width:100%; justify-content:flex-start; margin:0; }
+    div.st-key-model_section_navigation div[role="radiogroup"] label p,
+    div.st-key-research_section_navigation div[role="radiogroup"] label p,
+    div.st-key-experiment_section_navigation div[role="radiogroup"] label p { font-size:.83rem; }
     div.st-key-wg_persistent_upload_action { position:fixed; bottom:1.1rem; right:1.2rem; z-index:800; width:auto; }
     div.st-key-wg_persistent_upload_action button { border-radius:999px; box-shadow:0 8px 28px rgba(0,0,0,.35); background:#0e7490; color:white; border:1px solid #38bdf8; padding:.58rem 1rem; }
     div.st-key-wg_persistent_upload_action button:hover { background:#155e75; border-color:#7dd3fc; }
@@ -49,6 +60,7 @@ def apply_theme():
       .wg-home-title { font-size:1.6rem; }
       div[data-testid="stRadio"] > div[role="radiogroup"] { justify-content:center; }
       div.st-key-wg_persistent_upload_action { right:.65rem; bottom:.65rem; }
+      .wg-section-nav { position:static; }
     }
     div[data-testid="stMetric"] { background:linear-gradient(145deg,#172438,#111c2e); border:1px solid #263b55; border-radius:14px; padding:12px 16px; }
     div[data-testid="stMetricValue"] { font-variant-numeric:tabular-nums; }

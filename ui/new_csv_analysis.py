@@ -55,7 +55,17 @@ def _show_uploaded_results(result):
 def render_new_csv_analysis(root):
     st.subheader("Analyze a new station CSV")
     st.caption("Uploads are processed as a separate analysis run. They are never appended to or used to overwrite the verified historical snapshots.")
-    st.info("No fitted historical estimator is stored in this repository. This workflow validates a CSV first, then fits a new 12-configuration model only after you press the run button.")
+    mode = st.radio(
+        "Choose an isolated upload workflow",
+        ["Existing model inference", "Retraining / refitting"],
+        horizontal=True,
+        key="uploaded_analysis_mode",
+        help="Inference would require saved fitted estimators. Retraining fits a separate new local model version only after explicit confirmation.",
+    )
+    if mode == "Existing model inference":
+        st.warning("Inference is unavailable: this repository contains saved historical predictions but no persisted fitted estimator objects or compatible inference bundle. No model will be fit in this mode.")
+    else:
+        st.info("This separate workflow validates the upload first, then fits a new 12-configuration model only after you explicitly run it. Existing research artifacts are not overwritten.")
     upload = st.file_uploader("Choose a weather-station CSV", type=["csv"], key="new_station_csv")
     if upload is None:
         return
@@ -73,6 +83,13 @@ def render_new_csv_analysis(root):
         st.error("The uploaded CSV has no data rows.")
         return
     st.caption(f"{len(raw):,} rows · {len(raw.columns)} columns · SHA-256 {file_hash}")
+    schema = pd.DataFrame({
+        "Column": raw.columns.astype(str),
+        "Detected type": [str(dtype) for dtype in raw.dtypes],
+        "Missing values": [int(raw[column].isna().sum()) for column in raw.columns],
+    })
+    st.caption("Schema compatibility: manual mapping is required for a timestamp and the six model weather variables; units and hourly cadence are validated before analysis.")
+    st.dataframe(schema, hide_index=True, width="stretch")
     with st.expander("Preview uploaded columns and first rows"):
         st.dataframe(raw.head(20), hide_index=True, width="stretch")
     with st.form("new_csv_mapping_form"):
@@ -121,7 +138,9 @@ def render_new_csv_analysis(root):
         cards[2].metric("Held-out rows", f"{meta['test_rows']:,}")
         cards[3].metric("Missing source values", f"{sum(meta['missing_values_by_variable'].values()):,}")
         st.caption(f"Chronological split: train {meta['train_start']}–{meta['train_end']}; test {meta['test_start']}–{meta['test_end']}. All imputations use training medians only. The model protocol requires hourly timestamps and the same 11 features.")
-        if st.button("Train a new local 12-configuration model and analyze held-out rows", type="primary", key="run_uploaded_analysis"):
+        if mode == "Existing model inference":
+            st.info("The CSV passed preprocessing validation, but results cannot be produced with existing model inference because no fitted model artifacts are saved.")
+        elif st.button("Train a new local 12-configuration model and analyze held-out rows", type="primary", key="run_uploaded_analysis"):
             with st.spinner("Fitting the explicitly requested new local model version on uploaded training rows…"):
                 try:
                     result = run_uploaded_weather_analysis(prepared, content, upload.name, station_id, Path(root))
@@ -130,6 +149,6 @@ def render_new_csv_analysis(root):
                 except (ValueError, KeyError, FileNotFoundError, RuntimeError) as exc:
                     st.error(f"Uploaded analysis did not complete: {exc}")
         result = st.session_state.get("uploaded_analysis_result")
-        if result and result["metadata"].get("input_sha256") == file_hash:
+        if mode == "Retraining / refitting" and result and result["metadata"].get("input_sha256") == file_hash:
             _show_uploaded_results(result)
 

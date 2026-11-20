@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import pydeck as pdk
 import streamlit as st
@@ -139,7 +140,7 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
     min_date, max_date = obs.index.min().date(), latest.date()
     default_start = max(min_date, (latest - pd.Timedelta(days=29)).date())
     date_selection = st.date_input(
-        "Timeline period", value=(default_start, max_date), min_value=min_date,
+        "Historical period · year / month / day", value=(default_start, max_date), min_value=min_date,
         max_value=max_date, key="home_date_range",
         help="Filter actual saved historical timestamps. This is not a live data feed.",
     )
@@ -309,12 +310,11 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
                 except (AttributeError, KeyError, TypeError):
                     pass
                 st.caption("Map points show station-record coordinates. Exact sensor locations and independent E3 corroboration are unverified.")
-                legend = st.columns(4)
+                legend = st.columns(3)
                 legend[0].markdown("🔵 **No 8/12 candidate**")
                 legend[1].markdown("🔴 **E1 candidate**")
-                legend[2].markdown("🟠 **Regional evidence**")
-                legend[3].markdown("⚪ **Unknown**")
-                st.caption("Orange regional-anomaly status is not assigned: E3 has insufficient independent evidence.")
+                legend[2].markdown("⚪ **Unknown / unavailable**")
+                st.caption("Orange regional status is intentionally unassigned: E3 has insufficient independent evidence. No marker color means a confirmed fault.")
 
     # Right-side station details panel; exact timestamp values come from saved observations/exports.
     with layout[2]:
@@ -384,6 +384,56 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
                     "Open station details", key="open_station_details_hidden",
                     on_click=_set_station_details_open, args=(True,),
                 )
+
+    # Supporting histories use only the selected station's saved rows and the active date range.
+    with st.container(border=True):
+        st.markdown("### Historical context")
+        st.caption("Charts update with the selected station and date range. Gaps stay missing; no measurements are interpolated.")
+        source = source_frames.get(selected_station) if selected_station != "VILD0" else None
+        if selected_station == "VILD0":
+            history = obs.loc[(obs.index >= start_ts) & (obs.index <= end_ts)]
+        elif source is not None:
+            history = source.loc[(source.index >= start_ts.tz_convert("UTC")) & (source.index <= end_ts.tz_convert("UTC"))]
+        else:
+            history = pd.DataFrame()
+        history_columns = st.columns(2)
+        for index, (variable_code, (label, unit)) in enumerate(
+            (item for item in VARIABLES.items() if item[0] in {"temp", "rhum", "wspd", "pres"})
+        ):
+            with history_columns[index % 2]:
+                st.markdown(f"**{label} · {unit}**")
+                if variable_code not in history.columns or history.empty:
+                    st.info(f"{label} history is unavailable for this station and period.")
+                    continue
+                values = pd.to_numeric(history[variable_code], errors="coerce")
+                valid = values.dropna()
+                if valid.empty:
+                    st.info(f"No recorded {label.lower()} values in this period.")
+                    continue
+                if len(valid) > 900:
+                    valid = valid.iloc[::max(1, math.ceil(len(valid) / 900))]
+                history_fig = go.Figure(go.Scatter(
+                    x=valid.index, y=valid.values, mode="lines",
+                    line={"color": "#38BDF8", "width": 1.3}, name=label,
+                ))
+                if selected_ts in valid.index:
+                    history_fig.add_vline(x=selected_ts, line_color="#F59E0B", line_dash="dash", line_width=1)
+                history_fig.update_layout(title=label, xaxis_title="Historical time", yaxis_title=unit, showlegend=False)
+                st.plotly_chart(_plot_style(history_fig, 185), width="stretch", key=f"home_history_{selected_station}_{variable_code}")
+                st.caption(f"{len(valid):,} plotted valid values · {int(values.isna().sum()):,} missing in source rows")
+
+        candidates = stability.loc[
+            stability.configuration_votes.ge(8) & stability.timestamp.between(start_ts, end_ts),
+            "timestamp",
+        ]
+        if len(candidates):
+            monthly = candidates.dt.strftime("%Y-%m").value_counts().sort_index().rename_axis("month").rename("timestamps").reset_index()
+            frequency = px.bar(monthly, x="month", y="timestamps", labels={"month": "Month", "timestamps": "Saved 8/12 candidates"},
+                               title="Candidate frequency by month", color_discrete_sequence=["#F59E0B"])
+            st.plotly_chart(_plot_style(frequency, 230), width="stretch", key="home_candidate_frequency")
+        else:
+            st.info("No saved 8/12 candidate timestamps fall within this selected period.")
+        st.caption("Candidate frequency is descriptive and does not estimate fault prevalence. Candidate counts are available for the primary held-out station only.")
 
     # Persistent timeline and real-data replay controls.
     with st.container(border=True):
