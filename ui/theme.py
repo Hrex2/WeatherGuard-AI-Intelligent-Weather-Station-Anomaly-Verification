@@ -54,12 +54,17 @@ def apply_theme():
     div.st-key-wg_persistent_upload_action { position:fixed; bottom:1.1rem; right:1.2rem; z-index:800; width:auto; }
     div.st-key-wg_persistent_upload_action button { border-radius:999px; box-shadow:0 8px 28px rgba(0,0,0,.35); background:#0e7490; color:white; border:1px solid #38bdf8; padding:.58rem 1rem; }
     div.st-key-wg_persistent_upload_action button:hover { background:#155e75; border-color:#7dd3fc; }
-    @media (max-width:1100px) { .wg-reading-row strong { font-size:.88rem; } }
+    @media (max-width:1100px) {
+      .wg-reading-row strong { font-size:.88rem; }
+      [data-testid="stHorizontalBlock"] { flex-direction:column !important; align-items:stretch; }
+      [data-testid="stColumn"] { width:100% !important; flex:1 1 100% !important; }
+      div.st-key-wg_persistent_upload_action { position:static; width:100%; display:flex; justify-content:flex-end; margin-top:.5rem; }
+      div.st-key-wg_persistent_upload_action button { box-shadow:none; }
+    }
     @media (max-width:760px) {
       [data-testid="stAppViewContainer"] > .main .block-container { padding-left:.75rem; padding-right:.75rem; padding-top:.7rem; }
       .wg-home-title { font-size:1.6rem; }
       div[data-testid="stRadio"] > div[role="radiogroup"] { justify-content:center; }
-      div.st-key-wg_persistent_upload_action { right:.65rem; bottom:.65rem; }
       .wg-section-nav { position:static; }
     }
     div[data-testid="stMetric"] { background:linear-gradient(145deg,#172438,#111c2e); border:1px solid #263b55; border-radius:14px; padding:12px 16px; }

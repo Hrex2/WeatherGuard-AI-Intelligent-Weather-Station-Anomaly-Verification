@@ -236,8 +236,15 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
                             x=cand, y=chart_series.reindex(cand), mode="markers", name="8/12 E1 candidate",
                             marker={"color": "#EF4444", "size": 6, "symbol": "diamond"},
                         ))
-                trend.update_layout(title=f"{VARIABLES[variable][0]} trend", xaxis_title="Historical time", yaxis_title=VARIABLES[variable][1])
-                st.plotly_chart(_plot_style(trend, 230), width="stretch", key="home_analytics_trend")
+                trend.update_layout(title=f"{VARIABLES[variable][0]} trend", showlegend=False,
+                                    title_font_size=13)
+                _plot_style(trend, 190)
+                # This chart sits in a narrow analytics column. Suppress dense
+                # date ticks and axis titles so the actual trend remains readable.
+                trend.update_xaxes(showticklabels=False, title_text=None)
+                trend.update_yaxes(title_text=None, tickfont_size=9)
+                trend.update_layout(margin={"l": 24, "r": 4, "t": 30, "b": 4})
+                st.plotly_chart(trend, width="stretch", key="home_analytics_trend")
                 st.caption("Red diamonds mark saved E1 candidates; they do not confirm faults.")
             else:
                 st.info("No values for this measurement in the selected period.")

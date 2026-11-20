@@ -711,7 +711,7 @@ if "selected_observation" not in st.session_state:
     high = data["stability"].loc[data["stability"].configuration_votes.ge(8), "timestamp"]
     st.session_state["selected_observation"] = high.iloc[-1] if len(high) else data["observations"].index[-1]
 
-with st.container(border=True):
+with st.container(border=True, key="primary_header"):
     brand, nav = st.columns([1.25, 4.4], vertical_alignment="center")
     with brand:
         st.markdown("<div class='wg-brand'><span class='wg-brand-mark'>⌁</span><span>WEATHERGUARD <span style='color:#38bdf8'>AI</span></span></div>", unsafe_allow_html=True)

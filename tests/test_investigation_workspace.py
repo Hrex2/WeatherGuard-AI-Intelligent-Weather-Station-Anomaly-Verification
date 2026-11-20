@@ -100,6 +100,37 @@ class TestUploadedDataPreparation(unittest.TestCase):
         converted = prepare_uploaded_weather_data(frame, "time", self.mapping, units)
         self.assertAlmostEqual(converted["observations"].temp.iloc[0], 10)
 
+    def test_csv_acceptance_cases_missing_columns_bad_values_missing_data_and_empty(self):
+        # Case A: extra source columns are tolerated and valid data are prepared.
+        extra = self.frame.assign(operator_note="not a model feature")
+        prepared = prepare_uploaded_weather_data(extra, "time", self.mapping, self.units)
+        self.assertEqual(prepared["metadata"]["usable_rows"], 120)
+
+        # Case B: identify precisely which mapped source field is absent.
+        with self.assertRaisesRegex(KeyError, r"temp \(t\)"):
+            prepare_uploaded_weather_data(self.frame.drop(columns="t"), "time", self.mapping, self.units)
+
+        # Case C: fail with a column-specific message when measurements are text.
+        bad_numeric = self.frame.copy()
+        bad_numeric["t"] = bad_numeric["t"].astype(object)
+        bad_numeric.loc[0, "t"] = "warm"
+        with self.assertRaisesRegex(ValueError, r"Column t contains 1 non-numeric temp value"):
+            prepare_uploaded_weather_data(bad_numeric, "time", self.mapping, self.units)
+
+        # Case D: report partial missingness; reject an all-empty model variable.
+        partial = self.frame.copy()
+        partial.loc[0, "t"] = np.nan
+        result = prepare_uploaded_weather_data(partial, "time", self.mapping, self.units)
+        self.assertEqual(result["metadata"]["missing_values_by_variable"]["temp"], 1)
+        all_missing = self.frame.copy()
+        all_missing["rain"] = np.nan
+        with self.assertRaisesRegex(ValueError, r"all-missing training variable.*prcp"):
+            prepare_uploaded_weather_data(all_missing, "time", self.mapping, self.units)
+
+        # Case E: empty input is a handled validation error, not an empty model run.
+        with self.assertRaisesRegex(ValueError, "uploaded CSV is empty"):
+            prepare_uploaded_weather_data(self.frame.iloc[:0], "time", self.mapping, self.units)
+
     def test_duplicate_bad_and_nonhourly_timestamps_fail_closed(self):
         duplicate = self.frame.copy()
         duplicate.loc[1, "time"] = duplicate.loc[0, "time"]
