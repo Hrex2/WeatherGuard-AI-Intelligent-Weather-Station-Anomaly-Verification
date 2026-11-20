@@ -195,8 +195,10 @@ class TestWeatherGuardApplication(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
         self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
-        self.assertEqual(app.radio(key="primary_navigation").options, ["Home", "Model", "Research", "Experiments", "About"])
-        self.assertTrue(any("Station overview" in str(x.value) for x in app.markdown))
+        expected_workspaces = ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation",
+                               "Experiment Lab", "Research", "About"]
+        self.assertEqual(app.radio(key="primary_navigation").options, expected_workspaces)
+        self.assertTrue(any("WeatherGuard AI" in str(x.value) for x in app.markdown))
         self.assertTrue(any("Integrated evidence" in str(x.value) for x in app.markdown))
         self.assertIsNotNone(app.slider(key="home_timeline_slider"))
         self.assertIsNotNone(app.button(key="home_play_button"))
@@ -229,12 +231,8 @@ class TestWeatherGuardApplication(unittest.TestCase):
         self.assertIsNotNone(app.selectbox(key="home_detail_station_select"))
         # Visit the tabbed workspace before workspaces with their own tab sets;
         # AppTest retains inactive tab elements in a single shared test object.
-        for workspace in ("Weather Data", "Experiments", "Model", "Investigate a Reading", "Research", "About"):
-            if workspace in ("Weather Data", "Investigate a Reading"):
-                app.radio(key="primary_navigation").set_value("Home").run()
-                app.radio(key="quick_workspace").set_value(workspace).run()
-            else:
-                app.radio(key="primary_navigation").set_value(workspace).run()
+        for workspace in expected_workspaces[1:]:
+            app.radio(key="primary_navigation").set_value(workspace).run()
             self.assertEqual(len(app.exception), 0, [error.message for error in app.exception])
             if workspace == "Weather Data":
                 self.assertGreater(len(app.get("plotly_chart")), 0)
@@ -243,7 +241,10 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 self.assertGreaterEqual(len(app.get("plotly_chart")), 4)
                 self.assertTrue(any("Find an unusual observation" in str(x.value) for x in app.get("subheader")))
                 self.assertIsNotNone(app.selectbox(key="investigation_variable"))
-            if workspace == "Model":
+                investigation_text = "\n".join(str(x.value) for x in app.markdown)
+                for section in ("Selected observation", "Model agreement", "Evidence review", "Overall interpretation", "E3 · Spatial evidence"):
+                    self.assertIn(section, investigation_text)
+            if workspace == "Model Evaluation":
                 self.assertEqual(app.radio(key="model_section_navigation").options,
                                  ["Introduction", "Data Acquisition", "Preprocessing", "Model Selection", "Model Training", "Model Evaluation", "Results", "Conclusion"])
                 app.radio(key="model_section_navigation").set_value("Model Selection").run()
@@ -258,7 +259,7 @@ class TestWeatherGuardApplication(unittest.TestCase):
                 self.assertEqual([tab.label for tab in app.tabs], ["A. Experiments & Results", "B. How the Models Work"])
                 self.assertGreater(len(app.get("plotly_chart")), 0)
                 self.assertNotIn("new_predictions", app.session_state)
-            if workspace == "Experiments":
+            if workspace == "Experiment Lab":
                 self.assertEqual(app.radio(key="experiment_section_navigation").options,
                                  ["E1 · Model Stability", "E2 · Temporal Consistency", "E3 · Spatial Evidence", "E4 · Physical Plausibility", "Phase 12 · Contribution and Ablation", "Phase 13 · Research Synthesis", "Phase 14 · IEEE Paper", "Synthetic Campaigns"])
                 app.radio(key="experiment_section_navigation").set_value("E3 · Spatial Evidence").run()

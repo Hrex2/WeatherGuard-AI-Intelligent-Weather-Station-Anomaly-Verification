@@ -29,8 +29,9 @@ from ui.theme import apply_theme, metric_card, evidence_panel
 from ui.model_workspace import render_model_workspace
 from ui.research_workspace import render_research_workspace
 from ui.experiment_workspace import render_experiment_workspace
+from ui.chart_theme import style_chart
 
-st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="auto")
 apply_theme()
 
 
@@ -40,15 +41,7 @@ def _load_data(root_text):
 
 
 def _plot_layout(fig, height=350):
-    fig.update_layout(
-        height=height, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#cad8e8", "family": "Inter, Segoe UI, sans-serif"},
-        margin={"l": 14, "r": 14, "t": 30, "b": 12},
-        xaxis={"gridcolor": "#26384e", "zerolinecolor": "#26384e"},
-        yaxis={"gridcolor": "#26384e", "zerolinecolor": "#26384e"},
-        legend={"orientation": "h", "y": 1.12, "x": 0},
-    )
-    return fig
+    return style_chart(fig, height)
 
 
 def _fmt_ts(ts):
@@ -80,10 +73,6 @@ def render_about():
     """)
     st.info("This application is a historical research prototype, not a live monitoring or maintenance system.")
     st.caption("Project team and contact information are not specified in the repository.")
-
-
-def _reset_quick_workspace():
-    st.session_state["quick_workspace"] = "Home dashboard"
 
 
 def render_home(data, manifest, hashes):
@@ -176,20 +165,34 @@ def render_weather_data(data):
     series = view[variable].dropna()
     if len(series) > 9000:
         series = series.iloc[::max(1, len(series) // 9000)]
+    selected = st.session_state.get("selected_observation")
+    if isinstance(dates, tuple) and len(dates) == 2:
+        candidate_index = stability.index[(stability.index >= lo) & (stability.index <= hi)
+                                          & stability.configuration_votes.ge(8)]
+    else:
+        candidate_index = stability.index[stability.configuration_votes.ge(8)]
+    candidate_times = candidate_index.intersection(series.index)
+    summary = st.columns(3)
+    summary[0].metric("Historical rows in range", f"{len(view):,}")
+    summary[1].metric("8/12 candidates in range", f"{len(candidate_times):,}",
+                      help="Saved model agreement is a review marker, not a fault label.")
+    selected_value = series.get(pd.Timestamp(selected)) if selected is not None and pd.Timestamp(selected) in series.index else None
+    summary[2].metric("Selected reading", f"{selected_value:.2f} {labels[variable][1]}" if selected_value is not None else "Outside range / unavailable",
+                      help="The selected timestamp is shared with Home and Investigate a Reading.")
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=series.index, y=series, mode="lines", name=labels[variable][0],
                              line={"color": "#38BDF8", "width": 1.4},
                              hovertemplate="%{x|%Y-%m-%d %H:%M}<br>%{y:.2f} " + labels[variable][1] + "<extra></extra>"))
-    candidate_times = stability.index[stability.configuration_votes.ge(8)].intersection(series.index)
     if len(candidate_times):
         fig.add_trace(go.Scatter(x=candidate_times, y=series.loc[candidate_times], mode="markers", name="8/12 model agreement",
                                  marker={"color": "#FBBF24", "size": 7, "symbol": "diamond"}))
-    selected = st.session_state.get("selected_observation")
     if selected is not None and pd.Timestamp(selected) in series.index:
         selected = pd.Timestamp(selected)
         fig.add_trace(go.Scatter(x=[selected], y=[series.loc[selected]], mode="markers", name="Selected reading",
                                  marker={"color": "#F87171", "size": 11, "symbol": "x"}))
     fig.update_layout(title=f"{labels[variable][0]} over time", xaxis_title="Historical time", yaxis_title=f"{labels[variable][0]} ({labels[variable][1]})")
+    if series.empty:
+        st.info("No non-missing measurements are available for this variable and date range.")
     st.plotly_chart(_plot_layout(fig, 430), width="stretch")
     st.caption(f"Showing {len(view):,} historical rows; {int(view[variable].isna().sum()):,} missing values for {labels[variable][0].lower()} in this range. Gold markers indicate model agreement, not confirmed faults.")
     with st.expander("View measurement rows"):
@@ -717,9 +720,10 @@ with st.container(border=True, key="primary_header"):
         st.markdown("<div class='wg-brand'><span class='wg-brand-mark'>⌁</span><span>WEATHERGUARD <span style='color:#38bdf8'>AI</span></span></div>", unsafe_allow_html=True)
     with nav:
         primary_page = st.radio(
-            "Main navigation", ["Home", "Model", "Research", "Experiments", "About"],
+            "Main navigation",
+            ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation",
+             "Experiment Lab", "Research", "About"],
             horizontal=True, label_visibility="collapsed", key="primary_navigation",
-            on_change=_reset_quick_workspace,
         )
 
 with st.sidebar:
@@ -730,30 +734,22 @@ with st.sidebar:
     st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
     st.success("Saved artifact integrity verified")
     st.divider()
-    if primary_page == "Home":
-        st.markdown("### Home workspace")
-        quick_workspace = st.radio(
-            "Home view", ["Home dashboard", "Weather Data", "Investigate a Reading"],
-            key="quick_workspace", label_visibility="collapsed",
-        )
-    else:
-        quick_workspace = "Home dashboard"
     st.caption("Historical data only · provider and sensor provenance remain incomplete.")
 
-if quick_workspace == "Weather Data":
+if primary_page == "Weather Data":
     render_weather_data(data)
-elif quick_workspace == "Investigate a Reading":
+elif primary_page == "Investigate a Reading":
     render_investigation(data, ROOT)
 elif primary_page == "Home":
     render_home_dashboard(data, str(ROOT))
+elif primary_page == "Model Evaluation":
+    render_model_workspace(data, ROOT, hashes, render_evaluation)
+elif primary_page == "Experiment Lab":
+    render_experiment_workspace(ROOT, data, hashes, render_synthetic_experiments)
 elif primary_page == "Research":
     render_research_workspace(ROOT, data)
-elif primary_page == "Experiments":
-    render_experiment_workspace(ROOT, data, hashes, render_synthetic_experiments)
 elif primary_page == "About":
     render_about()
-else:
-    render_model_workspace(data, ROOT, hashes, render_evaluation)
 
 with st.container(key="wg_persistent_upload_action"):
     if st.button("＋  Experiment with your data", key="persistent_dataset_cta", type="primary"):

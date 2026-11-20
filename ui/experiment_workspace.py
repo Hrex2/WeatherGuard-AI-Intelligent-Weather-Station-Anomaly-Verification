@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from ui.chart_theme import style_chart
 SECTIONS = ["E1 · Model Stability", "E2 · Temporal Consistency", "E3 · Spatial Evidence",
             "E4 · Physical Plausibility", "Phase 12 · Contribution and Ablation",
             "Phase 13 · Research Synthesis", "Phase 14 · IEEE Paper", "Synthetic Campaigns"]
@@ -25,7 +26,7 @@ def _load_summary(root: Path) -> dict | None:
 def render_experiment_workspace(root, data: dict, hashes: dict, render_synthetic_campaigns) -> None:
     root = Path(root)
     st.markdown("<div class='wg-eyebrow'>EXPERIMENTS · SAVED EVIDENCE</div>", unsafe_allow_html=True)
-    st.title("Experiments")
+    st.title("Experiment Lab")
     st.caption("Browse saved analyses by evidence component. Synthetic results remain separate from observations and do not estimate field fault-detection performance.")
     nav, content = st.columns([0.82, 2.45], gap="large")
     with nav:
@@ -42,7 +43,7 @@ def render_experiment_workspace(root, data: dict, hashes: dict, render_synthetic
             if {"configuration", "anomalies"}.issubset(cfg.columns):
                 fig = px.bar(cfg, x="configuration", y="anomalies", color="family" if "family" in cfg else None,
                              title="Saved flags by model configuration", labels={"anomalies": "Flagged held-out timestamps"})
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(style_chart(fig, 330), width="stretch")
         elif section == "E2 · Temporal Consistency":
             st.header("E2 · Temporal Consistency")
             st.write("E2 compares a candidate with the same station’s prior measurements. The saved screen provides temporal context, but event truth and incremental predictive value are not independently adjudicated.")

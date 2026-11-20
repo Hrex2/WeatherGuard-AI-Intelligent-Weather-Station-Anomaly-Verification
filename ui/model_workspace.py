@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from ui.chart_theme import style_chart
 from services.model_metadata import build_model_education
 
 SECTIONS = [
@@ -15,8 +16,8 @@ SECTIONS = [
 
 def render_model_workspace(data: dict, root, hashes: dict, render_saved_results) -> None:
     education = build_model_education(data)
-    st.markdown("<div class='wg-eyebrow'>MODEL · SAVED RESEARCH PROTOCOL</div>", unsafe_allow_html=True)
-    st.title("Model")
+    st.markdown("<div class='wg-eyebrow'>MODEL EVALUATION · SAVED RESEARCH PROTOCOL</div>", unsafe_allow_html=True)
+    st.title("Model Evaluation")
     st.caption("Explore the archived unsupervised screening protocol. Opening this page does not train or refit a model.")
     nav, content = st.columns([0.78, 2.5], gap="large")
     with nav:
@@ -90,7 +91,7 @@ def render_model_workspace(data: dict, root, hashes: dict, render_saved_results)
                 chart = px.bar(results, x="family", y="anomalies", color="family",
                                labels={"family": "Model family", "anomalies": "Saved flags"},
                                title="Saved configuration flag counts", color_discrete_sequence=px.colors.sequential.Teal)
-                st.plotly_chart(chart, width="stretch")
+                st.plotly_chart(style_chart(chart, 330), width="stretch")
             st.warning("Independent fault labels are unavailable. Accuracy, precision, recall, F1, false-alarm rate, and fault-detection performance cannot be calculated.")
             st.caption("The known saved/local prediction mismatch is 42 of 100,980 cells; its cause remains unresolved.")
         elif section == "Results":

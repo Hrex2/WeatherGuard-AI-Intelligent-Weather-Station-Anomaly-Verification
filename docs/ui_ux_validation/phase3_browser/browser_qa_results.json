@@ -1,0 +1,812 @@
+{
+  "url": "http://localhost:8768",
+  "sizes": {
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "screenshots": [
+        "Home_desktop.png",
+        "Weather_Data_desktop.png",
+        "Investigate_a_Reading_desktop.png",
+        "Model_Evaluation_desktop.png",
+        "Experiment_Lab_desktop.png",
+        "Research_desktop.png",
+        "About_desktop.png"
+      ],
+      "workspaces": {
+        "Home": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Weather Data": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Investigate a Reading": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Model Evaluation": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Experiment Lab": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Research": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "About": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        }
+      }
+    },
+    "laptop": {
+      "width": 1366,
+      "height": 768,
+      "screenshots": [
+        "Home_laptop.png",
+        "Weather_Data_laptop.png",
+        "Investigate_a_Reading_laptop.png"
+      ],
+      "workspaces": {
+        "Home": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 4
+          }
+        },
+        "Weather Data": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Investigate a Reading": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Model Evaluation": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Experiment Lab": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "Research": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        "About": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        }
+      }
+    },
+    "tablet": {
+      "width": 768,
+      "height": 1024,
+      "screenshots": [
+        "Home_tablet.png",
+        "Weather_Data_tablet.png",
+        "Investigate_a_Reading_tablet.png"
+      ],
+      "workspaces": {
+        "Home": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 4
+          }
+        },
+        "Weather Data": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Investigate a Reading": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Model Evaluation": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Experiment Lab": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Research": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "About": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      }
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "screenshots": [
+        "Home_mobile.png",
+        "Weather_Data_mobile.png",
+        "Investigate_a_Reading_mobile.png"
+      ],
+      "workspaces": {
+        "Home": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 4
+          }
+        },
+        "Weather Data": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Investigate a Reading": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Model Evaluation": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Experiment Lab": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "Research": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        "About": {
+          "navigation_checked": true,
+          "content_found": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      }
+    }
+  },
+  "workspaces": {
+    "Home": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 4
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 4
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 4
+          }
+        }
+      ]
+    },
+    "Weather Data": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      ]
+    },
+    "Investigate a Reading": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      ]
+    },
+    "Model Evaluation": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      ]
+    },
+    "Experiment Lab": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      ]
+    },
+    "Research": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      ]
+    },
+    "About": {
+      "viewports": [
+        {
+          "device": "desktop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1440,
+            "document": 1440,
+            "body": 1440,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "laptop",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 1366,
+            "document": 1366,
+            "body": 1366,
+            "sidebar": 299,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "tablet",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 768,
+            "document": 768,
+            "body": 768,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        },
+        {
+          "device": "mobile",
+          "navigation_checked": true,
+          "overflow": false,
+          "metrics": {
+            "viewport": 390,
+            "document": 390,
+            "body": 390,
+            "sidebar": 0,
+            "canvases": 0
+          }
+        }
+      ]
+    }
+  },
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Client Error: Image source error - http://localhost:8768/media/58e169fb63e59374c1020303b1dbcaf60341f977c6f4c99972abebbd.png"
+  ],
+  "page_errors": [],
+  "request_failures": [],
+  "http_errors": [
+    {
+      "status": 404,
+      "url": "http://localhost:8768/media/58e169fb63e59374c1020303b1dbcaf60341f977c6f4c99972abebbd.png"
+    }
+  ],
+  "navigation_options": [
+    "Home",
+    "Weather Data",
+    "Investigate a Reading",
+    "Model Evaluation",
+    "Experiment Lab",
+    "Research",
+    "About"
+  ],
+  "weather_variable_interaction": "Weather measurement\n\nDew point",
+  "investigation_timestamp_interaction": {
+    "before": "2026-03-09 23:30 UTC+05:30",
+    "after": "2026-03-09 22:30 UTC+05:30",
+    "changed": true
+  },
+  "model_auto_fit_absent": true,
+  "experiment_e3_unavailable_message": true,
+  "keyboard_focus_probe": {
+    "tag": "INPUT",
+    "outline": "solid",
+    "width": "3px"
+  },
+  "reduced_motion_css_present": true,
+  "page_title": "WeatherGuard AI",
+  "home_map_probe": [
+    {
+      "width": 326,
+      "height": 535,
+      "clientWidth": 326,
+      "clientHeight": 535
+    },
+    {
+      "width": 326,
+      "height": 535,
+      "clientWidth": 326,
+      "clientHeight": 535
+    }
+  ],
+  "mobile_sidebar_collapsed": true,
+  "home_idle_stop_status": "No Stop button after the initial Home render settled.",
+  "home_marker_click": {
+    "clicked_station": "42101",
+    "details_panel_updated": true,
+    "map_canvas_wh": "473x535"
+  }
+}

@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 import pydeck as pdk
 import streamlit as st
 
+from ui.chart_theme import style_chart
 from ui.integrated_evidence_panel import build_dashboard_assessment, render_integrated_evidence_panel
 
 MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
@@ -102,15 +103,7 @@ def _selected_station_status(station_id: str, votes: int | None, available: int)
 
 
 def _plot_style(fig: go.Figure, height: int = 220) -> go.Figure:
-    fig.update_layout(
-        height=height, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#CBD5E1", "family": "Inter, Segoe UI, sans-serif", "size": 11},
-        margin={"l": 8, "r": 8, "t": 34, "b": 8},
-        xaxis={"gridcolor": "#26384E", "zerolinecolor": "#26384E"},
-        yaxis={"gridcolor": "#26384E", "zerolinecolor": "#26384E"},
-        legend={"orientation": "h", "y": 1.1, "x": 0},
-    )
-    return fig
+    return style_chart(fig, height)
 
 
 def _playback_seconds(start: pd.Timestamp, end: pd.Timestamp) -> float:
@@ -124,8 +117,7 @@ def _set_station_details_open(open_state: bool) -> None:
     st.session_state["home_details_open"] = open_state
 
 
-@st.fragment(run_every=0.8)
-def render_home_dashboard(data: dict, root_text: str) -> None:
+def _render_home_dashboard(data: dict, root_text: str) -> None:
     obs = data["observations"]
     predictions = data["predictions"]
     stability = data["stability"].copy()
@@ -158,8 +150,11 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
     signature = (str(start_date), str(end_date))
     if st.session_state.get("_home_range_signature") != signature:
         st.session_state["_home_range_signature"] = signature
+        was_playing = st.session_state.get("home_playing", False)
         st.session_state["home_playing"] = False
         st.session_state["home_timeline_slider"] = len(timeline) - 1
+        if was_playing:
+            st.rerun(scope="app")
     if "home_timeline_slider" not in st.session_state:
         st.session_state["home_timeline_slider"] = len(timeline) - 1
     frame_index = max(0, min(int(st.session_state["home_timeline_slider"]), len(timeline) - 1))
@@ -175,6 +170,7 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
         st.session_state["home_timeline_slider"] = frame_index
         if frame_index >= len(timeline) - 1:
             st.session_state["home_playing"] = False
+            st.rerun(scope="app")
 
     selected_ts = timeline[frame_index]
     st.session_state["selected_observation"] = selected_ts
@@ -187,11 +183,25 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
 
     st.markdown(
         "<div class='wg-eyebrow'>HISTORICAL WEATHER INTELLIGENCE · ASIA/KOLKATA</div>"
-        "<h1 class='wg-home-title'>Station overview</h1>"
-        "<div class='wg-subtitle'>Explore saved observations and model candidates in their historical context.</div>",
+        "<h1 class='wg-home-title'>WeatherGuard AI</h1>"
+        "<div class='wg-subtitle'>Investigate unusual weather-station readings with transparent evidence and provenance.</div>",
         unsafe_allow_html=True,
     )
-    st.caption("Processed research snapshot · not a live feed · a model candidate is not a confirmed fault.")
+    st.info("An anomaly is not automatically a sensor fault. WeatherGuard AI identifies unusual observations and helps investigate them using available evidence.")
+    st.caption("Historical processed research snapshot · not a live feed · timezone Asia/Kolkata.")
+
+    period_candidates = stability.loc[
+        stability.configuration_votes.ge(8) & stability.timestamp.between(start_ts, end_ts), "timestamp"
+    ]
+    overview = st.columns(4)
+    overview[0].metric("Historical coverage", f"{obs.index.min():%Y}–{obs.index.max():%Y}",
+                       help=f"{len(obs):,} processed rows from {obs.index.min():%Y-%m-%d} through {obs.index.max():%Y-%m-%d}.")
+    overview[1].metric("Saved configurations", f"{predictions.configuration.nunique()}",
+                       help="Four saved settings for each of three model families.")
+    overview[2].metric("8/12 candidates in period", f"{len(period_candidates):,}",
+                       help="This descriptive screen does not identify confirmed faults.")
+    overview[3].metric("Validation status", "Prototype",
+                       help="Independent adjudicated sensor-fault labels are not available.")
 
     layout = st.columns([0.92, 2.15, 1.02], gap="small")
 
@@ -236,6 +246,13 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
                             x=cand, y=chart_series.reindex(cand), mode="markers", name="8/12 E1 candidate",
                             marker={"color": "#EF4444", "size": 6, "symbol": "diamond"},
                         ))
+                if selected_ts in chart_series.index:
+                    trend.add_trace(go.Scatter(
+                        x=[selected_ts], y=[chart_series.loc[selected_ts]], mode="markers",
+                        name="Selected observation",
+                        marker={"color": "#F1F5F9", "size": 11, "symbol": "circle-open",
+                                "line": {"color": "#F87171", "width": 2}},
+                    ))
                 trend.update_layout(title=f"{VARIABLES[variable][0]} trend", showlegend=False,
                                     title_font_size=13)
                 _plot_style(trend, 190)
@@ -245,7 +262,7 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
                 trend.update_yaxes(title_text=None, tickfont_size=9)
                 trend.update_layout(margin={"l": 24, "r": 4, "t": 30, "b": 4})
                 st.plotly_chart(trend, width="stretch", key="home_analytics_trend")
-                st.caption("Red diamonds mark saved E1 candidates; they do not confirm faults.")
+                st.caption("Red diamonds mark saved E1 candidates; the outlined marker is the selected time. Neither confirms a fault.")
             else:
                 st.info("No values for this measurement in the selected period.")
 
@@ -429,17 +446,31 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
                 st.plotly_chart(_plot_style(history_fig, 185), width="stretch", key=f"home_history_{selected_station}_{variable_code}")
                 st.caption(f"{len(valid):,} plotted valid values · {int(values.isna().sum()):,} missing in source rows")
 
-        candidates = stability.loc[
-            stability.configuration_votes.ge(8) & stability.timestamp.between(start_ts, end_ts),
-            "timestamp",
-        ]
-        if len(candidates):
-            monthly = candidates.dt.strftime("%Y-%m").value_counts().sort_index().rename_axis("month").rename("timestamps").reset_index()
-            frequency = px.bar(monthly, x="month", y="timestamps", labels={"month": "Month", "timestamps": "Saved 8/12 candidates"},
-                               title="Candidate frequency by month", color_discrete_sequence=["#F59E0B"])
-            st.plotly_chart(_plot_style(frequency, 230), width="stretch", key="home_candidate_frequency")
-        else:
-            st.info("No saved 8/12 candidate timestamps fall within this selected period.")
+        candidate_column, configuration_column = st.columns(2)
+        candidates = period_candidates
+        with candidate_column:
+            if len(candidates):
+                monthly = candidates.dt.strftime("%Y-%m").value_counts().sort_index().rename_axis("month").rename("timestamps").reset_index()
+                frequency = px.bar(monthly, x="month", y="timestamps", labels={"month": "Month", "timestamps": "Saved 8/12 candidates"},
+                                   title="Candidate frequency by month", color_discrete_sequence=["#F59E0B"])
+                st.plotly_chart(_plot_style(frequency, 230), width="stretch", key="home_candidate_frequency")
+            else:
+                st.info("No saved 8/12 candidate timestamps fall within this selected period.")
+        with configuration_column:
+            configs = data.get("configuration_results", pd.DataFrame()).copy()
+            if {"configuration", "anomalies"}.issubset(configs.columns) and len(configs):
+                configs = configs.sort_values("anomalies", ascending=True)
+                comparison = px.bar(
+                    configs, x="anomalies", y="configuration", orientation="h",
+                    color="family" if "family" in configs.columns else None,
+                    labels={"anomalies": "Saved held-out flags", "configuration": "Configuration", "family": "Model family"},
+                    title="Saved configuration comparison",
+                )
+                comparison.update_layout(showlegend=False)
+                st.plotly_chart(_plot_style(comparison, 300), width="stretch", key="home_configuration_comparison")
+                st.caption("Counts describe saved labels; they are not accuracy or fault-detection scores.")
+            else:
+                st.info("Saved configuration comparison is unavailable in this artifact set.")
         st.caption("Candidate frequency is descriptive and does not estimate fault prevalence. Candidate counts are available for the primary held-out station only.")
 
     # Persistent timeline and real-data replay controls.
@@ -451,23 +482,32 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
             st.session_state["home_playing"] = False
             st.session_state["home_timeline_slider"] = max(0, frame_index - 1)
             frame_index = st.session_state["home_timeline_slider"]
+            st.rerun(scope="app")
         if controls[1].button("▶ Play" if not st.session_state["home_playing"] else "▶ Playing", key="home_play_button", disabled=st.session_state["home_playing"]):
             st.session_state["home_play_origin"] = frame_index
             st.session_state["home_play_started_at"] = time.monotonic()
             st.session_state["home_play_speed"] = float(st.session_state.get("home_play_speed_selector", "1x")[:-1])
             st.session_state["home_playing"] = True
+            st.rerun(scope="app")
         if controls[2].button("Ⅱ Pause", key="home_pause_button", disabled=not st.session_state["home_playing"]):
             st.session_state["home_playing"] = False
+            st.rerun(scope="app")
         if controls[3].button("↺ Reset", key="home_reset_button"):
             st.session_state["home_playing"] = False
             st.session_state["home_timeline_slider"] = 0
             frame_index = 0
+            st.rerun(scope="app")
         with controls[4]:
-            speed_label = st.selectbox("Speed", ["1x", "1.5x", "2x"], key="home_play_speed_selector", label_visibility="collapsed")
+            speed_options = ["1x", "1.5x", "2x"]
+            saved_speed = float(st.session_state.get("home_play_speed", 1.0))
+            speed_index = min(range(len(speed_options)), key=lambda i: abs(float(speed_options[i][:-1]) - saved_speed))
+            speed_label = st.selectbox("Speed", speed_options, index=speed_index,
+                                       key="home_play_speed_selector", label_visibility="collapsed")
         if controls[5].button("Next ▶", key="home_next_button"):
             st.session_state["home_playing"] = False
             st.session_state["home_timeline_slider"] = min(len(timeline) - 1, frame_index + 1)
             frame_index = st.session_state["home_timeline_slider"]
+            st.rerun(scope="app")
         if st.session_state.get("home_playing"):
             speed = float(speed_label[:-1])
             if speed != st.session_state.get("home_play_speed", 1.0):
@@ -484,3 +524,10 @@ def render_home_dashboard(data: dict, root_text: str) -> None:
             st.session_state["selected_observation"] = selected_ts
         duration = _playback_seconds(timeline[0], timeline[-1])
         st.caption(f"{selected_ts.strftime('%Y-%m-%d %H:%M %Z')} · frame {frame_index + 1:,} of {len(timeline):,} · replay duration {duration:.0f}s at 1× (all timestamps are saved historical records)")
+
+
+def render_home_dashboard(data: dict, root_text: str) -> None:
+    """Run the playback timer only while the historical timeline is playing."""
+    run_every = 0.8 if st.session_state.get("home_playing", False) else None
+    fragment = st.fragment(run_every=run_every)(_render_home_dashboard)
+    fragment(data, root_text)
