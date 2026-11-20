@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-11-17T14:40:03.855868+00:00",
+  "base_commit": "cbe53f830a2941556f7a9c48101da51536259b62",
+  "mode": "offline artifact generation from recorded metadata; no weather observation endpoint called",
+  "raw_observation_download_started": false,
+  "files": [
+    {
+      "path": "meteostat_inventory_metadata.csv",
+      "sha256": "3efaa1b08d896bfe3fbbec4c5a74326efe3e7511ba09b8e280347f6859c47578",
+      "size_bytes": 39866
+    },
+    {
+      "path": "PHASE1B_READINESS_REPORT.md",
+      "sha256": "342583a4d9b186e87b1f8b0efdcafbd7c03ea635091a8bbe349277195f4238b1",
+      "size_bytes": 12921
+    },
+    {
+      "path": "provider_availability_comparison.csv",
+      "sha256": "a4f6f060293990d5718b2720d7e987264c7f520d3f2a28ecef4c52f95c15a1ed",
+      "size_bytes": 107979
+    },
+    {
+      "path": "RAW_DATA_RETRIEVAL_PROPOSAL.md",
+      "sha256": "9505c83659a3d52989af9177af70d84569fbba7253527770835825e5cbc2b4f8",
+      "size_bytes": 7919
+    },
+    {
+      "path": "station_identity_assessment.md",
+      "sha256": "7f7e7cc5dbacb3c74f2b6d01bb7ca7d720c4fafb89965d4749c635ec7219374c",
+      "size_bytes": 4504
+    },
+    {
+      "path": "station_identity_crosswalk.csv",
+      "sha256": "878c84b685834c891fe756269ec560a430f528151ebef6a6b7ab1d16c4350ba1",
+      "size_bytes": 2815
+    }
+  ]
+}

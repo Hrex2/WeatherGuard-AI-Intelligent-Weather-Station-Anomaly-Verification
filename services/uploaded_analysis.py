@@ -45,8 +45,10 @@ def prepare_uploaded_weather_data(frame: pd.DataFrame, timestamp_column: str,
     if missing_variables:
         raise ValueError(f"Map all six required weather variables: {sorted(missing_variables)}")
     mapped_columns = [column_mapping[name] for name in BASE_VARIABLES]
-    if any(column not in frame.columns for column in mapped_columns):
-        raise KeyError("One or more mapped weather columns are missing from the CSV")
+    missing_columns = [f"{variable} ({column})" for variable, column in column_mapping.items()
+                       if column not in frame.columns]
+    if missing_columns:
+        raise KeyError(f"Mapped weather column(s) missing from CSV: {', '.join(missing_columns)}")
     if len(set(mapped_columns)) != len(mapped_columns):
         raise ValueError("Each required weather variable must map to a different CSV column")
     if timestamp_column in mapped_columns:

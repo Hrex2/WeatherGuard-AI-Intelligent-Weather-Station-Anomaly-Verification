@@ -1,0 +1,299 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+@page { size: 8.5in 11in; margin: .78in .78in .75in .78in; }
+body { font-family: Cambria, Georgia, serif; font-size: 10.5pt; line-height: 1.28; color:#192633; }
+h1 { font-family: Arial,sans-serif; color:#174A70; font-size:20pt; margin:24pt 0 10pt; page-break-before:always; }
+h1.cover-title { page-break-before:avoid; font-size:25pt; line-height:1.18; margin:80pt 0 18pt; color:#163D59; text-align:center; }
+h2 { font-family: Arial,sans-serif; color:#174A70; font-size:15pt; margin:20pt 0 8pt; page-break-after:avoid; }
+h3 { font-family: Arial,sans-serif; color:#218C8D; font-size:11.5pt; margin:14pt 0 5pt; page-break-after:avoid; }
+p { margin:0 0 8pt; text-align:justify; }
+table { border-collapse:collapse; width:100%; margin:10pt 0 14pt; font-size:8.5pt; page-break-inside:auto; }
+tr { page-break-inside:avoid; }
+th { background:#174A70; color:white; font-family:Arial,sans-serif; text-align:left; }
+td,th { border:0.5pt solid #D9D9D9; padding:5pt 6pt; vertical-align:middle; }
+tbody tr:nth-child(even) { background:#EFF5F8; }
+figure { text-align:center; margin:12pt 0 15pt; page-break-inside:avoid; }
+img { width:6.35in; height:auto; }
+figcaption { font-size:8.5pt; color:#425563; font-style:italic; margin-top:5pt; }
+blockquote { margin:12pt 22pt; color:#2D4658; font-style:italic; }
+li { margin:0 0 4pt; }
+.pagebreak { page-break-before:always; }
+code { font-family:Consolas,monospace; font-size:9pt; }
+a { color:#174A70; text-decoration:none; }
+</style></head><body><h1 class="cover-title">WeatherGuard AI Intelligent Weather Station Anomaly Verification</h1>
+<h2>Preliminary Research and Experimental Evaluation Report</h2>
+<table><thead><tr><th>Report detail</th><th>Value</th></tr></thead><tbody>
+<tr><td>Research title</td><td>Uncertainty-Aware Event-Level Verification of Weather Station Anomalies Using Model Stability, Temporal Consistency and Spatial Evidence</td></tr>
+<tr><td>Report status</td><td>Preliminary research and experimental evaluation</td></tr>
+<tr><td>Source checkpoint</td><td><code>codex/phase1c-controlled-metar-pilot</code> at <code>07edecdad90c36b98c0e2ad789f4d5c07bed728e</code></td></tr>
+<tr><td>Report date</td><td>17 November 2026</td></tr>
+</tbody></table>
+<blockquote>This is a preliminary research and experimental evaluation report. It documents a functioning prototype and controlled synthetic studies. Real-world spatial corroboration and independent field validation remain future work.</blockquote>
+<p style="page-break-before:always"></p><h2>Abstract</h2>
+<p>Weather station anomalies can arise from unusual atmospheric conditions, measurement faults, or both. This report evaluates WeatherGuard AI, a research prototype that combines unsupervised model stability (E1), temporal consistency screening (E2), planned neighbouring-station corroboration (E3), and physical measurement screening (E4). The study audits saved historical and synthetic artifacts without fitting new models or retrieving additional observations. The processed snapshot contains 44,879 rows, of which 44,849 are feature-ready; 36,434 observations form the chronological training partition and 8,415 the test partition, separated by seven days. Twelve configurations from Isolation Forest, Local Outlier Factor and One-Class SVM generate a saved grid of 100,980 predictions. Consensus threshold counts decline from 432 timestamps at 4/12 agreement to 15 at 12/12. Reviewed E2 outputs contain 6,840 screen evaluations and 2,880 paired comparisons; a temporal <code>SUPPORTING</code> status indicates departure from a selected history screen, not a confirmed fault. Corrected synthetic baseline summaries cover 160 context-by-scenario-by-injected-timestamp units across five preselected contexts and eight perturbations. Response varies materially by scenario and context. A coverage ablation reports evidence availability only and cannot establish outcome-level utility. The planned E3 comparison was blocked: the investigated METAR adapter did not cover the proposed September 2025 period, and no observation rows were retrieved. Forty-two Isolation Forest prediction mismatches also remain unexplained. The results support an uncertainty-aware research direction and demonstrate selected prototype behaviors, but there are no independently adjudicated field fault or clean labels. Consequently, real-world accuracy, calibration and operational benefit cannot yet be claimed.</p>
+<p><strong>Keywords:</strong> weather station quality control; anomaly detection; sensor fault screening; temporal consistency; spatial corroboration; uncertainty; abstention; synthetic evaluation</p>
+<h2>Contents</h2>
+<ol>
+<li>Introduction  </li>
+<li>Literature Review  </li>
+<li>Dataset and Preprocessing  </li>
+<li>Proposed Methodology  </li>
+<li>Experimental Design  </li>
+<li>Results  </li>
+<li>System Implementation  </li>
+<li>Discussion  </li>
+<li>Limitations and Future Work  </li>
+<li>Conclusion  </li>
+<p>References <br/>  Appendices</p>
+</ol>
+<h2>Figures</h2>
+<ol>
+<li>WeatherGuard AI evidence architecture  </li>
+<li>Historical processing and prediction workflow  </li>
+<li>E1 consensus threshold sensitivity  </li>
+<li>E1 model-family candidate counts  </li>
+<li>Synthetic response at E1 threshold 8/12  </li>
+<li>E2 status distribution by paired condition  </li>
+<li>E2 temporal screen by mode and window  </li>
+<li>E4 direct physical screen response  </li>
+<li>Evidence coverage ablation  </li>
+<li>Validation roadmap from prototype to field evaluation</li>
+</ol>
+<h2>Tables</h2>
+<ol>
+<li>Snapshot and chronological split  </li>
+<li>E1 consensus counts  </li>
+<li>E1 family-level candidates  </li>
+<li>Corrected context response at 8/12 E1 consensus  </li>
+<li>E2 paired status counts  </li>
+<li>Evidence availability ablation  </li>
+<li>Evidence status by research phase</li>
+</ol>
+<h2>Abbreviations</h2>
+<ul>
+<li><strong>E1–E4:</strong> Model stability, temporal consistency, spatial corroboration, and physical screening evidence groups.</li>
+<li><strong>IF:</strong> Isolation Forest.</li>
+<li><strong>LOF:</strong> Local Outlier Factor.</li>
+<li><strong>OCSVM:</strong> One-Class Support Vector Machine.</li>
+<li><strong>METAR:</strong> Aviation routine weather report.</li>
+<li><strong>RH:</strong> Relative humidity.</li>
+<li><strong>UTC:</strong> Coordinated Universal Time.</li>
+<li><strong>QA/QC:</strong> Quality assurance / quality control.</li>
+<li><strong>Abstention:</strong> An uncertain/insufficient-evidence outcome rather than a forced classification.</li>
+</ul>
+<h1>1. Introduction</h1>
+<h2>1.1 Context and problem</h2>
+<p>Automatic weather stations support monitoring, forecasting, climate analysis and operational decisions. Their readings can be unusual because the atmosphere is unusual, because a sensor or communication path has failed, or because both processes act together. A statistical outlier is therefore not equivalent to a faulty instrument. Meteorological quality-control practice combines temporal checks, physical constraints, spatial comparisons and expert review; individual automated flags are evidence for review rather than final diagnoses [1], [2].</p>
+<p>Unsupervised anomaly detectors can rank observations that differ from a learned distribution, but their outputs depend on the training sample, representation, configuration and seasonal context. Temporal screening can establish that a reading departs from a station&#x27;s recent history, but a rapid weather transition can also do so. Physical bounds and cross-variable checks can expose implausible values, yet broad limits may miss subtle faults and can flag valid extremes if poorly localized. Neighboring stations can help distinguish a regional event from a station-specific departure, but only when station identity, temporal overlap, data provenance and spatial representativeness are established.</p>
+<h2>1.2 Research question and objectives</h2>
+<p>The central question is: <strong>Can model stability, temporal consistency, neighbouring-station observations and physical sensor-quality screening help distinguish unusual regional weather events from suspicious station-specific observations when independently labelled fault data are limited?</strong></p>
+<p>The objectives are to: (1) audit a saved historical anomaly analysis; (2) characterize agreement among three unsupervised model families; (3) review temporal and physical screening behavior under controlled synthetic perturbations; (4) define an evidence-aware interpretation that can abstain when evidence is missing or conflicting; and (5) identify the data and validation required before field performance can be assessed.</p>
+<h2>1.3 Scope and proposed contribution</h2>
+<p>The work combines a processed historical snapshot with saved model predictions, synthetic fault experiments, software checks and station/provider metadata review. It does not reconstruct the raw observation source, acquire additional data or fit new models. The proposed contribution is a structured research framework for displaying multiple evidence streams and explicitly representing uncertainty. This is a design and evaluation direction, not a claim of algorithmic novelty or validated integrated performance.</p>
+<p>The intended interpretation categories are: (i) regionally supported unusual event; (ii) station-specific suspicious observation; and (iii) uncertain or insufficient evidence. The categories are proposed targets. Independent field labels and empirical spatial evidence are not available to validate them.</p>
+<h1>2. Literature Review</h1>
+<h2>2.1 Meteorological quality control</h2>
+<p>Operational and research QA/QC systems generally use a sequence of checks because no single threshold is sufficient for all variables, climates and station designs. Fiebrich et al. describe mesoscale data quality procedures spanning automated checks and human review [1]. Guidance for automatic weather stations emphasizes validation procedure design, sensor characteristics and local conditions [2]. Network standardization work also highlights station metadata, spatial representativeness and consistent temporal and spatial tests [3]. These findings motivate WeatherGuard AI&#x27;s separation of model, temporal, spatial and physical evidence.</p>
+<p>Recent QA/QC research continues to emphasize staged workflows and the difficulty of separating genuine environmental extremes from faulty measurements [4]. Sensor-quality modeling has also explored explicit uncertainty or certainty representations [5]. Such approaches are relevant as methodological context, but WeatherGuard AI does not reproduce their specific algorithms. Here, the primary concern is to avoid converting an automated flag into a fault assertion when reference evidence is missing.</p>
+<h2>2.2 Time-series anomaly detection</h2>
+<p>Anomaly-detection surveys distinguish point, contextual and collective anomalies and describe the dependence of methods on data assumptions and task definitions [6], [7]. Weather measurements have seasonality, serial dependence, irregular missingness and physical interactions. Accordingly, an unsupervised score should be interpreted relative to a declared representation and reference period rather than as a universal fault probability.</p>
+<p>The project evaluates Isolation Forest [8], Local Outlier Factor [9] and One-Class SVM [10]. They represent different notions of unusualness: isolation depth, local density and support of a learned distribution. Agreement across configurations can be informative about model sensitivity, but the configurations share data and are not independent judges. A vote fraction is not a calibrated posterior probability and does not supply a reference-label accuracy estimate.</p>
+<h2>2.3 Evidence fusion and research gap</h2>
+<p>Temporal and physical rules can complement distributional models, while spatial corroboration can provide event context. However, their errors and missingness differ. A regional extreme may be anomalous to a model but supported nearby; a sensor fault may be temporally persistent yet remain physically plausible; a source gap may make neighboring evidence unavailable. Thus, a useful system must represent support, conflict and unavailability explicitly and allow abstention.</p>
+<p>The project-specific gap is narrow: how to organize unsupervised model stability with temporal, spatial and physical evidence when real fault labels are absent and some evidence is unavailable. The repository contains partial software and controlled studies for E1, E2 and E4. The E3 data acquisition and independent outcome references remain blocked. The current report therefore establishes prototype status and experimental behavior, not a validated integrated decision rule.</p>
+<h2>2.4 Literature review method</h2>
+<p>This is a focused narrative review of verified methodological sources, not a systematic literature review. The cited works were selected for meteorological data quality control, sensor data validation and general time-series anomaly detection. Search coverage, screening and inclusion were not protocolized exhaustively; conclusions about the state of the art or novelty are intentionally limited.</p>
+<h1>3. Dataset and Preprocessing</h1>
+<h2>3.1 Processed historical snapshot</h2>
+<p>The repository stores a processed station time series in <code>verified_phase01/model_df.csv</code>; the report treats it as a processed historical snapshot, not raw acquisition. It contains 44,879 rows. Feature-ready input <code>X_multi.csv</code> contains 44,849 rows; the difference is consistent with rows excluded because historical lag/rolling features could not be formed. The main meteorological variables are air temperature, dew point, relative humidity, precipitation, wind speed and pressure. The saved base matrix contains those six variables and three temperature-history terms. The model service constructs two cyclical month terms (<code>month_sin</code>, <code>month_cos</code>) at runtime, so the model protocol uses 11 predictors. The timestamp column is an index, not a predictor.</p>
+<p>The processed time span is approximately 5 January 2021 through 9 March 2026 in the recorded Asia/Kolkata timezone. The source snapshots contain 71 missing cells in <code>model_df.csv</code>, including six missing precipitation values; the saved feature matrix has no missing values. The integrity audit documents training-median imputation for retained missing precipitation values. Three historical temperature features are previous-row temperature change, a prior six-observation rolling mean and deviation from that prior mean, computed within segment boundaries. “Six observations” is not necessarily six elapsed hours across every gap; the sequence is segmented to avoid carrying features across discontinuities.</p>
+<h2>3.2 Chronological partition and model preprocessing</h2>
+<p>The stored training partition has 36,434 observations and the test partition has 8,415. The test period begins seven days after the last training timestamp. The temporal separation is intended to reduce immediate boundary leakage; it does not establish statistical independence, eliminate seasonal distribution shift, or provide a labeled test set. The saved feature snapshots are chronological and non-overlapping.</p>
+<p>The saved model service adds cyclical month terms from timestamps. The scaler is fitted on training data only for LOF and OCSVM; Isolation Forest uses the unscaled feature matrix in the saved protocol. Training-only median handling is described in the preprocessing audit. Because archived estimator/scaler objects and complete historical fit provenance are unavailable, the report does not claim an independent end-to-end reconstruction of every historical prediction.</p>
+<h2>3.3 Data integrity and provenance</h2>
+<p>Phase 01 manifests contain hashes and counts for the saved data artifacts. The local integrity audit compares historical engineered features with their defining formulas, checks split membership and verifies imputation consistency. A hash verifies that a file matches the manifest; it does not prove that the original measurements are traceable to a particular physical instrument or that an experiment is scientifically valid. The raw source, retrieval request and row-level source indicators are not independently reconstructed here.</p>
+<p><strong>Table 1. Snapshot and chronological split.</strong></p>
+<table><thead><tr><th>Artifact</th><th>Rows</th><th>Role</th></tr></thead><tbody>
+<tr><td><code>model_df.csv</code></td><td>44,879</td><td>Processed snapshot with timestamps and engineered fields</td></tr>
+<tr><td><code>X_multi.csv</code></td><td>44,849</td><td>Feature-ready historical matrix; nine stored predictors</td></tr>
+<tr><td><code>X_train_multi.csv</code></td><td>36,434</td><td>Chronological training partition</td></tr>
+<tr><td><code>X_test_multi.csv</code></td><td>8,415</td><td>Chronological test partition</td></tr>
+<tr><td><code>model_predictions.csv</code></td><td>100,980</td><td>Saved configuration-by-test-time prediction records</td></tr>
+</tbody></table>
+<h2>3.4 Station acquisition readiness and E3 status</h2>
+<p>Phase 1A reviewed five station/provider identities and assessed four neighboring candidates using inventory and metadata. Individual observation availability for the seven assessed parameters remained unchecked; no observations were downloaded. Phase 1B inventoried 179 provider/parameter metadata records for VILD0, 42099, 42101, 42105 and 42096. VILD0 and 42099 remain identity-unresolved; 42105 is a conditional regional candidate; 42101 is a conditional alternative; 42096 was excluded from the proposed hourly period. Inventory envelopes do not establish actual timestamp coverage, direct observations or common data.</p>
+<p>Phase 1C inspected Meteostat Python 2.2.3&#x27;s hourly interface and METAR provider adapter for VILD0 and 42105, five requested parameters (<code>temp</code>, <code>rhum</code>, <code>wspd</code>, <code>wdir</code>, <code>pres</code>), and a proposed 1–30 September 2025 window. The inspected adapter&#x27;s METAR registry began on 16 November 2026 and its Aviation Weather Center query used a 24-hour window. The proposed historical period was therefore unavailable through this adapter. No observation call was made and no real E3 comparison was completed. The documented implementation derives relative humidity from temperature and dew point; source labels would not establish instrument-level provenance, and row-level indicators were not retrieved. Phase 1C status is <code>PILOT_WORKFLOW_BLOCKED_PROVIDER_INTERFACE_UNVERIFIED</code>.</p>
+<h1>4. Proposed Methodology</h1>
+<h2>4.1 Evidence framework</h2>
+<p>WeatherGuard AI organizes evidence into four streams. Figure 1 shows the intended flow. The integrated interpretation is partially implemented scaffolding and is not independently validated.</p>
+<figure><img src="figures/fig01_architecture.png"/><figcaption>Figure 1. WeatherGuard AI evidence architecture. E3 is pending empirical data; three interpretation categories are proposed, not validated.</figcaption></figure>
+<h3>E1: model stability</h3>
+<p>Four settings from each of Isolation Forest, LOF and OCSVM produce 12 model configurations. A configuration predicts either normal or anomalous status at each test timestamp. At a chosen threshold, the system selects timestamps flagged by at least that many configurations. The vote is an agreement measure over these saved configurations. It is not a probability, fault confidence or field-validation statistic.</p>
+<h3>E2: temporal consistency</h3>
+<p>Temporal screens compare a current reading with a prior history window using robust deviations and continuity checks. The reviewed synthetic study includes real-time and retrospective modes, 3-, 6- and 12-hour windows, and robust-z cutoffs of 2.5, 3.5 and 4.5. Statuses are <code>SUPPORTING</code>, <code>CONFLICTING</code>, <code>NO_DETECTED_EVIDENCE</code> and <code>UNAVAILABLE</code>. A <code>SUPPORTING</code> status means a temporal departure under that screen setting; it does not mean the station is faulty. Missing histories, segment boundaries and injected missing blocks can make the screen unavailable.</p>
+<h3>E3: spatial corroboration</h3>
+<p>The intended E3 stream compares time-aligned station observations to assess whether an unusual reading is supported in the surrounding region. A valid comparison requires resolved station identity, comparable variables and units, trustworthy observation provenance, shared timestamps, suitable distance/elevation/terrain context and an explicit missing-evidence policy. None of those empirical conditions was completed for this report. E3 is unavailable, not negative.</p>
+<h3>E4: physical measurement screening</h3>
+<p>Implemented checks flag missing, nonnumeric or infinite values, broad variable-specific screening bounds and cross-variable inconsistencies such as dew point above air temperature. Bounds in code are intentionally broad: temperature -90 to 60 °C, dew point -100 to 45 °C, RH 0 to 100%, precipitation 0 to 1000, wind speed 0 to 150, and pressure 800 to 1100 in their recorded units. These checks identify values for review. They are not local climatological validation, calibration, or hardware diagnosis.</p>
+<h2>4.2 Integrated interpretation and abstention</h2>
+<p>The target output categories are (1) regionally supported unusual weather event, (2) station-specific suspicious observation, and (3) uncertain or insufficient evidence. Conceptually, the first category requires a model or temporal departure plus trustworthy neighboring support; the second requires a station-local departure with adequate comparison evidence and no stronger regional explanation; the third applies when streams are missing, conflict, or do not meet evidence requirements. The repository contains rule-based scaffolding for these concepts, but E3 is absent and there are no independent reference labels. Consequently, neither category-level performance nor an integrated decision threshold is validated.</p>
+<figure><img src="figures/fig03_data_model_workflow.png"/><figcaption>Figure 2. Historical processing and saved prediction workflow. Counts refer to stored artifacts.</figcaption></figure>
+<h1>5. Experimental Design</h1>
+<h2>5.1 Historical prediction analysis</h2>
+<p>The E1 analysis uses 8,415 held-out timestamps and 12 saved configurations. It summarizes configuration-level candidate counts, consensus thresholds and family-level agreement. No independent outcome labels are used, so the experiment measures variation in unsupervised flags rather than accuracy.</p>
+<h2>5.2 Controlled synthetic studies</h2>
+<p>The multi-context campaign selects five historical contexts at least 14 days apart and spanning four quarters. Eight perturbation types are applied: a temperature point spike (+10), point drop (-10), persistent offset (+5 over six observations), stuck temperature (six observations), gradual drift (0 to +5 over six observations), missing temperature block (three observations), intermittent noise (standard deviation 2 over six observations), and dew-point increase (+20 over three observations). The campaign combines five contexts and eight scenarios into 40 context-scenario combinations and uses 12 shared model configurations. A shared fit and repeated configurations constrain the inference: the design is controlled and informative about selected perturbations, but is neither a random field sample nor an independent test of fault prevalence.</p>
+<p>The corrected baseline review defines 160 context × scenario × injected-timestamp units. Each unit can contribute multiple configuration decisions. The corrected response summary first computes response within each context and then reports the mean and range across five contexts. This avoids confusing configuration-by-label rows with experimental units. Synthetic response is never reported as field recall, sensitivity or accuracy.</p>
+<h2>5.3 E2 paired synthetic study</h2>
+<p>E2 compares injected and unmodified readings at the same timestamps, plus matched unmodified controls drawn from 10 preselected controls. The reviewed outputs cover six meteorological variables in unmodified same-time rows and target variables in injected rows. There are 2,880 paired comparisons across conditions, modes and settings. Repeated parameter settings are dependent, and matched controls were not independently adjudicated as clean. A missing-block injection can remove the history needed by a screen, producing <code>UNAVAILABLE</code> rather than evidence of a fault.</p>
+<h2>5.4 Baseline comparison and availability ablation</h2>
+<p>The corrected baseline compares E1 consensus thresholds, model families, E2 settings and E4 direct-variable screens using the 160-unit base. The E1+E3 and full evidence combinations have no E3 observations. The ablation therefore reports how often required evidence was available, not whether the combinations improve correctness, utility or calibration.</p>
+<h2>5.5 Distinguishing experiment types</h2>
+<p>Three evidence types are kept separate. <strong>Historical prediction evaluation</strong> summarizes saved unlabeled anomaly outputs. <strong>Synthetic experimentation</strong> applies controlled perturbations to selected historical contexts. <strong>Software regression and integrity tests</strong> check implementation behavior, file schemas and artifact hashes. Software tests support implementation claims only; they do not validate real-world detection. Hash verification supports artifact identity only.</p>
+<h1>6. Results</h1>
+<h2>6.1 Dataset characteristics</h2>
+<p>Counts verified from stored files match the Phase 01 and Phase 03 manifests: 44,879 processed rows; 44,849 feature-ready rows; 36,434 training rows; 8,415 test rows; 100,980 prediction records; and 8,415 distinct test timestamps. Six precipitation cells are missing in the processed source and are handled in the saved feature workflow using training-only median imputation. The saved feature matrix is complete. The report does not infer instrument provenance from these file properties.</p>
+<h2>6.2 Model configuration and E1 stability</h2>
+<p>The number of candidate timestamps falls as the required agreement threshold increases (Table 2; Figure 3). The 8/12 threshold yields 123 timestamps, or about 1.46% of the test timestamps. This is a screening threshold, not an empirically optimized operating point.</p>
+<p><strong>Table 2. E1 consensus threshold sensitivity. Denominator: 8,415 test timestamps.</strong></p>
+<table><thead><tr><th>Agreement threshold</th><th>Candidate timestamps</th><th>Test timestamps (%)</th></tr></thead><tbody>
+<tr><td>4/12</td><td>432</td><td>5.13</td></tr>
+<tr><td>6/12</td><td>214</td><td>2.54</td></tr>
+<tr><td>8/12</td><td>123</td><td>1.46</td></tr>
+<tr><td>10/12</td><td>51</td><td>0.61</td></tr>
+<tr><td>12/12</td><td>15</td><td>0.18</td></tr>
+</tbody></table>
+<figure><img src="figures/fig04_e1_consensus_threshold.png"/><figcaption>Figure 3. Candidate timestamp count declines with the E1 configuration-agreement threshold. Denominator is the 8,415 saved test timestamps; no labels are available.</figcaption></figure>
+<p>At family level, LOF has the largest number of timestamps flagged by any of its four configurations (635), followed by OCSVM (575) and Isolation Forest (521). Isolation Forest has 94 timestamps flagged by all four settings, LOF 182 and OCSVM 157. These counts describe configuration sensitivity and overlap, not independent family-level votes or fault truth (Table 3; Figure 4).</p>
+<p><strong>Table 3. Family-level E1 candidate counts. Denominator: 8,415 unique test timestamps per family.</strong></p>
+<table><thead><tr><th>Family</th><th>Flagged by any configuration</th><th>Flagged by all four configurations</th><th>Mean configurations voting per timestamp</th></tr></thead><tbody>
+<tr><td>Isolation Forest</td><td>521</td><td>94</td><td>0.128</td></tr>
+<tr><td>Local Outlier Factor</td><td>635</td><td>182</td><td>0.179</td></tr>
+<tr><td>One-Class SVM</td><td>575</td><td>157</td><td>0.165</td></tr>
+</tbody></table>
+<figure><img src="figures/fig05_e1_family_comparison.png"/><figcaption>Figure 4. Unique test timestamps flagged by at least one or all four settings within each model family.</figcaption></figure>
+<h2>6.3 E2 temporal sensitivity</h2>
+<p>The reviewed E2 detail contains 6,840 evaluations: 2,880 clean same-time rows, 2,880 synthetic faulted rows, and 1,080 matched-control evaluations. Across 3-hour/6-hour/12-hour windows, two modes and three robust-z thresholds, the setting sensitivity is substantial. The pooled <code>SUPPORTING</code> proportion among available evaluations varies with window, mode and threshold (Figure 7). This aggregation is descriptive; rows share timestamps and settings, and the pooled percentage must not be interpreted as a detection rate against ground truth.</p>
+<p>In the reviewed faulted condition, 961 of 2,610 available comparisons were <code>SUPPORTING</code> (36.8%); 270 of the 2,880 faulted evaluations were <code>UNAVAILABLE</code>. For clean same-time rows, 691 of 2,880 were <code>SUPPORTING</code> (24.0%); for matched controls, 272 of 1,080 were <code>SUPPORTING</code> (25.2%). The similar nonzero levels underscore why <code>SUPPORTING</code> is not a fault label. Matched controls were not independently adjudicated normal.</p>
+<figure><img src="figures/fig08_e2_setting_sensitivity.png"/><figcaption>Figure 7. E2 SUPPORTING status among available synthetic evaluations pooled by mode and history window across scenarios and cutoffs. Repeated settings are dependent; no truth-based performance is implied.</figcaption></figure>
+<h2>6.4 Five-context synthetic response</h2>
+<p>Table 4 reports the corrected mean context response and observed range across five contexts at the 8/12 E1 threshold. The denominator is the injected timestamp units for each scenario; context response fractions are computed before averaging over contexts. Point spike, point drop and dew-point inconsistency each have mean response of 100% at this threshold in the corrected summary. Gradual drift, missing blocks and stuck sensors have mean response of 0%; intermittent noise is 6.7%, and persistent offset 6.7%. Several scenarios have nonzero context maxima despite low mean, showing between-context heterogeneity. The exact scenario values and denominators are registered in the evidence CSV.</p>
+<p><strong>Table 4. Corrected E1 synthetic response at 8/12 consensus. Mean and range are across five contexts; denominator is injected timestamp units across contexts.</strong></p>
+<table><thead><tr><th>Scenario</th><th>Injected units</th><th>Mean response (%)</th><th>Context range (%)</th></tr></thead><tbody>
+<tr><td>Dew-point / temperature inconsistency</td><td>15</td><td>100.0</td><td>100.0–100.0</td></tr>
+<tr><td>Gradual temperature drift</td><td>30</td><td>0.0</td><td>0.0–0.0</td></tr>
+<tr><td>Intermittent temperature noise</td><td>30</td><td>6.7</td><td>0.0–16.7</td></tr>
+<tr><td>Missing temperature block</td><td>15</td><td>0.0</td><td>0.0–0.0</td></tr>
+<tr><td>Persistent temperature offset</td><td>30</td><td>6.7</td><td>0.0–16.7</td></tr>
+<tr><td>Temperature point drop</td><td>5</td><td>100.0</td><td>100.0–100.0</td></tr>
+<tr><td>Temperature point spike</td><td>5</td><td>100.0</td><td>100.0–100.0</td></tr>
+<tr><td>Stuck temperature sensor</td><td>30</td><td>0.0</td><td>0.0–0.0</td></tr>
+</tbody></table>
+<p><strong>Interpretation caution:</strong> These are response fractions for injected labels under the corrected saved experiment. They are not recall against real faults, and the small scenario denominators—especially five point-injection units—make generalization inappropriate.</p>
+<figure><img src="figures/fig06_synthetic_scenario_response.png"/><figcaption>Figure 5. Corrected context response at E1 8/12; bars show five-context means and whiskers show min–max context response. Synthetic injected units only.</figcaption></figure>
+<p>The earlier campaign report also presents configuration × synthetic timestamp fractions. For example, its mean fractions were 0.850 for point spikes, 0.800 for point drops, 0.231 for persistent offsets, 0.081 for stuck sensors, 0.019 for drift, 0.167 for missing blocks, 0.164 for noise and 0.717 for dew-point inconsistency. These are a distinct aggregation level from Table 4; they are not pooled into its context-level results.</p>
+<h2>6.5 Model-family comparison</h2>
+<p>The saved five-context campaign shows model-family differences that depend on perturbation and context. Point spikes and drops often trigger LOF and OCSVM in the shared fit; Isolation Forest response is more context-dependent for point injections. The later corrected summary in Table 4 uses consensus counts and therefore answers a different question. Synthetic performance is weakest for several gradual, persistent and stuck patterns at the 8/12 consensus threshold. This does not show those faults are undetectable by all evidence streams; it shows the selected E1 consensus rule did not respond to these specific injected units in this design.</p>
+<h2>6.6 E2 paired status results</h2>
+<p>Among 2,880 same-time pairs, the status changed after injection in 1,008 (35.0%). Missing blocks account for an important availability effect: 270 faulted rows became <code>UNAVAILABLE</code> because the temporal history was insufficient. In detail, clean same-time evaluations yielded 2,168 <code>NO_DETECTED_EVIDENCE</code>, 691 <code>SUPPORTING</code>, and 21 <code>CONFLICTING</code>. Faulted evaluations yielded 1,510 <code>NO_DETECTED_EVIDENCE</code>, 961 <code>SUPPORTING</code>, 270 <code>UNAVAILABLE</code>, and 139 <code>CONFLICTING</code>. These status totals cover evaluations under repeated settings, not unique events.</p>
+<p><strong>Table 5. E2 status counts by condition. Each condition contains 2,880 setting-level evaluations.</strong></p>
+<table><thead><tr><th>Condition</th><th>No detected evidence</th><th>Supporting</th><th>Conflicting</th><th>Unavailable</th></tr></thead><tbody>
+<tr><td>Same-time unmodified readings</td><td>2,168</td><td>691</td><td>21</td><td>0</td></tr>
+<tr><td>Synthetic faulted readings</td><td>1,510</td><td>961</td><td>139</td><td>270</td></tr>
+</tbody></table>
+<p>The 10 matched controls are a separate subset with 272 <code>SUPPORTING</code>, 792 <code>NO_DETECTED_EVIDENCE</code> and 16 <code>CONFLICTING</code> outcomes across 1,080 evaluations. They are not independently verified clean observations.</p>
+<figure><img src="figures/fig07_e2_paired_status.png"/><figcaption>Figure 6. E2 status distribution for clean same-time and synthetic faulted rows. Each condition contains 2,880 setting-level evaluations; repeated settings are not independent.</figcaption></figure>
+<h2>6.7 E4 screening response</h2>
+<p>The E4 checks cover missingness, nonnumeric and non-finite readings, broad physical ranges and cross-variable plausibility. In the corrected direct-screen experiment, the missing-temperature-block scenario was flagged across its injected units; the other selected injections received zero E4 direct-screen response in that comparison. This expected result demonstrates that missingness rules can expose a missing block. It does not establish hardware diagnosis, general sensor-fault coverage or suitability of every physical threshold.</p>
+<figure><img src="figures/fig09_e4_synthetic_screen.png"/><figcaption>Figure 8. Synthetic injected timestamp units flagged by E4 direct physical screening; this is not a hardware fault diagnostic accuracy plot.</figcaption></figure>
+<h2>6.8 Corrected synthetic baseline comparison</h2>
+<p>The corrected comparison aggregates 160 experimental units (unique context × scenario × injected timestamp), five contexts and eight scenarios. It evaluates E1 thresholds, model families, E2 settings and E4 checks. Table 4 shows the corrected E1 8/12 result; the baseline artifacts retain the other settings. Aggregation must remain explicit: the context mean/range is not interchangeable with the earlier configuration × label response statistic.</p>
+<h2>6.9 Evidence coverage ablation</h2>
+<p>The availability comparison (Table 5; Figure 9) shows that E1 alone and E1+E4 have all 160 units available; adding E2 yields 145/160 (90.6%). E1+E3 and the full E1+E2+E3+E4 combination have 0/160 complete units because the E3 stream was unavailable. E1+E2+E4 also has 145/160. These results quantify coverage constraints only. They cannot show that a complete evidence set would improve decision accuracy.</p>
+<p><strong>Table 5. Evidence combination coverage. Denominator: 160 context × scenario × injected-timestamp units.</strong></p>
+<table><thead><tr><th>Evidence combination</th><th>Complete units</th><th>Coverage</th></tr></thead><tbody>
+<tr><td>E1</td><td>160/160</td><td>100.0%</td></tr>
+<tr><td>E1 + E2</td><td>145/160</td><td>90.6%</td></tr>
+<tr><td>E1 + E3</td><td>0/160</td><td>0.0%</td></tr>
+<tr><td>E1 + E4</td><td>160/160</td><td>100.0%</td></tr>
+<tr><td>E1 + E2 + E3 + E4</td><td>0/160</td><td>0.0%</td></tr>
+<tr><td>E1 + E2 + E4</td><td>145/160</td><td>90.6%</td></tr>
+</tbody></table>
+<figure><img src="figures/fig10_evidence_coverage.png"/><figcaption>Figure 9. Fraction of 160 synthetic units with required evidence available for each combination. This is a coverage comparison, not outcome utility.</figcaption></figure>
+<h2>6.10 Prediction parity discrepancy</h2>
+<p>The prediction mismatch investigation contains 42 differing cells out of 100,980, all associated with Isolation Forest. The cause remains unexplained because the historical estimator/scaler state and complete fit provenance are unavailable. The saved historical predictions were not replaced. The discrepancy limits claims of exact computational reproduction and should be resolved or bounded in future work.</p>
+<h1>7. System Implementation</h1>
+<h2>7.1 Application architecture</h2>
+<p>WeatherGuard AI is a Streamlit application that loads saved processed data and research artifacts through service modules. The app describes the data as a historical processed snapshot, shows saved candidates, and presents model behavior and research limitations. It is not a live station feed. Main user-facing workspaces are Home, Weather Data, Investigate a Reading, Model Evaluation, Experiment Lab and Research. The user can explore measurements, review candidate timestamps and inspect model explanations or saved experiments.</p>
+<h2>7.2 Services and research modules</h2>
+<p>Repository modules separate data loading, model and uploaded-data analysis, physical quality screening, evidence interpretation and artifact integrity checks. Research modules support station preflight, provider metadata, controlled synthetic injections, temporal screens, model evaluation and report artifacts. The five-context synthetic campaign is guarded by saved manifests and artifact integrity checks. UI messaging explicitly describes model flags as candidates rather than accuracy measures and labels the project as a prototype with no verified fault labels.</p>
+<h2>7.3 Software verification</h2>
+<p>The repository includes unit and integrity tests for data handling, model services, quality rules, evidence status logic, experiment boundaries and artifact manifests. These tests establish expected software behavior for tested cases. They do not establish scientific validity, field performance or complete provider provenance. The report did not execute new tests or campaigns; it audited saved test reports and reviewed artifacts.</p>
+<h2>7.4 Evidence display and uncertainty</h2>
+<p>The application structure supports presenting E1 candidates, temporal or physical evidence, provenance and limitations. The three interpretation categories remain research targets rather than validated app outputs. E3 availability and independently adjudicated reference labels are prerequisites for a defensible integrated display.</p>
+<h1>8. Discussion</h1>
+<p>The saved E1 analysis shows a clear stability gradient: stronger agreement selects fewer timestamps, while model-family counts differ. It provides a reproducible way to prioritize review and makes threshold dependence visible. Without reference labels, it cannot identify an optimal threshold, estimate fault likelihood or establish a false alarm rate. The 12 configurations also share a common test dataset, so their votes are correlated evidence.</p>
+<p>E2 demonstrates that temporal screens can return support, conflict, no detected departure or unavailable statuses across selected settings. It also demonstrates a central ambiguity: a substantial fraction of unmodified same-time rows and matched controls are <code>SUPPORTING</code>. Temporal support therefore means unusual history-relative behavior, not faulty hardware. Conversely, <code>NO_DETECTED_EVIDENCE</code> does not prove a reading is normal. Missingness can remove the evidence needed for an assessment, and the correct result is unavailable.</p>
+<p>Synthetic E1 response varies sharply by perturbation. Strong response to selected point anomalies and dew-point inconsistency coexists with weak response to drift, stuck readings, missing blocks, noise and persistent offsets at the 8/12 threshold. These selected tests expose limits and context dependence, but the injections do not capture the full range of sensor faults, weather transitions, station environments or failure mechanisms.</p>
+<p>E4 catches a designed missing block and screens broad physical inconsistencies. It adds a deterministic line of evidence but cannot distinguish a sensor fault from a real extreme without context. Bounds need station- and variable-specific validation and should preserve potentially valid extremes for review.</p>
+<p>E3 remains essential to the central question because spatial support is one route to distinguishing regional weather from station-local behavior. The station inventory and adapter investigation did not provide real observation series. Therefore, the report cannot assess whether neighboring stations support any saved anomaly, how distance or terrain affects corroboration, or whether a proposed spatial rule improves classification.</p>
+<p>Finally, the coverage ablation indicates that the full evidence combination cannot currently be populated. It does not demonstrate that combining streams improves outcomes. The appropriate present conclusion is that WeatherGuard AI implements useful investigative components and controlled tests, while its integrated interpretation remains a hypothesis awaiting traceable station data and independent outcome references.</p>
+<h1>9. Limitations and Future Work</h1>
+<h2>9.1 Limitations</h2>
+<p>The processed snapshot lacks independently reconstructed raw-source and instrument provenance. VILD0/42099 identity remains ambiguous; inventory metadata does not verify common populated observations. The METAR adapter could not serve the proposed September 2025 period, and Phase 1C retrieved no rows. E3 is empirically unvalidated.</p>
+<p>No independently adjudicated field faults or verified clean operation labels are available. Real-world precision, recall, false alarm rates, calibration, utility and generalization cannot be computed. E2 supporting statuses are not fault truth, and matched controls are not independently adjudicated clean. Synthetic experiments are limited to eight perturbations, five selected contexts and particular variables/magnitudes. Repeated configurations and settings are dependent.</p>
+<p>The baseline ablation measures evidence availability only; outcome-level ablation remains incomplete. Robustness across stations, seasons, instruments and acquisition providers remains untested. The 42/100,980 Isolation Forest mismatches are unresolved due to missing historical fit objects and provenance. Full Colab verification is not demonstrated. The literature review is narrative rather than systematic. The physical rules are broad screening limits, not diagnoses.</p>
+<h2>9.2 Prioritized next work</h2>
+<ol>
+<li>Resolve candidate station identity with operator or authoritative station-register evidence.</li>
+<li>Identify a traceable historical observation source and retrieve bounded samples only after availability and provenance checks.</li>
+<li>Validate timestamps, units, flags, missingness, source attribution and shared coverage before comparing stations.</li>
+<li>Independently adjudicate regional events, station faults and acceptable readings, documenting uncertainty and review protocol.</li>
+<li>Evaluate E3 with time-aligned stations and characterize representativeness, distance, elevation and missingness.</li>
+<li>Complete outcome-level evidence ablation with independent references and explicit abstention costs.</li>
+<li>Expand robustness analysis across sites, seasons, variables, perturbation magnitudes and providers.</li>
+<li>Resolve or bound the Isolation Forest parity discrepancy and archive estimator/scaler artifacts with fit provenance.</li>
+<li>Reevaluate the integrated three-category interpretation only after the reference set and E3 evidence exist.</li>
+</ol>
+<figure><img src="figures/fig11_research_validation_roadmap.png"/><figcaption>Figure 10. Validation roadmap. Metadata and synthetic software components precede, but do not substitute for, traceable field evidence and independent labels.</figcaption></figure>
+<h1>10. Conclusion</h1>
+<p>This report answers the research question cautiously. The saved studies show that configuration agreement, temporal screening and broad physical checks can organize candidate observations and reveal different patterns under selected synthetic perturbations. The results also show threshold sensitivity, context dependence, temporal false support on unadjudicated controls, unavailable states under missing histories, and weak E1 response to several persistent or gradual perturbations. They do not establish that the evidence streams distinguish real regional weather from real station faults.</p>
+<p>WeatherGuard AI has an implemented research prototype, saved historical anomaly analyses, integrity-checked experiments and prepared station-readiness workflows. The five-context synthetic studies were experimentally evaluated and the saved numerical results were audited. Real-world spatial corroboration, independent fault/normal validation and integrated outcome utility remain unvalidated. The blocked METAR pilot retrieved no observations, and the historical prediction parity issue remains open. The next scientific milestone is traceable station data paired with independent adjudication, not a stronger claim from the current unlabeled snapshot.</p>
+<h1>References</h1>
+<p>[1] C. A. Fiebrich, C. R. Morgan, A. G. McCombs, P. K. Grimsley, and R. A. McPherson, “Quality Assurance Procedures for Mesoscale Meteorological Data,” <em>Journal of Atmospheric and Oceanic Technology</em>, vol. 27, no. 10, pp. 1565–1582, 2010, doi: <a href="https://doi.org/10.1175/2010JTECHA1433.1">10.1175/2010JTECHA1433.1</a>.</p>
+<p>[2] V. Estévez, P. Gavilán, and J. V. Giráldez, “Guidelines on validation procedures for meteorological data from automatic weather stations,” <em>Journal of Hydrology</em>, vol. 402, nos. 1–2, pp. 144–154, 2011, doi: <a href="https://doi.org/10.1016/j.jhydrol.2011.02.031">10.1016/j.jhydrol.2011.02.031</a>.</p>
+<p>[3] C. A. Fiebrich et al., “Toward the Standardization of Mesoscale Meteorological Networks,” <em>Journal of Atmospheric and Oceanic Technology</em>, vol. 37, no. 11, pp. 2033–2049, 2020, doi: <a href="https://doi.org/10.1175/JTECH-D-20-0078.1">10.1175/JTECH-D-20-0078.1</a>.</p>
+<p>[4] B. Faybishenko et al., “Challenging problems of quality assurance and quality control (QA/QC) of sensor data for environmental studies,” <em>Stochastic Environmental Research and Risk Assessment</em>, vol. 36, no. 4, pp. 1049–1062, 2022, doi: <a href="https://doi.org/10.1007/s00477-021-02106-w">10.1007/s00477-021-02106-w</a>.</p>
+<p>[5] A. Stawowy et al., “The Analysis and Modelling of the Quality of Information Acquired from Weather Station Sensors,” <em>Remote Sensing</em>, vol. 13, no. 4, Art. 693, 2021, doi: <a href="https://doi.org/10.3390/rs13040693">10.3390/rs13040693</a>.</p>
+<p>[6] G. Blázquez-García, A. Conde, U. Mori, and J. A. Lozano, “A Review on Outlier/Anomaly Detection in Time Series Data,” <em>ACM Computing Surveys</em>, vol. 54, no. 3, Art. 56, pp. 1–33, 2021, doi: <a href="https://doi.org/10.1145/3444690">10.1145/3444690</a>.</p>
+<p>[7] V. Chandola, A. Banerjee, and V. Kumar, “Anomaly Detection: A Survey,” <em>ACM Computing Surveys</em>, vol. 41, no. 3, Art. 15, pp. 1–58, 2009, doi: <a href="https://doi.org/10.1145/1541880.1541882">10.1145/1541880.1541882</a>.</p>
+<p>[8] F. T. Liu, K. M. Ting, and Z.-H. Zhou, “Isolation Forest,” in <em>Proceedings of the 8th IEEE International Conference on Data Mining</em>, 2008, pp. 413–422, doi: <a href="https://doi.org/10.1109/ICDM.2008.17">10.1109/ICDM.2008.17</a>.</p>
+<p>[9] M. M. Breunig, H.-P. Kriegel, R. T. Ng, and J. Sander, “LOF: Identifying Density-Based Local Outliers,” in <em>Proceedings of the 2000 ACM SIGMOD International Conference on Management of Data</em>, 2000, pp. 93–104, doi: <a href="https://doi.org/10.1145/335191.335388">10.1145/335191.335388</a>.</p>
+<p>[10] B. Schölkopf, J. C. Platt, J. Shawe-Taylor, A. J. Smola, and R. C. Williamson, “Estimating the Support of a High-Dimensional Distribution,” <em>Neural Computation</em>, vol. 13, no. 7, pp. 1443–1471, 2001, doi: <a href="https://doi.org/10.1162/089976601750264965">10.1162/089976601750264965</a>.</p>
+<h1>Appendices</h1>
+<h2>Appendix A. Model configurations</h2>
+<p>The saved Phase 03 protocol has 12 configurations: four Isolation Forest contamination settings (0.01, 0.02, 0.03, 0.05); four LOF neighborhood settings (10, 20, 30, 50); and four One-Class SVM <code>nu</code> settings (0.01, 0.02, 0.03, 0.05). Exact model fit and seed provenance should be read with the Phase 03 manifest; parity is not exact for 42 Isolation Forest cells.</p>
+<h2>Appendix B. Synthetic scenario definitions</h2>
+<table><thead><tr><th>Scenario</th><th>Target</th><th>Perturbation in saved campaign</th></tr></thead><tbody>
+<tr><td>Point spike</td><td>Temperature</td><td>+10 for one timestamp</td></tr>
+<tr><td>Point drop</td><td>Temperature</td><td>-10 for one timestamp</td></tr>
+<tr><td>Persistent offset</td><td>Temperature</td><td>+5 across six observations</td></tr>
+<tr><td>Stuck sensor</td><td>Temperature</td><td>Constant reading across six observations</td></tr>
+<tr><td>Gradual drift</td><td>Temperature</td><td>Increase from 0 to +5 across six observations</td></tr>
+<tr><td>Missing block</td><td>Temperature</td><td>Three missing observations</td></tr>
+<tr><td>Intermittent noise</td><td>Temperature</td><td>Noise standard deviation 2 across six observations</td></tr>
+<tr><td>Dew-point inconsistency</td><td>Dew point</td><td>+20 across three observations</td></tr>
+</tbody></table>
+<h2>Appendix C. Data provenance and integrity summary</h2>
+<p>The source snapshot and model outputs are local saved artifacts at the Phase 1C checkpoint. The Phase 1A/1B/1C reports document station identity, provider inventory and adapter feasibility. The evidence register records SHA-256 hashes, row filters and interpretation limits for numerical claims. Hash verification is distinct from provenance and label validation.</p>
+<p><strong>Table 7. Evidence status by research phase.</strong></p>
+<table><thead><tr><th>Phase</th><th>Status in saved checkpoint</th><th>Evidence boundary</th></tr></thead><tbody>
+<tr><td>Phase 0</td><td>Complete locally</td><td>Baseline software and artifact verification; no field label validation</td></tr>
+<tr><td>Phase 1A</td><td>Partial</td><td>Station/provider metadata reviewed; observation availability unchecked</td></tr>
+<tr><td>Phase 1B</td><td>Partial; external access required</td><td>Provider/parameter inventory metadata; identity and observation coverage unresolved</td></tr>
+<tr><td>Phase 1C</td><td><code>PILOT_WORKFLOW_BLOCKED_PROVIDER_INTERFACE_UNVERIFIED</code></td><td>Adapter inspected; requested historical period unsupported; no rows retrieved</td></tr>
+<tr><td>Phase 2</td><td>Outstanding</td><td>Independent event, fault and normal reference labels not established</td></tr>
+</tbody></table>
+<h2>Appendix D. Software validation summary</h2>
+<p>The repository includes software tests and artifact integrity checks. The report did not run new tests or model workflows. Existing tests support software behavior in covered cases; no software test establishes real-world performance. The master notebook contains historical exploratory material; full hosted-notebook execution is not demonstrated.</p>
+<h2>Appendix E. Reproducibility instructions</h2>
+<p>See <code>REPRODUCIBILITY_AND_ARTIFACT_REGISTER.md</code> for the source commit, input artifact locations, report generation boundaries and verified counts. <code>build_assets.py</code> recalculates saved-artifact summaries, figures and the evidence register only; it does not fit a model, regenerate a campaign or fetch external weather observations.</p></body></html>

@@ -1,0 +1,13 @@
+neighbor_station_id,variable,valid_difference_pairs,mean_neighbor_minus_primary,mean_absolute_difference,rmse,interpretation
+42099,temp,42,-0.476190476190476,2.5809523809523816,3.598280012397458,Descriptive only; time alignment and independent lineage are not established.
+42099,dwpt,42,-3.9928571428571424,4.15952380952381,6.022596339342914,Descriptive only; time alignment and independent lineage are not established.
+42099,rhum,42,-3.642857142857143,10.5,13.417295164220302,Descriptive only; time alignment and independent lineage are not established.
+42099,wspd,42,7.707142857142857,8.164285714285713,10.412298131582306,Descriptive only; time alignment and independent lineage are not established.
+42099,pres,42,0.9857142857142824,1.376190476190475,1.8362746967446761,Descriptive only; time alignment and independent lineage are not established.
+42099,prcp,0,,,,Descriptive only; time alignment and independent lineage are not established.
+42101,temp,50,-0.1800000000000002,2.9600000000000004,3.9887341350358265,Descriptive only; time alignment and independent lineage are not established.
+42101,dwpt,50,-5.492000000000001,5.716,7.249331003616817,Descriptive only; time alignment and independent lineage are not established.
+42101,rhum,50,-9.2,14.8,18.320480343047777,Descriptive only; time alignment and independent lineage are not established.
+42101,wspd,50,9.222000000000001,9.486,11.569157272679805,Descriptive only; time alignment and independent lineage are not established.
+42101,pres,51,0.15686274509803474,1.1215686274509813,1.599632310692608,Descriptive only; time alignment and independent lineage are not established.
+42101,prcp,0,,,,Descriptive only; time alignment and independent lineage are not established.

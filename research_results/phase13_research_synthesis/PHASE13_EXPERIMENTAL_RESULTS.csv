@@ -1,0 +1,21 @@
+result_id,experiment_or_measure,estimate_or_count,denominator_or_scope,source_file,verification_status,scientific_interpretation
+R01,Processed observations,44879,rows,verified_phase01/phase01_manifest.json,Verified,Processed snapshot; historical raw-data lineage is unknown
+R02,Feature-ready rows,44849,rows,verified_phase01/phase01_manifest.json,Verified,Manifested nine base feature columns
+R03,Train split,36434,rows,verified_phase01/phase01_manifest.json,Verified,Training ends 2025-03-14 23:30 +05:30
+R04,Test split,8415,rows,verified_phase01/phase01_manifest.json,Verified,2025-03-21 23:30 through 2026-03-09 23:30 +05:30; seven-day gap
+R05,Model prediction grid,100980,"12 configurations × 8,415 timestamps",phase03_model_revalidation/model_predictions.csv; phase03 integrity manifest,Verified,Saved predictions; not independently labeled performance
+R06,Prediction parity mismatches,42,100980 prediction cells,research_results/prediction_mismatch_investigation.csv; research_results/prediction_mismatch_investigation.json,Verified mismatch count; cause unresolved,All mismatches associated with Isolation Forest; reproducibility remains incomplete
+R07,E1 threshold sensitivity,432; 214; 123; 51; 15,4/12; 6/12; 8/12; 10/12; 12/12 thresholds,research_results/e1_threshold_sensitivity.csv,Verified candidate counts,Threshold counts are not calibrated performance metrics
+R08,Phase 12 baseline candidate count,123,8415 timestamps,phase12_evidence_coverage.csv; phase12_summary.json,Verified,Existing 8/12 screen only
+R09,E1 supporting flags,123,8415 timestamps,phase12_evidence_coverage.csv,Verified,Exactly same flag count and vote result as baseline; no additional input identified
+R10,E1-baseline identity,8415 identical vote-count and flag rows,8415 timestamps,phase12_summary.json; phase12_component_dependency.csv,Verified,Signal dependency finding for saved artifacts
+R11,E2 supporting flags,1661,8415 timestamps,phase12_evidence_coverage.csv; phase12_summary.json,Verified descriptive screen,"Not sensitivity, specificity, accuracy, or event detection rate"
+R12,E1/E2 supporting-indicator agreement,79.916815%; Jaccard 0.027058; phi 0.056526,8415 paired timestamps,phase12_component_overlap.csv,Verified descriptive association,High agreement is largely shared negatives; association is not independence or validity
+R13,E4 supporting flags,0,8415 timestamps,phase12_evidence_coverage.csv; phase12_summary.json,Verified,No missing values in evaluated window; no evidence that anomalies/faults were absent
+R14,E3 decision-eligible observations,0,8415 timestamps,phase12_evidence_coverage.csv; phase12_summary.json,Verified,"123 descriptive-only; 8,292 insufficient; no verified independent lineage"
+R15,E3 candidate-indexed neighbor rows,246,123 candidates × two neighbor IDs,phase12_summary.json,Verified descriptive rows,Timestamp indexing alone does not establish matched independent observations
+R16,E3 alignment classes,32 exact; 61 nonzero; 153 missing offsets,246 neighbor rows,phase12_summary.json,Verified descriptive alignment,Median absolute available offset 60 minutes; exact does not establish source independence
+R17,Phase 12 category changes,0,8415 cases across sensitivity configurations,phase12_sensitivity_results.csv; phase12 report,Verified deterministic result,Categories remain baseline-derived; evidence profiles and explanations can change
+R18,Synthetic injection campaign,5 contexts; 8 scenarios; 40 combinations; 160 injected units,synthetic held-out contexts and scripted injections,research_results/fault_matrix_multicontext_46ae5d119d/ and baseline_review_1/,Verified synthetic design,Not field validation or event-truth performance
+R19,Synthetic E2 paired setting-level statuses,1008 changed; 270 unavailable,2880 rows across 18 settings; 160 paired IDs,research_results/fault_matrix_multicontext_46ae5d119d/; E2 reviewed reports,Verified synthetic review,Repeated setting-level rows are not independent experimental units; labels are injection-defined
+R20,Physical-screen synthetic coverage,160/160 for E1 and E1+E4; 145/160 for E1+E2 and E1+E2+E4; 0/160 for E3-containing combinations,160 synthetic units,research_results/fault_matrix_multicontext_46ae5d119d/baseline_review_1/,Verified coverage only,Coverage does not measure decision utility or generalization

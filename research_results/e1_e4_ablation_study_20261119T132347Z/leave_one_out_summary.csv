@@ -1,0 +1,4 @@
+reference_configuration,comparison_configuration,removed_component,observations_evaluated,assessment_changes,reference_suspicious_assessments,without_component_suspicious_assessments,component_available_observations_before_removal,mean_available_components_before_removal,mean_available_components_after_removal,available_component_coverage_change_pct,baseline_preserved_for_all_observations
+A5 · Baseline + E1 + E2 + E4,A5 without E1,E1,8415,0,123,123,8415,3.0,2.0,0.0,True
+A5 · Baseline + E1 + E2 + E4,A5 without E2,E2,8415,0,123,123,8415,3.0,2.0,0.0,True
+A5 · Baseline + E1 + E2 + E4,A5 without E4,E4,8415,0,123,123,8415,3.0,2.0,0.0,True

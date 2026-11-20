@@ -153,3 +153,20 @@ Implementation revision: `1712e1289e961211538277cc2f8285ef9f1dbce8`. Final full-
 ### Linux CI byte-integrity follow-up
 
 The first two hosted Linux runs reached all 84 tests but failed the Experiment Lab AppTest because the verified multi-context outputs were hidden. Investigation found Git on Windows had normalized CRLF bytes in the manifested experiment files, while the manifests intentionally hash the original bytes. A scoped `.gitattributes` rule now preserves the campaign and its referenced run artifacts as binary for Git checkout, without changing their working-tree bytes or regenerating any experiment. Before commit, the Git index was independently checked against all 29 manifested inputs, six outputs, and the manifest sidecar: all hashes matched. Hosted Actions run #13 on commit `0ec6c6a29c84e3544bdce3acbf7eeaa30a8f8f31` completed successfully, including the Linux AppTest, compilation, and whitespace checks.
+
+## Research completion roadmap — Phase 0 checkpoint (2026-11-17)
+
+- Refreshed local `main` to `852bc34e76ef4e5de15e48f0f1402f7bf0e9c1d1`, merged PR #2. PR-head CI run #15 on `c51ab63e7aa47f386d0f4c08e28576be153f18d0` passed.
+- `python -B -m unittest discover -s tests -v`: **84 passed, 0 failed, 0 skipped**; compileall and `git diff --check` passed.
+- Read-only artifact verification passed for Phase 01 (44,879/36,434/8,415 rows), Phase 03 (11 CSV artifacts), and PR #2 multi-context/E2/baseline inputs and outputs (40 context-scenario rows; 6,840 E2 detail; 3,360 baseline detail; 29 baseline inputs and six outputs).
+- No saved prediction, original synthetic result or historical manifest was regenerated or overwritten.
+- Phase 1/2 blockers are recorded in `PHASE0_BASELINE_VERIFICATION.md`: source-verified raw VILD0/neighbor observations and independent adjudicated event/fault/normal references are absent. Do not begin empirical E3 or report real-world accuracy until those inputs are available.
+
+## Phase 1A station preflight — 2026-11-17
+
+- `python scripts/run_phase1a_station_preflight.py`: generated five provider identity rows/records for the five candidate stations, 70 station-provider-parameter statuses, and four neighbor assessments. It made no observation downloads or live inventory API calls.
+- `python -B -m unittest discover -s tests -v`: **98 passed, 0 failed, 0 skipped** (84 existing + 14 station-preflight tests). New tests cover identities, metadata, coordinates, Haversine, source classes, availability, suitability, mocked inventory responses, and manifest tampering.
+- `python -m compileall -q app.py services ui src/weather_research tests scripts`: passed. `git diff --check`: passed.
+- Phase 1A manifest verifies four repository inputs and five generated outputs. All 70 parameter rows are `NOT_CHECKED`; station-level Meteostat inventory metadata is reported separately. Four neighbor candidates assessed: three conditional, one unsuitable for the present hourly period based on the provider page's listed inventory.
+- A scoped `.gitattributes` rule preserves this hash-manifested preflight directory byte-for-byte across Windows/Linux checkout.
+- Status: **PARTIALLY_COMPLETE_EXTERNAL_DATA_ACCESS_REQUIRED**. No raw observation downloads, E3 implementation/validation, refit, prediction generation, or historical-result edits.

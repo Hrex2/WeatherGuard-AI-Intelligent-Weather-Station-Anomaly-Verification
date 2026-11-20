@@ -23,10 +23,15 @@ from services.model_metadata import build_model_education
 from services.research_artifact_integrity import multicontext_artifact_state
 from ui.investigation_workspace import render_investigation_workspace
 from ui.new_csv_analysis import render_new_csv_analysis
+from ui.home_dashboard import render_home_dashboard
 from ui.station_map import render_station_map
 from ui.theme import apply_theme, metric_card, evidence_panel
+from ui.model_workspace import render_model_workspace
+from ui.research_workspace import render_research_workspace
+from ui.experiment_workspace import render_experiment_workspace
+from ui.chart_theme import style_chart
 
-st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="WeatherGuard AI", page_icon="🌦️", layout="wide", initial_sidebar_state="auto")
 apply_theme()
 
 
@@ -36,15 +41,7 @@ def _load_data(root_text):
 
 
 def _plot_layout(fig, height=350):
-    fig.update_layout(
-        height=height, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#cad8e8", "family": "Inter, Segoe UI, sans-serif"},
-        margin={"l": 14, "r": 14, "t": 30, "b": 12},
-        xaxis={"gridcolor": "#26384e", "zerolinecolor": "#26384e"},
-        yaxis={"gridcolor": "#26384e", "zerolinecolor": "#26384e"},
-        legend={"orientation": "h", "y": 1.12, "x": 0},
-    )
-    return fig
+    return style_chart(fig, height)
 
 
 def _fmt_ts(ts):
@@ -60,6 +57,22 @@ def render_header(kicker, title, subtitle):
     st.title(title)
     st.markdown(f"<div class='wg-subtitle'>{subtitle}</div>", unsafe_allow_html=True)
     st.write("")
+
+
+@st.dialog("Experiment with your data", width="large")
+def render_upload_dialog(root):
+    render_new_csv_analysis(root)
+
+
+def render_about():
+    render_header("WeatherGuard AI / project", "About", "A research prototype for reviewing unusual historical weather-station readings.")
+    st.markdown("""
+    WeatherGuard AI combines saved model outputs with temporal, spatial, and physical evidence to help people investigate unusual weather observations.
+
+    **Research boundary:** model agreement identifies candidates; it does not confirm sensor failure. The project’s E3 spatial evidence remains descriptive because independent station lineage and event adjudication are insufficient.
+    """)
+    st.info("This application is a historical research prototype, not a live monitoring or maintenance system.")
+    st.caption("Project team and contact information are not specified in the repository.")
 
 
 def render_home(data, manifest, hashes):
@@ -152,20 +165,34 @@ def render_weather_data(data):
     series = view[variable].dropna()
     if len(series) > 9000:
         series = series.iloc[::max(1, len(series) // 9000)]
+    selected = st.session_state.get("selected_observation")
+    if isinstance(dates, tuple) and len(dates) == 2:
+        candidate_index = stability.index[(stability.index >= lo) & (stability.index <= hi)
+                                          & stability.configuration_votes.ge(8)]
+    else:
+        candidate_index = stability.index[stability.configuration_votes.ge(8)]
+    candidate_times = candidate_index.intersection(series.index)
+    summary = st.columns(3)
+    summary[0].metric("Historical rows in range", f"{len(view):,}")
+    summary[1].metric("8/12 candidates in range", f"{len(candidate_times):,}",
+                      help="Saved model agreement is a review marker, not a fault label.")
+    selected_value = series.get(pd.Timestamp(selected)) if selected is not None and pd.Timestamp(selected) in series.index else None
+    summary[2].metric("Selected reading", f"{selected_value:.2f} {labels[variable][1]}" if selected_value is not None else "Outside range / unavailable",
+                      help="The selected timestamp is shared with Home and Investigate a Reading.")
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=series.index, y=series, mode="lines", name=labels[variable][0],
                              line={"color": "#38BDF8", "width": 1.4},
                              hovertemplate="%{x|%Y-%m-%d %H:%M}<br>%{y:.2f} " + labels[variable][1] + "<extra></extra>"))
-    candidate_times = stability.index[stability.configuration_votes.ge(8)].intersection(series.index)
     if len(candidate_times):
         fig.add_trace(go.Scatter(x=candidate_times, y=series.loc[candidate_times], mode="markers", name="8/12 model agreement",
                                  marker={"color": "#FBBF24", "size": 7, "symbol": "diamond"}))
-    selected = st.session_state.get("selected_observation")
     if selected is not None and pd.Timestamp(selected) in series.index:
         selected = pd.Timestamp(selected)
         fig.add_trace(go.Scatter(x=[selected], y=[series.loc[selected]], mode="markers", name="Selected reading",
                                  marker={"color": "#F87171", "size": 11, "symbol": "x"}))
     fig.update_layout(title=f"{labels[variable][0]} over time", xaxis_title="Historical time", yaxis_title=f"{labels[variable][0]} ({labels[variable][1]})")
+    if series.empty:
+        st.info("No non-missing measurements are available for this variable and date range.")
     st.plotly_chart(_plot_layout(fig, 430), width="stretch")
     st.caption(f"Showing {len(view):,} historical rows; {int(view[variable].isna().sum()):,} missing values for {labels[variable][0].lower()} in this range. Gold markers indicate model agreement, not confirmed faults.")
     with st.expander("View measurement rows"):
@@ -232,8 +259,8 @@ def render_investigation(data, root):
     render_investigation_workspace(data, root)
 
 
-def render_experiments(root, data, phase01_hashes):
-    render_header("WeatherGuard AI  /  experiment lab", "Experiment Lab", "Run controlled, explicitly simulated injections on held-out observations.")
+def render_synthetic_experiments(root, data, phase01_hashes):
+    render_header("WeatherGuard AI  /  experiments", "Synthetic Campaigns", "Review saved controlled injection results and their limits.")
     st.warning("SIMULATED DATA — NOT REAL-WORLD FAULT VALIDATION. Synthetic results test detector behavior on declared injections; they do not estimate field accuracy or diagnose hardware.")
     matrix_dir = root / "research_results" / "fault_matrix_02bd147f5cce"
     matrix_manifest_path = matrix_dir / "run_metadata.json"
@@ -687,27 +714,43 @@ if "selected_observation" not in st.session_state:
     high = data["stability"].loc[data["stability"].configuration_votes.ge(8), "timestamp"]
     st.session_state["selected_observation"] = high.iloc[-1] if len(high) else data["observations"].index[-1]
 
-with st.sidebar:
-    st.markdown("<div class='wg-eyebrow'>WeatherGuard AI</div>", unsafe_allow_html=True)
-    st.markdown("### Historical Weather Anomaly Monitoring")
-    st.caption("Choose a place to start")
-    workspace = st.radio("Main navigation", ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation", "Experiment Lab", "Research"], label_visibility="collapsed", key="workspace_navigation")
-    st.divider()
-    st.markdown("**Historical data** · VILD0 processed snapshot")
-    st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
-    st.caption("Not a live feed · source provenance incomplete")
-    st.divider()
-    st.caption("Working title: Uncertainty-Aware Event-Level Verification of Weather Station Anomalies")
+with st.container(border=True, key="primary_header"):
+    brand, nav = st.columns([1.25, 4.4], vertical_alignment="center")
+    with brand:
+        st.markdown("<div class='wg-brand'><span class='wg-brand-mark'>⌁</span><span>WEATHERGUARD <span style='color:#38bdf8'>AI</span></span></div>", unsafe_allow_html=True)
+    with nav:
+        primary_page = st.radio(
+            "Main navigation",
+            ["Home", "Weather Data", "Investigate a Reading", "Model Evaluation",
+             "Experiment Lab", "Research", "About"],
+            horizontal=True, label_visibility="collapsed", key="primary_navigation",
+        )
 
-if workspace == "Home":
-    render_home(data, manifest, hashes)
-elif workspace == "Weather Data":
+with st.sidebar:
+    st.markdown("<div class='wg-eyebrow'>PROJECT WORKSPACE</div>", unsafe_allow_html=True)
+    st.markdown("### Dataset context")
+    st.markdown("**VILD0 · primary processed series**")
+    st.caption("Ludhiana / Doraha record · historical snapshot")
+    st.caption(f"{len(data['observations']):,} rows · {data['predictions'].configuration.nunique()} saved configurations")
+    st.success("Saved artifact integrity verified")
+    st.divider()
+    st.caption("Historical data only · provider and sensor provenance remain incomplete.")
+
+if primary_page == "Weather Data":
     render_weather_data(data)
-elif workspace == "Investigate a Reading":
+elif primary_page == "Investigate a Reading":
     render_investigation(data, ROOT)
-elif workspace == "Research":
-    render_research(data)
-elif workspace == "Experiment Lab":
-    render_experiments(ROOT, data, hashes)
-else:
-    render_evaluation(data, ROOT, hashes)
+elif primary_page == "Home":
+    render_home_dashboard(data, str(ROOT))
+elif primary_page == "Model Evaluation":
+    render_model_workspace(data, ROOT, hashes, render_evaluation)
+elif primary_page == "Experiment Lab":
+    render_experiment_workspace(ROOT, data, hashes, render_synthetic_experiments)
+elif primary_page == "Research":
+    render_research_workspace(ROOT, data)
+elif primary_page == "About":
+    render_about()
+
+with st.container(key="wg_persistent_upload_action"):
+    if st.button("＋  Experiment with your data", key="persistent_dataset_cta", type="primary"):
+        render_upload_dialog(ROOT)

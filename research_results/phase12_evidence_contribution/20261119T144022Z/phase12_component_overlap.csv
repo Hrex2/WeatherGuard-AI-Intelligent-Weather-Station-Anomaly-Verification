@@ -1,0 +1,10 @@
+indicator_type,component_left,component_right,n,both_positive,left_only,right_only,both_negative,agreement_pct,jaccard_positive,phi,interpretation_limit
+supporting,E1,E2,8415,47,76,1614,6678,79.91681521093285,0.027058146229130685,0.056525561345238465,"Descriptive association only; not causal, calibrated, or predictive validation."
+supporting,E1,E4,8415,0,123,0,8292,98.53832442067736,0.0,,"Descriptive association only; not causal, calibrated, or predictive validation."
+supporting,E2,E4,8415,0,1661,0,6754,80.26143790849673,0.0,,"Descriptive association only; not causal, calibrated, or predictive validation."
+available,E1,E2,8415,8415,0,0,0,100.0,1.0,,"Descriptive association only; not causal, calibrated, or predictive validation."
+available,E1,E4,8415,8415,0,0,0,100.0,1.0,,"Descriptive association only; not causal, calibrated, or predictive validation."
+available,E2,E4,8415,8415,0,0,0,100.0,1.0,,"Descriptive association only; not causal, calibrated, or predictive validation."
+baseline_candidate,BASELINE,E1,8415,123,0,0,8292,100.0,1.0,1.0,"Descriptive association only; not causal, calibrated, or predictive validation."
+baseline_candidate,BASELINE,E2,8415,47,76,1614,6678,79.91681521093285,0.027058146229130685,0.056525561345238465,"Descriptive association only; not causal, calibrated, or predictive validation."
+baseline_candidate,BASELINE,E4,8415,0,123,0,8292,98.53832442067736,0.0,,"Descriptive association only; not causal, calibrated, or predictive validation."

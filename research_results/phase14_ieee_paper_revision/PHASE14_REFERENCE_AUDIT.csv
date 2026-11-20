@@ -1,0 +1,14 @@
+reference_no,title_or_resource,verification_source,bibliographic_status,in_text_use,notes
+1,"Quality Assurance Procedures for Mesoscale Meteorological Data","https://journals.ametsoc.org/view/journals/atot/27/10/2010jtecha1433_1.xml; DOI 10.1175/2010JTECHA1433.1",Verified,[1],Publisher record supports title journal volume issue pages and DOI
+2,"Guidelines on validation procedures for meteorological data from automatic weather stations","https://doi.org/10.1016/j.jhydrol.2011.02.031",Verified,[2],Title author order journal volume pages and DOI checked against article record
+3,"Toward the Standardization of Mesoscale Meteorological Networks","https://journals.ametsoc.org/view/journals/atot/37/11/JTECH-D-20-0078.1.xml; DOI 10.1175/JTECH-D-20-0078.1",Verified,[3],Publisher record supports 2020 volume 37 issue 11 pages 2033–2049
+4,"Challenging Problems of Quality Assurance and Quality Control (QA/QC) of Meteorological Time Series Data","https://doi.org/10.1007/s00477-021-02106-w",Verified,[4],Publisher/repository records support title authors journal year volume pages and DOI
+5,"Isolation Forest","https://doi.org/10.1109/ICDM.2008.17",Verified,[5],Conference title and pages checked against publication metadata
+6,"LOF: Identifying Density-Based Local Outliers","https://doi.org/10.1145/335191.335388",Verified,[6],Conference title pages and DOI checked against publication metadata
+7,"Estimating the Support of a High-Dimensional Distribution","https://doi.org/10.1162/089976601750264965",Corrected and verified,[7],Original paper paired this DOI with a different title; revised title now matches the journal record
+8,"Anomaly Detection: A Survey","https://doi.org/10.1145/1541880.1541882",Verified,[8],ACM record supports volume 41 issue 3 article 15 and DOI
+9,"A Review on Outlier/Anomaly Detection in Time Series Data","https://doi.org/10.1145/3444690",Verified,[9],ACM record supports volume 54 issue 3 article 56 and DOI
+10,"The Analysis and Modelling of the Quality of Information Acquired from Weather Station Sensors","https://www.mdpi.com/2072-4292/13/4/693; DOI 10.3390/rs13040693",Verified,[10],Publisher record supports title authors journal year volume issue article number and DOI
+11,"Iowa Environmental Mesonet ASOS-AWOS-METAR data download","https://mesonet.agron.iastate.edu/request/download.phtml?network=TM__ASOS",Provider documentation,[11],Online archive/documentation resource; access date retained from source paper
+12,"Meteostat hourly data API","https://dev.meteostat.net/python/api/meteostat.hourly",Provider documentation,[12],Online API documentation; product behavior/version is time-dependent
+13,"India Meteorological Department WIS2 station catalogue","https://wis2box.imd.gov.in/oapi/collections/stations/items?f=html",Provider endpoint,[13],Station metadata endpoint; endpoint availability and catalogue contents can change

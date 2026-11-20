@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "stations": ["VILD0", "42105"],
+  "primary_station": "VILD0",
+  "neighbour_candidate": "42105",
+  "provider": "METAR",
+  "parameters": ["temp", "rhum", "wspd", "wdir", "pres"],
+  "start_date_inclusive": "2025-09-01",
+  "end_date_inclusive": "2025-09-30",
+  "end_boundary_exclusive": "2025-10-01",
+  "frequency": "hourly",
+  "source_timezone": "Meteostat v2.2.3 returns UTC-naive timestamps when timezone is omitted",
+  "comparison_timezone": "UTC",
+  "model_fill": false,
+  "approval_status": "PENDING_USER_APPROVAL",
+  "expected_output_directory": "research_results/phase1c_metar_pilot/runs/<unique_run_id>/",
+  "package_version": "2.2.3",
+  "provider_interface_status": "BLOCKED_FOR_REQUESTED_HISTORICAL_WINDOW",
+  "credentials": {
+    "rapidapi_key_for_python_interface": false,
+    "metar_adapter_user_agent_environment_variable": "MS_AVIATIONWEATHER_USER_AGENT"
+  },
+  "provider_interface_verification": {
+    "python_entry_point": "meteostat.hourly",
+    "provider_enum": "meteostat.Provider.METAR",
+    "parameter_enum": ["Parameter.TEMP", "Parameter.RHUM", "Parameter.WSPD", "Parameter.WDIR", "Parameter.PRES"],
+    "runtime_provider_start_observed": "2026-11-16",
+    "adapter_endpoint_window": "hours=24",
+    "supports_requested_2025_09_period": false,
+    "humidity_semantics": "Meteostat 2.2.3 derives rhum from parsed temp and dwpt; it is not an independent encoded METAR field"
+  },
+  "readiness_status": "PILOT_WORKFLOW_BLOCKED_PROVIDER_INTERFACE_UNVERIFIED"
+}

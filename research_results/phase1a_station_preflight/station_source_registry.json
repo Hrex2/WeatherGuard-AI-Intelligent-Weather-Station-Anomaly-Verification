@@ -1,0 +1,102 @@
+{
+  "retrieval_timestamp_utc": "2026-11-17T10:08:23.144466+00:00",
+  "query_type": "repository inventory and public provider station-page/documentation review; parameter API and observations not queried",
+  "provider_versions": {
+    "meteostat_python": null,
+    "reason": "package not installed"
+  },
+  "network_status": "DOCUMENTATION_AND_STATION_METADATA_REVIEWED_API_NOT_QUERIED",
+  "provider_notes": "Reviewed public station metadata pages and docs; parameter-specific inventory API was not called, and no raw observations were downloaded.",
+  "sources": [
+    {
+      "name": "repository_inventory",
+      "url_or_path": "outputs/station_provenance/station_manifest.json",
+      "response_status": "REPOSITORY_READ",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "phase02_report",
+      "url_or_path": "PHASE02_PROVENANCE_REPORT.md",
+      "response_status": "REPOSITORY_READ",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "spatial_summary",
+      "url_or_path": "phase03_model_revalidation/spatial_comparison_summary.csv",
+      "response_status": "REPOSITORY_READ",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "phase03_manifest",
+      "url_or_path": "phase03_model_revalidation/phase03_integrity_manifest.json",
+      "response_status": "REPOSITORY_READ",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_vild0",
+      "url_or_path": "https://meteostat.net/en/station/VILD0",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_42099",
+      "url_or_path": "https://meteostat.net/en/station/42099",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_42101",
+      "url_or_path": "https://meteostat.net/en/station/42101",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_42105",
+      "url_or_path": "https://meteostat.net/en/station/42105",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_42096",
+      "url_or_path": "https://meteostat.net/en/station/42096",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_inventory_docs",
+      "url_or_path": "https://dev.meteostat.net/python/stations/inventory",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_hourly_docs",
+      "url_or_path": "https://dev.meteostat.net/data/timeseries/hourly.html",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "meteostat_station_inventory_docs",
+      "url_or_path": "https://dev.meteostat.net/python/stations/inventory",
+      "response_status": "REQUEST_TIMED_OUT",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "imd_station_list",
+      "url_or_path": "https://imdpune.gov.in/library/public/Climatological%20Tables%201991-2020.pdf",
+      "response_status": "DOCUMENTATION_OR_METADATA_REVIEWED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "imd_wis2_station_api",
+      "url_or_path": "https://wis2box.imd.gov.in/oapi/collections/stations/items/0-20000-0-42099?f=html",
+      "response_status": "REQUEST_TIMED_OUT",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    },
+    {
+      "name": "imd_data_portal",
+      "url_or_path": "https://dsp.imdpune.gov.in/",
+      "response_status": "NOT_VERIFIED",
+      "verification_note": "Does not establish observation availability or historical dataset provenance."
+    }
+  ]
+}
